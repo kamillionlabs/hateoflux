@@ -1,3 +1,16 @@
+.classpath
+.attach_*
+bin/
+build/
+/.project
+/.gradle/
+/.settings/
+/.idea
+/.run
+/generated/
+/out
+/gradle/wrapper/gradle-wrapper.properties
+
 # Compiled class file
 *.class
 
