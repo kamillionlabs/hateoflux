@@ -18,6 +18,7 @@
 
 package org.kamillion.hateoflux.linkbuilder;
 
+import org.kamillion.hateoflux.model.Link;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
@@ -32,9 +33,14 @@ import java.util.Optional;
  */
 public class SpringControllerLinkBuilder {
 
-    public static <T> String linkTo(Class<T> controllerClass, ControllerMethodReference<T> methodRef) {
+    public static <T> Link linkTo(Class<T> controllerClass, ControllerMethodReference<T> methodRef) {
 
         assertClassIsCorrectlyAnnotated(controllerClass);
+        String basePath = extractControllerBasePath(controllerClass);
+
+        if (methodRef == null) {
+            return Link.linkAsSelfOf(basePath);
+        }
 
         final MethodCaptureInterceptor interceptor = new MethodCaptureInterceptor();
 
@@ -44,16 +50,19 @@ public class SpringControllerLinkBuilder {
         T proxy = (T) enhancer.create();
 
         // Invoke the method reference which will capture the method details
-        methodRef.apply(proxy);
+        methodRef.invoke(proxy);
         final Method capturedMethod = interceptor.getCapturedMethod();
 
         if (capturedMethod == null) {
-            throw new IllegalArgumentException("No method reference captured");
+            throw new IllegalStateException("No method reference captured");
         }
 
-        String basePath = getControllerBasePath(controllerClass);
-        String methodPath = getMethodPath(capturedMethod);
-        return basePath + methodPath;
+        String methodPath = extractMethodPath(capturedMethod);
+        return Link.linkAsSelfOf(basePath + methodPath);
+    }
+
+    public static <T> Link linkTo(Class<T> controllerClass) {
+        return linkTo(controllerClass, null);
     }
 
     private static <T> void assertClassIsCorrectlyAnnotated(final Class<T> controllerClass) {
@@ -65,13 +74,13 @@ public class SpringControllerLinkBuilder {
         Assert.isTrue(isControllerClass, "Controller must be annotated as such, either with @Controller or @RestController!");
     }
 
-    private static String getControllerBasePath(Class<?> controllerClass) {
+    private static String extractControllerBasePath(Class<?> controllerClass) {
         return Optional.ofNullable(controllerClass.getAnnotation(RequestMapping.class)) //
                 .flatMap(a -> Arrays.stream(a.value()).findFirst())
                 .orElse("");
     }
 
-    private static String getMethodPath(Method method) {
+    private static String extractMethodPath(Method method) {
         return Optional.ofNullable(method.getAnnotation(RequestMapping.class)) //
                 .flatMap(a -> Arrays.stream(a.value()).findFirst()) //
                 .or(() -> Optional.ofNullable(method.getAnnotation(GetMapping.class))//

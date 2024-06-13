@@ -23,5 +23,5 @@ package org.kamillion.hateoflux.linkbuilder;
  */
 @FunctionalInterface
 public interface ControllerMethodReference<T> {
-    void apply(T controller);
+    void invoke(T controller);
 }

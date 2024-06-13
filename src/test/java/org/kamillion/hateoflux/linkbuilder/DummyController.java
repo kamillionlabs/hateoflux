@@ -18,10 +18,10 @@
 
 package org.kamillion.hateoflux.linkbuilder;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import java.util.UUID;
 
 /**
  * @author Younes El Ouarti
@@ -32,7 +32,40 @@ public class DummyController {
 
 
     @GetMapping("/getmapping-url")
-    public Mono<Integer> funcWithGetMappingUrl() {
+    public Mono<Integer> getMappingUrl() {
         return Mono.just(3);
     }
+
+    @PostMapping("/{someUuId}")
+    public Mono<Void> postMappingAndParameter(@PathVariable UUID someUuId) {
+        return Mono.empty();
+    }
+
+    @PostMapping("/{someUuId}/")
+    public Mono<Void> postMappingAndParameterAndSlash(@PathVariable UUID someUuId) {
+        return Mono.empty();
+    }
+
+    @PutMapping("/{someUuId}/subresource")
+    public Mono<Void> putMappingAndParameterAsSubresource(@PathVariable UUID someUuId) {
+        return Mono.empty();
+    }
+
+    @RequestMapping(value = "/request", method = RequestMethod.PUT)
+    public Mono<Void> requestPutMappingAWithQueryParameters(@RequestParam(required = false) Integer size,
+                                                            @RequestParam String name) {
+        return Mono.empty();
+    }
+
+    @RequestMapping(value = "/request/", method = RequestMethod.PUT)
+    public Mono<Void> requestPutMappingAWithQueryParametersAndSlash(@RequestParam(required = false) Integer size,
+                                                                    @RequestParam String name) {
+        return Mono.empty();
+    }
+
+    @PatchMapping("/{someUuId}/subresource")
+    public Mono<Void> patchMappingAndParameterAsSubresourceAndQueryParameter(@PathVariable UUID someUuId, @RequestParam String name) {
+        return Mono.empty();
+    }
+
 }
