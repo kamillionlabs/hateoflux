@@ -20,9 +20,12 @@ package org.kamillion.hateoflux.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.annotation.Nullable;
 import lombok.Value;
+import org.kamillion.hateoflux.linkbuilder.UriExpander;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
+
+import java.util.Map;
 
 /**
  * Represents a hypermedia link with various attributes defining aspects of the link such as
@@ -111,13 +114,40 @@ public class Link {
         this.hreflang = hreflang;
     }
 
-    public Link slash(@Nullable Object object) {
-        return this;
+    /**
+     * Appends a specified URI part to the current {@Link}'s href. The method ensures proper formatting with slashes.
+     *
+     * @param uriPart
+     *         The URI part to be appended.
+     * @return A new instance of {@link Link} with the appended URI part.
+     */
+    public Link slash(String uriPart) {
+        StringBuffer newHref = new StringBuffer(this.href);
+
+        if (!this.href.endsWith("/")) {
+            newHref.append("/");
+        }
+
+        if (StringUtils.hasText(uriPart)) {
+            if (uriPart.startsWith("/")) {
+                newHref.append(uriPart.substring(1));
+            } else {
+                newHref.append(uriPart);
+            }
+        }
+
+        return this.withHref(newHref.toString());
     }
 
 
     public Link expand(Object... pathVariables) {
-        return this;
+        String newHref = UriExpander.expand(this.href, pathVariables);
+        return this.withHref(newHref);
+    }
+
+    public Link expand(Map<String, Object> pathVariables) {
+        String newHref = UriExpander.expand(this.href, pathVariables);
+        return this.withHref(newHref);
     }
 
 
@@ -129,8 +159,8 @@ public class Link {
      * Creates a new {@link Link} instance with the specified href but without any IANA relation.
      * This is useful for creating links that do not need to express a specific relationship type.
      *
-     * @param href Hypertext REFerence, commonly known as a URL (e.g., https://www.github.com).
-     *
+     * @param href
+     *         Hypertext REFerence, commonly known as a URL (e.g., https://www.github.com).
      * @return A new instance of {@link Link} with no IANA relation.
      */
     public static Link of(String href) {
@@ -141,9 +171,10 @@ public class Link {
      * Creates a new {@link Link} instance and associates it with a specified IANA relation.
      * This method defines the type of relationship between the current resource and the linked resource.
      *
-     * @param href     Hypertext REFerence, commonly known as a URL (e.g., https://www.github.com).
-     * @param relation IANA relation of the link, which must not be null (see {@link IanaRelation} for details).
-     *
+     * @param href
+     *         Hypertext REFerence, commonly known as a URL (e.g., https://www.github.com).
+     * @param relation
+     *         IANA relation of the link, which must not be null (see {@link IanaRelation} for details).
      * @return A new instance of {@link Link} with the specified IANA relation.
      */
     public static Link of(IanaRelation relation, String href) {
@@ -155,8 +186,8 @@ public class Link {
      * Creates a new {@link Link} instance with an IANA relation of type {@link IanaRelation#SELF}.
      * This type indicates that the link's URI is a reference to the resource itself.
      *
-     * @param href Hypertext REFerence, commonly known as a URL (e.g., https://www.github.com).
-     *
+     * @param href
+     *         Hypertext REFerence, commonly known as a URL (e.g., https://www.github.com).
      * @return A new instance of {@link Link} with a "self" IANA relation.
      */
     public static Link linkAsSelfOf(String href) {
@@ -168,13 +199,14 @@ public class Link {
      * Returns a new {@link Link} that is a copy of the current link. The new link
      * includes the specified relation to describe the type of relationship to the linked resource.
      *
-     * @param relation A string specifying the IANA relation of the link.
-     *
+     * @param relation
+     *         A string specifying the IANA relation of the link.
      * @return A new {@link Link} object with the specified relation added.
      */
     public Link withRel(String relation) {
         Assert.hasText(relation, "relation must not be empty");
-        return new Link(LinkRelation.of(relation), this.href, this.title, this.name, this.media, this.type, this.templated, this.deprecation, this.profile, this.hreflang);
+        return new Link(LinkRelation.of(relation), this.href, this.title, this.name, this.media, this.type,
+                this.templated, this.deprecation, this.profile, this.hreflang);
     }
 
 
@@ -182,13 +214,14 @@ public class Link {
      * Returns a new {@link Link} that is a copy of the current link. The new link
      * includes the specified IANA relation to describe the type of relationship to the linked resource.
      *
-     * @param relation The IANA relation of the link.
-     *
+     * @param relation
+     *         The IANA relation of the link.
      * @return A new {@link Link} object with the specified IANA relation added.
      */
     public Link withRel(IanaRelation relation) {
         Assert.notNull(relation, "relation must not be null");
-        return new Link(LinkRelation.of(relation), this.href, this.title, this.name, this.media, this.type, this.templated, this.deprecation, this.profile, this.hreflang);
+        return new Link(LinkRelation.of(relation), this.href, this.title, this.name, this.media, this.type,
+                this.templated, this.deprecation, this.profile, this.hreflang);
     }
 
     /**
@@ -205,48 +238,52 @@ public class Link {
      * Returns a new {@link Link} that is a copy of the current link, with the href
      * attribute updated to the specified href.
      *
-     * @param href The new href for the link.
-     *
+     * @param href
+     *         The new href for the link.
      * @return A new {@link Link} object with the updated href.
      */
     public Link withHref(String href) {
-        return new Link(this.linkRelation, href, this.title, this.name, this.media, this.type, this.templated, this.deprecation, this.profile, this.hreflang);
+        return new Link(this.linkRelation, href, this.title, this.name, this.media, this.type, this.templated,
+                this.deprecation, this.profile, this.hreflang);
     }
 
     /**
      * Returns a new {@link Link} that is a copy of the current link, with the title
      * attribute updated to the specified title.
      *
-     * @param title The new title for the link.
-     *
+     * @param title
+     *         The new title for the link.
      * @return A new {@link Link} object with the updated title.
      */
     public Link withTitle(String title) {
-        return new Link(this.linkRelation, this.href, title, this.name, this.media, this.type, this.templated, this.deprecation, this.profile, this.hreflang);
+        return new Link(this.linkRelation, this.href, title, this.name, this.media, this.type, this.templated,
+                this.deprecation, this.profile, this.hreflang);
     }
 
     /**
      * Returns a new {@link Link} that is a copy of the current link, with the name
      * attribute updated to the specified name.
      *
-     * @param name The new name for the link.
-     *
+     * @param name
+     *         The new name for the link.
      * @return A new {@link Link} object with the updated name.
      */
     public Link withName(String name) {
-        return new Link(this.linkRelation, this.href, this.title, name, this.media, this.type, this.templated, this.deprecation, this.profile, this.hreflang);
+        return new Link(this.linkRelation, this.href, this.title, name, this.media, this.type, this.templated,
+                this.deprecation, this.profile, this.hreflang);
     }
 
     /**
      * Returns a new {@link Link} that is a copy of the current link, with the media
      * attribute updated to the specified media type.
      *
-     * @param media The new media type for the link.
-     *
+     * @param media
+     *         The new media type for the link.
      * @return A new {@link Link} object with the updated media type.
      */
     public Link withMedia(String media) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated, this.deprecation, this.profile, this.hreflang);
+        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated,
+                this.deprecation, this.profile, this.hreflang);
     }
 
     /**
@@ -254,12 +291,13 @@ public class Link {
      * flag set to the specified value. This indicates whether the href attribute is
      * a URI template.
      *
-     * @param templated The new value for the templated flag.
-     *
+     * @param templated
+     *         The new value for the templated flag.
      * @return A new {@link Link} object with the updated templated flag.
      */
     public Link withTemplated(boolean templated) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, templated, this.deprecation, this.profile, this.hreflang);
+        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, templated,
+                this.deprecation, this.profile, this.hreflang);
     }
 
     /**
@@ -267,12 +305,13 @@ public class Link {
      * URL updated to the specified deprecation URL. This URL indicates that the linked
      * resource is deprecated.
      *
-     * @param deprecation The new deprecation URL for the link.
-     *
+     * @param deprecation
+     *         The new deprecation URL for the link.
      * @return A new {@link Link} object with the updated deprecation URL.
      */
     public Link withDeprecation(String deprecation) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated, deprecation, this.profile, this.hreflang);
+        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated,
+                deprecation, this.profile, this.hreflang);
     }
 
     /**
@@ -280,12 +319,13 @@ public class Link {
      * attribute updated to the specified profile URL. This URL indicates the schema
      * or profile that the linked resource conforms to.
      *
-     * @param profile The new profile URL for the link.
-     *
+     * @param profile
+     *         The new profile URL for the link.
      * @return A new {@link Link} object with the updated profile.
      */
     public Link withProfile(String profile) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated, this.deprecation, profile, this.hreflang);
+        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated,
+                this.deprecation, profile, this.hreflang);
     }
 
     /**
@@ -293,12 +333,13 @@ public class Link {
      * attribute updated to the specified language code. This code indicates the language
      * of the linked resource.
      *
-     * @param hreflang The new language code for the link.
-     *
+     * @param hreflang
+     *         The new language code for the link.
      * @return A new {@link Link} object with the updated language code.
      */
     public Link withHreflang(String hreflang) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated, this.deprecation, this.profile, hreflang);
+        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated,
+                this.deprecation, this.profile, hreflang);
     }
 }
 
