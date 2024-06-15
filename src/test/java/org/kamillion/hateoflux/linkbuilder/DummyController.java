@@ -32,7 +32,7 @@ public class DummyController {
 
 
     @GetMapping("/getmapping-url")
-    public Mono<Integer> getMappingUrl() {
+    public Mono<Integer> getMappingSimple() {
         return Mono.just(3);
     }
 
@@ -52,19 +52,20 @@ public class DummyController {
     }
 
     @RequestMapping(value = "/request", method = RequestMethod.PUT)
-    public Mono<Void> requestPutMappingAWithQueryParameters(@RequestParam(required = false) Integer size,
-                                                            @RequestParam String name) {
+    public Mono<Void> requestPutMappingWithQueryParameters(@RequestParam(required = false) Integer size,
+                                                           @RequestParam String name) {
         return Mono.empty();
     }
 
     @RequestMapping(value = "/request/", method = RequestMethod.PUT)
-    public Mono<Void> requestPutMappingAWithQueryParametersAndSlash(@RequestParam(required = false) Integer size,
-                                                                    @RequestParam String name) {
+    public Mono<Void> requestPutMappingWithQueryParametersAndSlash(@RequestParam(required = false) Integer size,
+                                                                   @RequestParam String name) {
         return Mono.empty();
     }
 
     @PatchMapping("/{someUuId}/subresource")
-    public Mono<Void> patchMappingAndParameterAsSubresourceAndQueryParameter(@PathVariable UUID someUuId, @RequestParam String name) {
+    public Mono<Void> patchMappingAndParameterAsSubresourceAndQueryParameter(@PathVariable UUID someUuId,
+                                                                             @RequestParam String name) {
         return Mono.empty();
     }
 

@@ -25,8 +25,11 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Optional;
+import java.lang.reflect.Parameter;
+import java.util.*;
+
+import static java.net.URLEncoder.encode;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author Younes El Ouarti
@@ -49,7 +52,7 @@ public class SpringControllerLinkBuilder {
         enhancer.setCallback(interceptor);
         T proxy = (T) enhancer.create();
 
-        // Invoke the method reference which will capture the method details
+        // Invoke the method reference, which will capture the method details
         methodRef.invoke(proxy);
         final Method capturedMethod = interceptor.getCapturedMethod();
 
@@ -58,7 +61,61 @@ public class SpringControllerLinkBuilder {
         }
 
         String methodPath = extractMethodPath(capturedMethod);
-        return Link.linkAsSelfOf(basePath + methodPath);
+        String fullPath = basePath + methodPath;
+        fullPath = expandTemplatedPath(fullPath, interceptor);
+
+        return Link.linkAsSelfOf(fullPath);
+    }
+
+    private static String expandTemplatedPath(String fullPath, MethodCaptureInterceptor interceptor) {
+        Map<String, Object> pathVariables = new HashMap<>();
+        Map<String, Object> queryParameters = new HashMap<>();
+        Parameter[] parameters = interceptor.getCapturedMethod().getParameters();
+        Object[] parameterValues = interceptor.getCapturedArguments();
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter parameter = parameters[i];
+            Object parameterValue = parameterValues[i];
+            if (parameterValue == null) {
+                continue;
+            }
+            if (parameter.isAnnotationPresent(PathVariable.class)) {
+                pathVariables.put(parameter.getName(), parameterValue);
+            }
+            if (parameter.isAnnotationPresent(RequestParam.class)) {
+                queryParameters.put(parameter.getName(), parameterValue);
+            }
+
+        }
+        fullPath = UriExpander.expand(fullPath, pathVariables);
+        fullPath = appendQueryParams(fullPath, queryParameters);
+
+        return fullPath;
+    }
+
+    /**
+     * Appends query parameters to a given URI based on a map of arguments.
+     *
+     * @param uri
+     *         The base URI to which query parameters will be appended.
+     * @param args
+     *         The map containing query parameters and their values.
+     * @return A URI string with appended query parameters.
+     */
+    public static String appendQueryParams(String uri, Map<String, Object> args) {
+        if (args == null || args.isEmpty()) {
+            return uri;
+        }
+
+        boolean hasParams = uri.contains("?");
+        StringJoiner joiner = new StringJoiner("&", hasParams ? "&" : "?", "");
+
+        for (var entry : args.entrySet()) {
+            // Encode keys and values to ensure they are URL safe
+            String key = encode(entry.getKey(), UTF_8);
+            String value = encode(entry.getValue().toString(), UTF_8);
+            joiner.add(key + "=" + value);
+        }
+        return uri + joiner;
     }
 
     public static <T> Link linkTo(Class<T> controllerClass) {
@@ -71,7 +128,8 @@ public class SpringControllerLinkBuilder {
         final boolean isControllerClass = controllerClass.isAnnotationPresent(Controller.class) //
                 || controllerClass.isAnnotationPresent(RestController.class);
 
-        Assert.isTrue(isControllerClass, "Controller must be annotated as such, either with @Controller or @RestController!");
+        Assert.isTrue(isControllerClass, "Controller must be annotated as such, either with @Controller or " +
+                "@RestController!");
     }
 
     private static String extractControllerBasePath(Class<?> controllerClass) {

@@ -14,7 +14,8 @@ class UriExpanderTest {
     @ParameterizedTest
     @CsvSource({
             "/users/{userId}, 37, /users/37",
-            "/users/{userId}/posts/{postId}, 37|2605, /users/37/posts/2605"
+            "/users/{userId}/posts/{postId}, 37|2605, /users/37/posts/2605",
+            "/users, , /users"
     })
     void givenValidInputs_whenExpandWithVars_thenExpectedUri(String template, String vars, String expected) {
         Object[] variables = vars == null ? new Object[]{} : vars.split("\\|");
@@ -42,14 +43,16 @@ class UriExpanderTest {
     void givenEmptyTemplate_whenExpandWithVars_thenThrowException() {
         assertThatThrownBy(() -> UriExpander.expand("", 15))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Provided string is not a template. Was ''");
+                .hasMessage("Too many arguments provided for the URI template. " +
+                        "Template was: '', path variables were: [15]");
     }
 
     @Test
     void givenNonTemplate_whenExpandWithVars_thenThrowException() {
         assertThatThrownBy(() -> UriExpander.expand("/no/placeholders", 15))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Provided string is not a template. Was '/no/placeholders'");
+                .hasMessage("Too many arguments provided for the URI template. " +
+                        "Template was: '/no/placeholders', path variables were: [15]");
     }
 
     @Test

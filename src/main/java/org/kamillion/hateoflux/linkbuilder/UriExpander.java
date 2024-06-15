@@ -24,6 +24,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.lang.String.format;
+
 /**
  * Utility class for expanding URI templates. Provides methods to expand URI templates using either ordered parameters
  * or named parameters from a map. The class handles templates indicated by placeholders enclosed in curly braces {}. If
@@ -33,6 +35,17 @@ import java.util.regex.Pattern;
  */
 public class UriExpander {
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{([^}]+)\\}");
+
+    private static final String TOO_MANY_ARGS_MESSAGE = "Too many arguments provided for the URI template. " +
+            "Template was: '%s', path variables were: %s";
+
+    private static final String NOT_ENOUGH_ARGS_MESSAGE = "Not enough arguments provided to expand the URI template. " +
+            "Template was: '%s', path variables were: %s";
+
+    private static final String NO_MATCHING_VAR_MESSAGE = "Expanding URL failed; No matching variable found for '%s' " +
+            "in provided keys.";
+    private static final String NOT_ALL_KEYS_USED = "Expanding URL '%s' ended without using all provided keys. The " +
+            "following stayed unused: %s";
 
     /**
      * Expands the URI template using the given ordered path variables. If the template contains no placeholders, the
@@ -54,25 +67,30 @@ public class UriExpander {
      *         if there are too many or too few variables provided.
      */
     public static String expand(String uriTemplate, Object... pathVariables) {
-        assertStringIsATemplate(uriTemplate);
+        if (!isTemplated(uriTemplate)) {
+            if (pathVariables == null || pathVariables.length == 0) {
+                return uriTemplate;
+            } else {
+                throw new IllegalArgumentException(//
+                        format(TOO_MANY_ARGS_MESSAGE, uriTemplate, Arrays.toString(pathVariables)));
+            }
+        }
 
         Matcher matcher = VARIABLE_PATTERN.matcher(uriTemplate);
         StringBuffer sb = new StringBuffer();
         int i = 0;
         while (matcher.find()) {
             if (i >= pathVariables.length) {
-                throw new IllegalArgumentException(
-                        "Not enough arguments provided to expand the URI template. Template was: '" + uriTemplate +
-                                "', path variables were: " + Arrays.toString(pathVariables));
+                throw new IllegalArgumentException(format(NOT_ENOUGH_ARGS_MESSAGE, //
+                        uriTemplate, Arrays.toString(pathVariables)));
             }
             matcher.appendReplacement(sb, pathVariables[i++].toString());
         }
         matcher.appendTail(sb);
 
         if (i < pathVariables.length) {
-            throw new IllegalArgumentException(
-                    "Too many arguments provided for the URI template. Template was: '" + uriTemplate + //
-                            "', path variables were: " + Arrays.toString(pathVariables));
+            throw new IllegalArgumentException(//
+                    format(TOO_MANY_ARGS_MESSAGE, uriTemplate, Arrays.toString(pathVariables)));
         }
 
         return sb.toString();
@@ -100,7 +118,10 @@ public class UriExpander {
      *         arguments.
      */
     public static String expand(String uriTemplate, Map<String, Object> pathVariables) {
-        assertStringIsATemplate(uriTemplate);
+        if (!isTemplated(uriTemplate)) {
+            return uriTemplate;
+        }
+
         Matcher matcher = VARIABLE_PATTERN.matcher(uriTemplate);
         StringBuffer sb = new StringBuffer();
         Set<String> usedKeys = new HashSet<>();
@@ -108,9 +129,7 @@ public class UriExpander {
         while (matcher.find()) {
             String key = matcher.group(1);
             if (!pathVariables.containsKey(key)) {
-                throw new IllegalArgumentException(
-                        "Expanding URL failed; No matching variable found for '" + matcher.group(
-                                1) + "' in provided keys.");
+                throw new IllegalArgumentException(format(NO_MATCHING_VAR_MESSAGE, matcher.group(1)));
             }
             matcher.appendReplacement(sb, pathVariables.get(key).toString());
             usedKeys.add(key);
@@ -122,17 +141,12 @@ public class UriExpander {
                 .filter(k -> !usedKeys.contains(k)) //
                 .toList();
         if (!unusedKeys.isEmpty()) {
-            throw new IllegalArgumentException("Expanding URL '" + uriTemplate //
-                    + "' ended without using all provided keys. " //
-                    + "The following stayed unused: " //
-                    + String.join(",", unusedKeys));
+            throw new IllegalArgumentException(format(NOT_ALL_KEYS_USED, uriTemplate, String.join(",", unusedKeys)));
         }
         return sb.toString();
     }
 
-    private static void assertStringIsATemplate(final String uriTemplate) {
-        if (!StringUtils.hasText(uriTemplate) || !uriTemplate.contains("{")) {
-            throw new IllegalArgumentException("Provided string is not a template. Was '" + uriTemplate + "'");
-        }
+    public static boolean isTemplated(String uriTemplate) {
+        return StringUtils.hasText(uriTemplate) && uriTemplate.contains("{");
     }
 }

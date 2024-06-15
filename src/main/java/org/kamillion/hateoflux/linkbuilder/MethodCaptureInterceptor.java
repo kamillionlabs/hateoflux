@@ -31,11 +31,13 @@ import java.lang.reflect.Method;
 public class MethodCaptureInterceptor implements MethodInterceptor {
 
     private Method capturedMethod = null;
+    private Object[] capturedArguments = null;
 
 
     @Override
-    public Object intercept(final Object o, final Method method, final Object[] objects, final MethodProxy methodProxy) {
+    public Object intercept(final Object o, final Method method, final Object[] args, final MethodProxy methodProxy) {
         capturedMethod = method;
+        capturedArguments = args;
         return null; // Interceptor is only used to capture method. Execution is not intended.
     }
 }
