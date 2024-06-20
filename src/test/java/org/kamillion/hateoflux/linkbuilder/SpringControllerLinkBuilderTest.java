@@ -13,7 +13,7 @@ class SpringControllerLinkBuilderTest {
 
 
     @Test
-    void givenGetMappingSimple_whenLinkToCalled_thenLinkIsOk() {
+    void givenGetMappingSimple_whenLinkTo_thenLinkIsFull() {
         // GIVEN & WHEN
         final Link link = linkTo(DummyController.class, DummyController::getMappingSimple);
 
@@ -22,39 +22,39 @@ class SpringControllerLinkBuilderTest {
     }
 
     @Test
-    void givenPostMappingAndParameter_whenLinkToCalled_thenLinkIsOk() {
+    void givenPostMappingWithParameter_whenLinkTo_thenParameterIsSubstituted() {
         // GIVEN & WHEN
         String someUuid = "00000000-0000-0000-0000-000000000000";
-        final Link link = linkTo(DummyController.class, c -> c.postMappingAndParameter(UUID.fromString(someUuid)));
+        final Link link = linkTo(DummyController.class, c -> c.postMappingWithParameter(UUID.fromString(someUuid)));
 
         //THEN
         assertThat(link.getHref()).isEqualTo("/dummy/" + someUuid);
     }
 
     @Test
-    void givenPostMappingAndParameterAndSlash_whenLinkToCalled_thenLinkIsOk() {
+    void givenPostMappingWithParameterAndSlash_whenLinkTo_thenLinkHasTrailingSlash() {
         // GIVEN & WHEN
         String someUuid = "00000000-0000-0000-0000-000000000000";
         final Link link = linkTo(DummyController.class,
-                c -> c.postMappingAndParameterAndSlash(UUID.fromString(someUuid)));
+                c -> c.postMappingWithParameterAndSlash(UUID.fromString(someUuid)));
 
         //THEN
         assertThat(link.getHref()).isEqualTo("/dummy/" + someUuid + "/");
     }
 
     @Test
-    void givenPutMappingAndParameterAsSubresource_whenLinkToCalled_thenLinkIsOk() {
+    void givenPutMappingWithParameterAsSubresource_whenLinkTo_thenParameterIsSubstituted() {
         // GIVEN & WHEN
         String someUuid = "00000000-0000-0000-0000-000000000000";
         final Link link = linkTo(DummyController.class,
-                c -> c.putMappingAndParameterAsSubresource(UUID.fromString(someUuid)));
+                c -> c.putMappingWithParameterAsSubresource(UUID.fromString(someUuid)));
 
         //THEN
         assertThat(link.getHref()).isEqualTo("/dummy/" + someUuid + "/subresource");
     }
 
     @Test
-    void givenRequestPutMappingAWithQueryParametersWithAllArgs_whenLinkToCalled_thenLinkIsOk() {
+    void givenRequestPutMappingAWithQueryParametersWithAllArgs_whenLinkTo_thenBothQueryParametersAreSet() {
         // GIVEN & WHEN
         final Link link = linkTo(DummyController.class, c -> c.requestPutMappingWithQueryParameters(3, "foo"));
 
@@ -63,7 +63,7 @@ class SpringControllerLinkBuilderTest {
     }
 
     @Test
-    void givenRequestPutMappingWithQueryParametersWithRequiredOnly_whenLinkToCalled_thenLinkIsOk() {
+    void givenRequestPutMappingWithQueryParametersWithRequiredOnly_whenLinkTo_thenOnlyOneQueryParameterIsSet() {
         // GIVEN & WHEN
         final Link link = linkTo(DummyController.class, c -> c.requestPutMappingWithQueryParameters(null, "foo"));
 
@@ -72,7 +72,7 @@ class SpringControllerLinkBuilderTest {
     }
 
     @Test
-    void givenRequestPutMappingWithQueryParametersAndSlash_whenLinkToCalled_thenLinkIsOk() {
+    void givenRequestPutMappingWithQueryParametersAndSlash_whenLinkTo_thenLinkHasTrailingSlashBeforeQuery() {
         // GIVEN & WHEN
         final Link link = linkTo(DummyController.class, c -> c.requestPutMappingWithQueryParametersAndSlash(3, "foo"));
 
@@ -81,14 +81,36 @@ class SpringControllerLinkBuilderTest {
     }
 
     @Test
-    void givenRequestPatchMappingAndParameterAsSubresourceAndQueryParameter_whenLinkToCalled_thenLinkIsOk() {
+    void givenPatchMappingWithParameterAsSubresourceAndQueryParameter_whenLinkTo_thenPathAndQueryParameterAreSubstituted() {
         // GIVEN & WHEN
         String someUuid = "00000000-0000-0000-0000-000000000000";
         final Link link = linkTo(DummyController.class,
-                c -> c.patchMappingAndParameterAsSubresourceAndQueryParameter(UUID.fromString(someUuid), "bar"));
+                c -> c.patchMappingWithParameterAsSubresourceAndQueryParameter(UUID.fromString(someUuid), "bar"));
 
         //THEN
         assertThat(link.getHref()).isEqualTo("/dummy/" + someUuid + "/subresource?name=bar");
     }
+
+    @Test
+    void givenPostMappingWithParameterAndCustomName_whenLinkTo_thenSubstitutionWorks() {
+        // GIVEN & WHEN
+        String name = "foo";
+        final Link link = linkTo(DummyController.class,
+                c -> c.postMappingWithParameterAndCustomName(name));
+
+        //THEN
+        assertThat(link.getHref()).isEqualTo("/dummy/" + name);
+    }
+
+    @Test
+    void givenRequestPutMappingWithQueryParameterAndCustomName_whenLinkTo_thenCustomNameIsUsed() {
+        // GIVEN & WHEN
+        final Link link = linkTo(DummyController.class,
+                c -> c.requestPutMappingWithQueryParameterAndCustomName(3));
+
+        //THEN
+        assertThat(link.getHref()).isEqualTo("/dummy/request?customSize=3");
+    }
+
 
 }

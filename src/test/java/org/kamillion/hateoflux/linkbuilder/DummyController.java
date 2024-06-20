@@ -37,23 +37,33 @@ public class DummyController {
     }
 
     @PostMapping("/{someUuId}")
-    public Mono<Void> postMappingAndParameter(@PathVariable UUID someUuId) {
+    public Mono<Void> postMappingWithParameter(@PathVariable UUID someUuId) {
+        return Mono.empty();
+    }
+
+    @PostMapping("/{someUuId}")
+    public Mono<Void> postMappingWithParameterAndCustomName(@PathVariable("someUuId") String customName) {
         return Mono.empty();
     }
 
     @PostMapping("/{someUuId}/")
-    public Mono<Void> postMappingAndParameterAndSlash(@PathVariable UUID someUuId) {
+    public Mono<Void> postMappingWithParameterAndSlash(@PathVariable UUID someUuId) {
         return Mono.empty();
     }
 
     @PutMapping("/{someUuId}/subresource")
-    public Mono<Void> putMappingAndParameterAsSubresource(@PathVariable UUID someUuId) {
+    public Mono<Void> putMappingWithParameterAsSubresource(@PathVariable UUID someUuId) {
         return Mono.empty();
     }
 
     @RequestMapping(value = "/request", method = RequestMethod.PUT)
     public Mono<Void> requestPutMappingWithQueryParameters(@RequestParam(required = false) Integer size,
                                                            @RequestParam String name) {
+        return Mono.empty();
+    }
+
+    @RequestMapping(value = "/request", method = RequestMethod.PUT)
+    public Mono<Void> requestPutMappingWithQueryParameterAndCustomName(@RequestParam("customSize") Integer size) {
         return Mono.empty();
     }
 
@@ -64,8 +74,8 @@ public class DummyController {
     }
 
     @PatchMapping("/{someUuId}/subresource")
-    public Mono<Void> patchMappingAndParameterAsSubresourceAndQueryParameter(@PathVariable UUID someUuId,
-                                                                             @RequestParam String name) {
+    public Mono<Void> patchMappingWithParameterAsSubresourceAndQueryParameter(@PathVariable UUID someUuId,
+                                                                              @RequestParam String name) {
         return Mono.empty();
     }
 
