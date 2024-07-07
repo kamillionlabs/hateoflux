@@ -1,7 +1,8 @@
 package org.kamillion.hateoflux.linkbuilder;
 
 import org.junit.jupiter.api.Test;
-import org.kamillion.hateoflux.model.Link;
+import org.kamillion.hateoflux.dummy.controller.DummyController;
+import org.kamillion.hateoflux.model.link.Link;
 
 import java.util.UUID;
 

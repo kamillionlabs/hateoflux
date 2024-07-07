@@ -18,7 +18,7 @@
 
 package org.kamillion.hateoflux.linkbuilder;
 
-import org.kamillion.hateoflux.model.Link;
+import org.kamillion.hateoflux.model.link.Link;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
@@ -110,18 +110,18 @@ public class SpringControllerLinkBuilder {
     /**
      * Appends query parameters to a given URI based on a map of arguments.
      *
-     * @param uri
+     * @param uriToAppendTo
      *         The base URI to which query parameters will be appended.
      * @param args
      *         The map containing query parameters and their values.
      * @return A URI string with appended query parameters.
      */
-    public static String appendQueryParams(String uri, Map<String, Object> args) {
+    public static String appendQueryParams(String uriToAppendTo, Map<String, Object> args) {
         if (args == null || args.isEmpty()) {
-            return uri;
+            return uriToAppendTo;
         }
 
-        boolean hasParams = uri.contains("?");
+        boolean hasParams = uriToAppendTo.contains("?");
         StringJoiner joiner = new StringJoiner("&", hasParams ? "&" : "?", "");
 
         for (var entry : args.entrySet()) {
@@ -130,7 +130,7 @@ public class SpringControllerLinkBuilder {
             String value = encode(entry.getValue().toString(), UTF_8);
             joiner.add(key + "=" + value);
         }
-        return uri + joiner;
+        return uriToAppendTo + joiner;
     }
 
     public static <T> Link linkTo(Class<T> controllerClass) {

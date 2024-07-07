@@ -16,7 +16,7 @@
  * @since 24.05.2024
  */
 
-package org.kamillion.hateoflux.model;
+package org.kamillion.hateoflux.model.link;
 
 import lombok.Getter;
 

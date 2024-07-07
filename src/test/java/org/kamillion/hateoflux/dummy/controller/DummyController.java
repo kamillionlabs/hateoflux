@@ -16,7 +16,7 @@
  * @since 03.06.2024
  */
 
-package org.kamillion.hateoflux.linkbuilder;
+package org.kamillion.hateoflux.dummy.controller;
 
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;

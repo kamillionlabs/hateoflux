@@ -16,10 +16,11 @@
  * @since 23.05.2024
  */
 
-package org.kamillion.hateoflux.model;
+package org.kamillion.hateoflux.model.link;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Value;
 import org.kamillion.hateoflux.linkbuilder.UriExpander;
 import org.springframework.util.Assert;
@@ -33,7 +34,7 @@ import java.util.Map;
  *
  * @author Younes El Ouarti
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(Include.NON_NULL)
 @Value
 public class Link {
 
@@ -79,7 +80,7 @@ public class Link {
     /**
      * Indicates whether the href is a URI template that should be templated with variables.
      */
-    boolean templated;
+    Boolean templated;
 
     /**
      * A URL that provides information about the deprecation of the link, useful
@@ -100,7 +101,7 @@ public class Link {
     String hreflang;
 
     private Link(final LinkRelation linkRelation, final String href, final String title, final String name,
-                 final String media, final String type, final boolean templated, final String deprecation,
+                 final String media, final String type, final Boolean templated, final String deprecation,
                  final String profile, final String hreflang) {
         this.linkRelation = linkRelation;
         this.href = href;
@@ -112,6 +113,10 @@ public class Link {
         this.deprecation = deprecation;
         this.profile = profile;
         this.hreflang = hreflang;
+    }
+
+    public boolean isTemplated() {
+        return UriExpander.isTemplated(href);
     }
 
     /**
@@ -152,7 +157,7 @@ public class Link {
 
 
     private Link(String href) {
-        this(null, href, null, null, null, null, false, null, null, null);
+        this(null, href, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -179,7 +184,7 @@ public class Link {
      */
     public static Link of(IanaRelation relation, String href) {
         Assert.notNull(relation, "relation must not be null");
-        return new Link(LinkRelation.of(relation), href, null, null, null, null, false, null, null, null);
+        return new Link(LinkRelation.of(relation), href, null, null, null, null, null, null, null, null);
     }
 
     /**

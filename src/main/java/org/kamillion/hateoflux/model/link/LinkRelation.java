@@ -16,19 +16,21 @@
  * @since 24.05.2024
  */
 
-package org.kamillion.hateoflux.model;
+package org.kamillion.hateoflux.model.link;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.Getter;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 
 /**
  * @author Younes El Ouarti
  */
-@Getter
+@EqualsAndHashCode
+@Value
 public class LinkRelation {
 
     @JsonValue
-    private final String relation;
+    String relation;
 
     private LinkRelation(String relation) {
         this.relation = relation;
