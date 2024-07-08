@@ -25,7 +25,6 @@ rewritten accordingly.
     * set "templated" attribute if href is a template; otherwise it shouldn't
     * Link.of(<template string with _query_ parameters>)
     * Query parameters (@RequestParam) for collections with distinction between with or without @NonComposite
-* HTTP Problem Details (RFC 7807)
 * Forwarded header handling
 
 ## Currently out of scope

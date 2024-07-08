@@ -27,6 +27,7 @@ import org.kamillion.hateoflux.model.link.IanaRelation;
 import org.kamillion.hateoflux.model.link.Link;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import java.util.Collection;
 import java.util.List;
 
 import static org.kamillion.hateoflux.linkbuilder.SpringControllerLinkBuilder.linkTo;
@@ -123,6 +124,7 @@ public class SerializationTest {
                                 .withLinks(Link.linkAsSelfOf("/book/234")))
                 );
 
+
         //WHEN
         String actualJson = mapper.writeValueAsString(halEntity);
 
@@ -167,5 +169,101 @@ public class SerializationTest {
                 """, actualJson, NON_EXTENSIBLE);
     }
 
-    //TODO add tests for HalCollectionWrapper
+    @Test
+    public void givenHalCollectionWrapperWithNoPaging_whenSerialized_thenNoErrors() throws Exception {
+        //GIVEN
+        var halCollection = HalCollectionWrapper.wrap(List.of(
+                        HalEntityWrapper.wrap(germanBedtimeStories)
+                                .withLinks(Link.linkAsSelfOf("/book/123")),
+                        HalEntityWrapper.wrap(cookBookForManlyMen)
+                                .withLinks(Link.linkAsSelfOf("/book/234"))))
+                .withLinks(Link.linkAsSelfOf("/author/1/books"));
+
+        //WHEN
+        String actualJson = mapper.writeValueAsString(halCollection);
+
+        //THEN
+        JSONAssert.assertEquals("""
+                {
+                  "_embedded": {
+                    "customBooks": [
+                      {
+                        "title": "The German Bedtime Stories",
+                        "author": "Herbert Almann",
+                        "isbn": "123-4567890123",
+                        "publishedDate": "1889-05-17",
+                        "_links": {
+                          "self": {
+                            "href": "/book/123"
+                          }
+                        }
+                      },
+                      {
+                        "title": "The Only Cook Book a Manly Men Needs",
+                        "author": "Herbert Almann",
+                        "isbn": "234-5678901234",
+                        "publishedDate": "1889-05-17",
+                        "_links": {
+                          "self": {
+                            "href": "/book/234"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "_links": {
+                    "self": {
+                      "href": "/author/1/books"
+                    }
+                  }
+                }
+                """, actualJson, NON_EXTENSIBLE);
+    }
+
+    @Test
+    public void givenHalCollectionWrapperWithPaging_whenSerialized_thenNoErrors() throws Exception {
+        //GIVEN
+        HalCollectionWrapper<Book, Void> halCollection = HalCollectionWrapper.wrap(
+                        List.of(HalEntityWrapper.wrap(germanBedtimeStories)
+                                .withLinks(Link.linkAsSelfOf("/book/123"))))
+                .withLinks(Link.linkAsSelfOf("/author/1/books"))
+                .withPageInfo(HalPageInfo.of(1, 1, 1, 1));
+
+        Collection<HalEntityWrapper<Book, Void>> embeddedCollection = halCollection.getEmbeddedCollection();
+
+        //WHEN
+        String actualJson = mapper.writeValueAsString(halCollection);
+
+        //THEN
+        JSONAssert.assertEquals("""
+                {
+                  "_embedded": {
+                    "customBooks": [
+                      {
+                        "title": "The German Bedtime Stories",
+                        "author": "Herbert Almann",
+                        "isbn": "123-4567890123",
+                        "publishedDate": "1889-05-17",
+                        "_links": {
+                          "self": {
+                            "href": "/book/123"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "page": {
+                    "size": 1,
+                    "totalElements": 1,
+                    "totalPages": 1,
+                    "number": 1
+                  },
+                  "_links": {
+                    "self": {
+                      "href": "/author/1/books"
+                    }
+                  }
+                }
+                """, actualJson, NON_EXTENSIBLE);
+    }
 }

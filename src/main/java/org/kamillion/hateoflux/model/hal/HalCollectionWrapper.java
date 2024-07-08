@@ -18,6 +18,7 @@
 
 package org.kamillion.hateoflux.model.hal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
@@ -83,5 +84,15 @@ public final class HalCollectionWrapper<ContentT, EmbeddedT>
     public HalCollectionWrapper<ContentT, EmbeddedT> withPageInfo(HalPageInfo pageInfo) {
         return new HalCollectionWrapper<>(this.embeddedCollection.getKey(), this.embeddedCollection.getValue(),
                 pageInfo, this.getLinks());
+    }
+
+    @JsonIgnore
+    public Collection<HalEntityWrapper<ContentT, EmbeddedT>> getEmbeddedCollection() {
+        return embeddedCollection.getValue();
+    }
+
+    @JsonIgnore
+    public String getNameOfEmbeddedCollection() {
+        return embeddedCollection.getKey();
     }
 }
