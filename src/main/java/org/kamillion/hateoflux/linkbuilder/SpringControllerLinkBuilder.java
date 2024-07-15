@@ -37,7 +37,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class SpringControllerLinkBuilder {
 
-    public static <T> Link linkTo(Class<T> controllerClass, ControllerMethodReference<T> methodRef) {
+    public static <ControllerT> Link linkTo(Class<ControllerT> controllerClass,
+                                            ControllerMethodReference<ControllerT> methodRef) {
 
         assertClassIsCorrectlyAnnotated(controllerClass);
         String basePath = extractControllerBasePath(controllerClass);
@@ -51,7 +52,7 @@ public class SpringControllerLinkBuilder {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(controllerClass);
         enhancer.setCallback(interceptor);
-        T proxy = (T) enhancer.create();
+        ControllerT proxy = (ControllerT) enhancer.create();
 
         // Invoke the method reference, which will capture the method details
         methodRef.invoke(proxy);
@@ -133,11 +134,11 @@ public class SpringControllerLinkBuilder {
         return uriToAppendTo + joiner;
     }
 
-    public static <T> Link linkTo(Class<T> controllerClass) {
+    public static <ControllerT> Link linkTo(Class<ControllerT> controllerClass) {
         return linkTo(controllerClass, null);
     }
 
-    private static <T> void assertClassIsCorrectlyAnnotated(final Class<T> controllerClass) {
+    private static <ControllerT> void assertClassIsCorrectlyAnnotated(final Class<ControllerT> controllerClass) {
 
         Assert.notNull(controllerClass, "Controller class must not be null!");
         final boolean isControllerClass = controllerClass.isAnnotationPresent(Controller.class) //

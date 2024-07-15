@@ -2,11 +2,11 @@ package org.kamillion.hateoflux.model.hal;
 
 import org.junit.jupiter.api.Test;
 
-class HalCollectionWrapperTest {
+class HalListWrapperTest {
 
     @Test
     public void testEmpty() {
-        HalCollectionWrapper<String, Integer> kj = HalCollectionWrapper.empty("kj");
+        HalListWrapper<String, Integer> kj = HalListWrapper.empty("kj");
     }
 
 }

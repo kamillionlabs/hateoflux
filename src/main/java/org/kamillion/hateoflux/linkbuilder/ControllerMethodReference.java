@@ -22,6 +22,6 @@ package org.kamillion.hateoflux.linkbuilder;
  * @author Younes El Ouarti
  */
 @FunctionalInterface
-public interface ControllerMethodReference<T> {
-    void invoke(T controller);
+public interface ControllerMethodReference<ControllerT> {
+    void invoke(ControllerT controller);
 }

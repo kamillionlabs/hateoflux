@@ -27,7 +27,6 @@ import org.kamillion.hateoflux.model.link.IanaRelation;
 import org.kamillion.hateoflux.model.link.Link;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import java.util.Collection;
 import java.util.List;
 
 import static org.kamillion.hateoflux.linkbuilder.SpringControllerLinkBuilder.linkTo;
@@ -64,11 +63,11 @@ public class SerializationTest {
     @Test
     public void givenHalEntity_whenSerialized_thenNoErrors() throws Exception {
         //GIVEN
-        var halEntity = HalEntityWrapper.wrap(germanBedtimeStories)
+        HalEntityWrapper<Book, Author> halEntity = HalEntityWrapper.wrap(germanBedtimeStories)
                 .withLinks(
                         Link.of("/book/123").withRel(IanaRelation.SELF),
                         Link.of("/author/1").withRel("author"))
-                .withEmbeddedEntity(HalEntityWrapper.wrap(author)
+                .withEmbeddedEntity(HalEmbeddedWrapper.wrap(author)
                         .withLinks(
                                 Link.linkAsSelfOf("/author/").slash("1"),
                                 linkTo(AuthorController.class, c -> c.getBooks(1)).withRel("books")
@@ -117,10 +116,10 @@ public class SerializationTest {
         //GIVEN
         var halEntity = HalEntityWrapper.wrap(author)
                 .withLinks(Link.linkAsSelfOf("/author/1"))
-                .withNonEmptyEmbeddedCollection(List.of(
-                        HalEntityWrapper.wrap(germanBedtimeStories)
+                .withNonEmptyEmbeddedList(List.of(
+                        HalEmbeddedWrapper.wrap(germanBedtimeStories)
                                 .withLinks(Link.linkAsSelfOf("/book/123")),
-                        HalEntityWrapper.wrap(cookBookForManlyMen)
+                        HalEmbeddedWrapper.wrap(cookBookForManlyMen)
                                 .withLinks(Link.linkAsSelfOf("/book/234")))
                 );
 
@@ -172,7 +171,7 @@ public class SerializationTest {
     @Test
     public void givenHalCollectionWrapperWithNoPaging_whenSerialized_thenNoErrors() throws Exception {
         //GIVEN
-        var halCollection = HalCollectionWrapper.wrap(List.of(
+        var halCollection = HalListWrapper.wrap(List.of(
                         HalEntityWrapper.wrap(germanBedtimeStories)
                                 .withLinks(Link.linkAsSelfOf("/book/123")),
                         HalEntityWrapper.wrap(cookBookForManlyMen)
@@ -223,13 +222,11 @@ public class SerializationTest {
     @Test
     public void givenHalCollectionWrapperWithPaging_whenSerialized_thenNoErrors() throws Exception {
         //GIVEN
-        HalCollectionWrapper<Book, Void> halCollection = HalCollectionWrapper.wrap(
+        HalListWrapper<Book, Void> halCollection = HalListWrapper.wrap(
                         List.of(HalEntityWrapper.wrap(germanBedtimeStories)
                                 .withLinks(Link.linkAsSelfOf("/book/123"))))
                 .withLinks(Link.linkAsSelfOf("/author/1/books"))
                 .withPageInfo(HalPageInfo.of(1, 1, 1, 1));
-
-        Collection<HalEntityWrapper<Book, Void>> embeddedCollection = halCollection.getEmbeddedCollection();
 
         //WHEN
         String actualJson = mapper.writeValueAsString(halCollection);
