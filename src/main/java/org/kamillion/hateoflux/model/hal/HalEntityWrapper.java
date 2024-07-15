@@ -234,7 +234,7 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
             @NonNull Class<?> embeddedTypeAsNameOrigin, List<HalEmbeddedWrapper<NewEmbeddedT>> entitiesToEmbed) {
         Assert.notNull(embeddedTypeAsNameOrigin, "Embedded type must not be null");
         Assert.notNull(entitiesToEmbed, "List to embed is not allowed to be null");
-        String name = determineEntityRelationName(embeddedTypeAsNameOrigin);
+        String name = determineCollectionRelationName(embeddedTypeAsNameOrigin);
         return new HalEntityWrapper<>(this.entity, name, entitiesToEmbed, this.getLinks());
     }
 

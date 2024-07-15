@@ -94,7 +94,7 @@ public final class HalListWrapper<EntityT, EmbeddedT>
     }
 
     @JsonIgnore
-    public String getNameOfEmbeddedList() {
+    public String getNameOfEntityList() {
         return entityList.getKey();
     }
 }

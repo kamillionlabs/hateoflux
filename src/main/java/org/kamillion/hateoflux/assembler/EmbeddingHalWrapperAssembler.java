@@ -33,25 +33,37 @@ import java.util.List;
  */
 public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
 
+    default HalListWrapper<EntityT, EmbeddedT> toEmptyListWrapper(Class<?> listItemTypeAsNameOrigin,
+                                                                  ServerWebExchange exchange) {
+        HalListWrapper<EntityT, EmbeddedT> emptyWrapper = HalListWrapper.empty(listItemTypeAsNameOrigin);
+        return emptyWrapper
+                .withLinks(buildLinksForEntityList(null, exchange));
+    }
+
+    default HalListWrapper<EntityT, EmbeddedT> toEmptyListWrapper(String listName, ServerWebExchange exchange) {
+        HalListWrapper<EntityT, EmbeddedT> emptyWrapper = HalListWrapper.empty(listName);
+        return emptyWrapper
+                .withLinks(buildLinksForEntityList(null, exchange));
+    }
 
     default HalListWrapper<EntityT, EmbeddedT> toListWrapper(List<Pair<EntityT, EmbeddedT>> entitiesToWrap,
                                                              ServerWebExchange exchange) {
-        List<HalEntityWrapper<EntityT, EmbeddedT>> listOfWrappedEntityWithEmbedded =
+        List<HalEntityWrapper<EntityT, EmbeddedT>> listOfWrappedEntitiesWithEmbedded =
                 entitiesToWrap.stream()
                         .map(pair -> {
                             EntityT entity = pair.left();
                             EmbeddedT embedded = pair.right();
-                            return toWrapper(entity, embedded, exchange);
+                            return toEntityWrapper(entity, embedded, exchange);
                         }).toList();
 
-        return HalListWrapper.wrap(listOfWrappedEntityWithEmbedded)
+        return HalListWrapper.wrap(listOfWrappedEntitiesWithEmbedded)
                 .withLinks(buildLinksForEntityList(entitiesToWrap, exchange));
     }
 
 
-    default HalEntityWrapper<EntityT, EmbeddedT> toWrapper(EntityT entityToWrap,
-                                                           EmbeddedT embedded,
-                                                           ServerWebExchange exchange) {
+    default HalEntityWrapper<EntityT, EmbeddedT> toEntityWrapper(EntityT entityToWrap,
+                                                                 EmbeddedT embedded,
+                                                                 ServerWebExchange exchange) {
         return HalEntityWrapper.wrap(entityToWrap)
                 .withLinks(buildLinksForEntity(entityToWrap, exchange))
                 .withEmbeddedEntity(
@@ -60,29 +72,29 @@ public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
                 );
     }
 
-    default HalEntityWrapper<EntityT, EmbeddedT> toWrapper(EntityT entityToWrap,
-                                                           List<EmbeddedT> embeddedList,
-                                                           ServerWebExchange exchange) {
+    default HalEntityWrapper<EntityT, EmbeddedT> toEntityWrapper(EntityT entityToWrap,
+                                                                 List<EmbeddedT> embeddedList,
+                                                                 ServerWebExchange exchange) {
         var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
         return HalEntityWrapper.wrap(entityToWrap)
                 .withLinks(buildLinksForEntity(entityToWrap, exchange))
                 .withNonEmptyEmbeddedList(wrappedEmbeddedList);
     }
 
-    default HalEntityWrapper<EntityT, EmbeddedT> toWrapper(EntityT entityToWrap,
-                                                           String embeddedListName,
-                                                           List<EmbeddedT> embeddedList,
-                                                           ServerWebExchange exchange) {
+    default HalEntityWrapper<EntityT, EmbeddedT> toEntityWrapper(EntityT entityToWrap,
+                                                                 String embeddedListName,
+                                                                 List<EmbeddedT> embeddedList,
+                                                                 ServerWebExchange exchange) {
         var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
         return HalEntityWrapper.wrap(entityToWrap)
                 .withLinks(buildLinksForEntity(entityToWrap, exchange))
                 .withEmbeddedList(embeddedListName, wrappedEmbeddedList);
     }
 
-    default HalEntityWrapper<EntityT, EmbeddedT> toWrapper(EntityT entityToWrap,
-                                                           Class<?> embeddedTypeAsNameOrigin,
-                                                           List<EmbeddedT> embeddedList,
-                                                           ServerWebExchange exchange) {
+    default HalEntityWrapper<EntityT, EmbeddedT> toEntityWrapper(EntityT entityToWrap,
+                                                                 Class<?> embeddedTypeAsNameOrigin,
+                                                                 List<EmbeddedT> embeddedList,
+                                                                 ServerWebExchange exchange) {
         var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
         return HalEntityWrapper.wrap(entityToWrap)
                 .withLinks(buildLinksForEntity(entityToWrap, exchange))
@@ -112,7 +124,7 @@ public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
         return List.of();
     }
 
-    Link buildSelfLinkForEntityList(List<Pair<EntityT, EmbeddedT>> entityToWrap,
+    Link buildSelfLinkForEntityList(List<Pair<EntityT, EmbeddedT>> entitiesToWrap,
                                     ServerWebExchange exchange);
 
     //-------

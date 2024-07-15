@@ -16,10 +16,13 @@ rewritten accordingly.
     * CollectionModel
     * PagedModel
 * Serialization
+* Assemblers
 
 ## Backlog
 
-* Assemblers
+* RequiredXyz() - Consistent behaviour: Exception or null
+* @NonNull and checks on Assembler methods
+* Javadocs on assembler
 * linkTo()
     * Build links with base URL
     * set "templated" attribute if href is a template; otherwise it shouldn't

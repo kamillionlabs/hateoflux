@@ -21,6 +21,7 @@ package org.kamillion.hateoflux.model.hal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import org.kamillion.hateoflux.model.link.IanaRelation;
 import org.kamillion.hateoflux.model.link.Link;
 import org.kamillion.hateoflux.model.link.LinkRelation;
 import org.springframework.lang.NonNull;
@@ -50,18 +51,22 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
         return new ArrayList<>(links.values());
     }
 
-    public Optional<Link> getLink(LinkRelation relation) {
-        return Optional.ofNullable(links.get(relation));
+    @JsonIgnore
+    public Optional<Link> getLink(IanaRelation relation) {
+        return Optional.ofNullable(links.get(LinkRelation.of(relation)));
     }
 
+    @JsonIgnore
     public Optional<Link> getLink(String relation) {
         return Optional.ofNullable(links.get(LinkRelation.of(relation)));
     }
 
-    public Link getRequiredLink(LinkRelation relation) {
-        return links.get(relation);
+    @JsonIgnore
+    public Link getRequiredLink(IanaRelation relation) {
+        return links.get(LinkRelation.of(relation));
     }
 
+    @JsonIgnore
     public Link getRequiredLink(String relation) {
         return links.get(LinkRelation.of(relation));
     }
