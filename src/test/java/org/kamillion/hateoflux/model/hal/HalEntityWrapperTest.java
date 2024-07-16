@@ -25,14 +25,14 @@ class HalEntityWrapperTest {
     void givenContentIsAnIterable_whenWrapping_thenExceptionIsThrown() {
         assertThatThrownBy(() -> HalEntityWrapper.wrap(List.of(new Book())))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Content is not allowed to be a collection/iterable. Use HalCollectionWrapper instead");
+                .hasMessage("Entity is not allowed to be a collection/iterable. Use HalListWrapper instead");
     }
 
     @Test
     void givenContentIsNull_whenWrapping_thenExceptionIsThrown() {
         assertThatThrownBy(() -> HalEntityWrapper.wrap(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Content is not allowed to be null");
+                .hasMessage("Entity is not allowed to be null");
     }
 
     @Test
@@ -147,6 +147,6 @@ class HalEntityWrapperTest {
 
         //THEN
         assertThat(entity.getEmbedded().get()).isEqualTo(new ArrayList<>());
-        assertThat(entity.getNameOfEmbedded().get()).isEqualTo("customBook");
+        assertThat(entity.getNameOfEmbedded().get()).isEqualTo("customBooks");
     }
 }

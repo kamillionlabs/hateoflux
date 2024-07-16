@@ -168,6 +168,9 @@ class EmbeddingHalWrapperAssemblerTest {
         assertThat(actualEntityList).isNotNull();
         assertThat(actualEntityList).hasSize(2);
         assertThat(actualEntityList.get(0).getLinks()).hasSize(1);
+        assertThat(actualEntityList.get(0).getRequiredLink(IanaRelation.SELF).getHref()).isEqualTo("entity/self/link");
+        assertThat(actualEntityList.get(1).getLinks()).hasSize(1);
+        assertThat(actualEntityList.get(1).getRequiredLink(IanaRelation.SELF).getHref()).isEqualTo("entity/self/link");
 
         //Embedded
         HalEmbeddedWrapper<Author> actualEmbedded = actualEntityList.get(0).getRequiredEmbedded().get(0);
