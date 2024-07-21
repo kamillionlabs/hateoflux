@@ -20,15 +20,53 @@ package org.kamillion.hateoflux.model.hal;
 
 import lombok.Builder;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.lang.Nullable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 /**
  * @author Younes El Ouarti
  */
 @Builder
 @Jacksonized
-public record HalPageInfo(Integer size, Integer totalElements, Integer totalPages, Integer number) {
+public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, Integer number) {
 
-    public static HalPageInfo of(Integer size, Integer totalElements, Integer totalPages, Integer number) {
+    public static HalPageInfo of(Integer size, Long totalElements, Integer totalPages, Integer number) {
         return new HalPageInfo(size, totalElements, totalPages, number);
     }
+
+    public static HalPageInfo of(List<?> entities, long totalElements, int pageSize) {
+        return calculatePageInfo(entities.size(), totalElements, pageSize, null);
+    }
+
+    public static HalPageInfo of(List<?> entities, long totalElements, int pageSize, @Nullable Long offset) {
+        return calculatePageInfo(entities.size(), totalElements, pageSize, offset);
+    }
+
+    public static Mono<HalPageInfo> of(Flux<?> entities, Mono<Long> totalElements, int pageSize,
+                                       @Nullable Long offset) {
+        Mono<Integer> sizeMono = entities.count().map(Long::intValue);
+
+        return Mono.zip(sizeMono, totalElements)
+                .map(tuple -> calculatePageInfo(tuple.getT1(), tuple.getT2(), pageSize, offset));
+    }
+
+    public static Mono<HalPageInfo> of(Flux<?> entities, Mono<Long> totalElements, int pageSize) {
+        Mono<Integer> sizeMono = entities.count().map(Long::intValue);
+
+        return Mono.zip(sizeMono, totalElements)
+                .map(tuple -> calculatePageInfo(tuple.getT1(), tuple.getT2(), pageSize, null));
+    }
+
+    private static HalPageInfo calculatePageInfo(int size, long totalElements, int pageSize, @Nullable Long offset) {
+        long offsetEffective = offset == null ? 0L : offset;
+
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        int number = (int) (offsetEffective / pageSize);
+
+        return new HalPageInfo(size, totalElements, totalPages, number);
+    }
+
 }

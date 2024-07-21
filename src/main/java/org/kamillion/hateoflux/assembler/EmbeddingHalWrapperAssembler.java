@@ -22,7 +22,9 @@ import org.kamillion.hateoflux.model.Pair;
 import org.kamillion.hateoflux.model.hal.HalEmbeddedWrapper;
 import org.kamillion.hateoflux.model.hal.HalEntityWrapper;
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
+import org.kamillion.hateoflux.model.hal.HalPageInfo;
 import org.kamillion.hateoflux.model.link.Link;
+import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.util.ArrayList;
@@ -48,6 +50,12 @@ public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
 
     default HalListWrapper<EntityT, EmbeddedT> toListWrapper(List<Pair<EntityT, EmbeddedT>> entitiesToWrap,
                                                              ServerWebExchange exchange) {
+        return toListWrapper(entitiesToWrap, null, exchange);
+    }
+
+    default HalListWrapper<EntityT, EmbeddedT> toListWrapper(List<Pair<EntityT, EmbeddedT>> entitiesToWrap,
+                                                             @Nullable HalPageInfo pageInfo,
+                                                             ServerWebExchange exchange) {
         List<HalEntityWrapper<EntityT, EmbeddedT>> listOfWrappedEntitiesWithEmbedded =
                 entitiesToWrap.stream()
                         .map(pair -> {
@@ -56,8 +64,14 @@ public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
                             return toEntityWrapper(entity, embedded, exchange);
                         }).toList();
 
-        return HalListWrapper.wrap(listOfWrappedEntitiesWithEmbedded)
+        HalListWrapper<EntityT, EmbeddedT> result = HalListWrapper.wrap(listOfWrappedEntitiesWithEmbedded)
                 .withLinks(buildLinksForEntityList(entitiesToWrap, exchange));
+
+        if (pageInfo == null) {
+            return result;
+        } else {
+            return result.withPageInfo(pageInfo);
+        }
     }
 
 
@@ -109,8 +123,6 @@ public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
                 .toList();
     }
 
-    //-------
-
     default List<Link> buildLinksForEntityList(List<Pair<EntityT, EmbeddedT>> entityToWrap,
                                                ServerWebExchange exchange) {
         List<Link> links = new ArrayList<>();
@@ -127,8 +139,6 @@ public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
     Link buildSelfLinkForEntityList(List<Pair<EntityT, EmbeddedT>> entitiesToWrap,
                                     ServerWebExchange exchange);
 
-    //-------
-
     default List<Link> buildLinksForEntity(EntityT entityToWrap, ServerWebExchange exchange) {
         List<Link> links = new ArrayList<>();
         links.add(buildSelfLinkForEntity(entityToWrap, exchange));
@@ -141,8 +151,6 @@ public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
     default List<Link> buildOtherLinksForEntity(EntityT entityToWrap, ServerWebExchange exchange) {
         return List.of();
     }
-
-    //-------
 
     default List<Link> buildLinksForEmbedded(EmbeddedT embedded, ServerWebExchange exchange) {
         List<Link> links = new ArrayList<>();

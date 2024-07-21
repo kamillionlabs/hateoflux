@@ -226,7 +226,7 @@ public class SerializationTest {
                         List.of(HalEntityWrapper.wrap(germanBedtimeStories)
                                 .withLinks(Link.linkAsSelfOf("/book/123"))))
                 .withLinks(Link.linkAsSelfOf("/author/1/books"))
-                .withPageInfo(HalPageInfo.of(1, 1, 1, 1));
+                .withPageInfo(HalPageInfo.of(1, 1L, 1, 1));
 
         //WHEN
         String actualJson = mapper.writeValueAsString(halCollection);

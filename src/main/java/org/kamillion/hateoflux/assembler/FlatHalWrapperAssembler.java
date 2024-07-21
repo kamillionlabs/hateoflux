@@ -20,7 +20,9 @@ package org.kamillion.hateoflux.assembler;
 
 import org.kamillion.hateoflux.model.hal.HalEntityWrapper;
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
+import org.kamillion.hateoflux.model.hal.HalPageInfo;
 import org.kamillion.hateoflux.model.link.Link;
+import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.util.ArrayList;
@@ -46,13 +48,25 @@ public interface FlatHalWrapperAssembler<EntityT> {
 
     default HalListWrapper<EntityT, Void> toListWrapper(List<EntityT> entitiesToWrap,
                                                         ServerWebExchange exchange) {
+        return toListWrapper(entitiesToWrap, null, exchange);
+    }
+
+    default HalListWrapper<EntityT, Void> toListWrapper(List<EntityT> entitiesToWrap,
+                                                        @Nullable HalPageInfo pageInfo,
+                                                        ServerWebExchange exchange) {
         List<HalEntityWrapper<EntityT, Void>> listOfWrappedEntities =
                 entitiesToWrap.stream()
                         .map(entity -> toEntityWrapper(entity, exchange))
                         .toList();
 
-        return HalListWrapper.wrap(listOfWrappedEntities)
+        HalListWrapper<EntityT, Void> result = HalListWrapper.wrap(listOfWrappedEntities)
                 .withLinks(buildLinksForEntityList(entitiesToWrap, exchange));
+
+        if (pageInfo == null) {
+            return result;
+        } else {
+            return result.withPageInfo(pageInfo);
+        }
     }
 
     default HalEntityWrapper<EntityT, Void> toEntityWrapper(EntityT entityToWrap,
@@ -60,7 +74,6 @@ public interface FlatHalWrapperAssembler<EntityT> {
         return HalEntityWrapper.wrap(entityToWrap)
                 .withLinks(buildLinksForEntity(entityToWrap, exchange));
     }
-
 
     default List<Link> buildLinksForEntityList(List<EntityT> entityToWrap,
                                                ServerWebExchange exchange) {
@@ -77,7 +90,6 @@ public interface FlatHalWrapperAssembler<EntityT> {
 
     Link buildSelfLinkForEntityList(List<EntityT> entitiesToWrap,
                                     ServerWebExchange exchange);
-
 
     default List<Link> buildLinksForEntity(EntityT entityToWrap, ServerWebExchange exchange) {
         List<Link> links = new ArrayList<>();

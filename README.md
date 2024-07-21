@@ -20,13 +20,17 @@ rewritten accordingly.
 
 ## Backlog
 
+* Pagination in assemblers
+* Reactive assemblers
+* Make its own entity
 * RequiredXyz() - Consistent behaviour: Exception or null
 * @NonNull and checks on Assembler methods
 * Javadocs on assembler
+* changelog
 * linkTo()
     * Build links with base URL
     * set "templated" attribute if href is a template; otherwise it shouldn't
-    * Link.of(<template string with _query_ parameters>)
+    * Link.of(template string with _query_ parameters)
     * Query parameters (@RequestParam) for collections with distinction between with or without @NonComposite
 * Forwarded header handling
 
