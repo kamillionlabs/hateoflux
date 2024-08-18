@@ -20,8 +20,6 @@ rewritten accordingly.
 
 ## Backlog
 
-* changelog
-* RequiredXyz() - Consistent behaviour: Exception or null
 * Javadocs on assembler
 * linkTo()
     * Build links with base URL
