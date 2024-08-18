@@ -22,6 +22,7 @@ import org.kamillion.hateoflux.model.Pair;
 import org.kamillion.hateoflux.model.Pairs;
 import org.kamillion.hateoflux.model.hal.HalEntityWrapper;
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
@@ -35,14 +36,14 @@ import java.util.List;
 public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extends
         EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
 
-    default Mono<HalListWrapper<EntityT, EmbeddedT>> toListWrapper(Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap,
+    default Mono<HalListWrapper<EntityT, EmbeddedT>> toListWrapper(@NonNull Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap,
                                                                    ServerWebExchange exchange) {
         return convertToPairs(entitiesToWrap)
                 .map(pairs -> toListWrapper(pairs, exchange));
     }
 
-    default Mono<HalListWrapper<EntityT, EmbeddedT>> toPagedListWrapper(Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap,
-                                                                        Mono<Long> totalElements,
+    default Mono<HalListWrapper<EntityT, EmbeddedT>> toPagedListWrapper(@NonNull Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap,
+                                                                        @NonNull Mono<Long> totalElements,
                                                                         int pageSize,
                                                                         @Nullable Long offset,
                                                                         ServerWebExchange exchange) {
@@ -52,21 +53,21 @@ public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extend
     }
 
 
-    private Mono<Pairs<EntityT, EmbeddedT>> convertToPairs(Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap) {
+    private Mono<Pairs<EntityT, EmbeddedT>> convertToPairs(@NonNull Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap) {
         return entitiesToWrap.collect(Pairs::new, Pairs::add);
     }
 
 
-    default Mono<HalEntityWrapper<EntityT, EmbeddedT>> toEntityWrapper(Mono<EntityT> entityToWrap,
-                                                                       Mono<EmbeddedT> embedded,
+    default Mono<HalEntityWrapper<EntityT, EmbeddedT>> toEntityWrapper(@NonNull Mono<EntityT> entityToWrap,
+                                                                       @NonNull Mono<EmbeddedT> embedded,
                                                                        ServerWebExchange exchange) {
         return Mono.zip(entityToWrap, embedded,
                 (entityValue, embeddedValue) -> toEntityWrapper(entityValue, embeddedValue, exchange));
     }
 
 
-    default Mono<HalEntityWrapper<EntityT, EmbeddedT>> toEntityWrapper(Mono<EntityT> entityWrap,
-                                                                       Flux<EmbeddedT> embeddedList,
+    default Mono<HalEntityWrapper<EntityT, EmbeddedT>> toEntityWrapper(@NonNull Mono<EntityT> entityWrap,
+                                                                       @NonNull Flux<EmbeddedT> embeddedList,
                                                                        ServerWebExchange exchange) {
         Mono<List<EmbeddedT>> embeddedListAsMono = embeddedList.collectList();
         return Mono.zip(entityWrap, embeddedListAsMono,
@@ -74,9 +75,9 @@ public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extend
     }
 
 
-    default Mono<HalEntityWrapper<EntityT, EmbeddedT>> toEntityWrapper(Mono<EntityT> entityToWrap,
-                                                                       String embeddedListName,
-                                                                       Flux<EmbeddedT> embeddedList,
+    default Mono<HalEntityWrapper<EntityT, EmbeddedT>> toEntityWrapper(@NonNull Mono<EntityT> entityToWrap,
+                                                                       @NonNull String embeddedListName,
+                                                                       @NonNull Flux<EmbeddedT> embeddedList,
                                                                        ServerWebExchange exchange) {
         Mono<List<EmbeddedT>> embeddedListAsMono = embeddedList.collectList();
         return Mono.zip(entityToWrap, embeddedListAsMono,
@@ -84,9 +85,9 @@ public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extend
                         exchange));
     }
 
-    default Mono<HalEntityWrapper<EntityT, EmbeddedT>> toEntityWrapper(Mono<EntityT> entityToWrap,
-                                                                       Class<?> embeddedTypeAsNameOrigin,
-                                                                       Flux<EmbeddedT> embeddedList,
+    default Mono<HalEntityWrapper<EntityT, EmbeddedT>> toEntityWrapper(@NonNull Mono<EntityT> entityToWrap,
+                                                                       @NonNull Class<?> embeddedTypeAsNameOrigin,
+                                                                       @NonNull Flux<EmbeddedT> embeddedList,
                                                                        ServerWebExchange exchange) {
         Mono<List<EmbeddedT>> embeddedListAsMono = embeddedList.collectList();
         return Mono.zip(entityToWrap, embeddedListAsMono,

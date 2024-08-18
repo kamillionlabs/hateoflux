@@ -20,6 +20,7 @@ package org.kamillion.hateoflux.assembler;
 
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
 import org.kamillion.hateoflux.model.link.Link;
+import org.springframework.lang.NonNull;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.util.ArrayList;
@@ -32,14 +33,15 @@ public sealed interface SealedEntityListAssemblerModule<EntityT, EmbeddedT> perm
         FlatHalWrapperAssembler, EmbeddingHalWrapperAssembler {
 
 
-    default HalListWrapper<EntityT, EmbeddedT> createEmptyListWrapper(Class<?> listItemTypeAsNameOrigin,
+    default HalListWrapper<EntityT, EmbeddedT> createEmptyListWrapper(@NonNull Class<?> listItemTypeAsNameOrigin,
                                                                       ServerWebExchange exchange) {
         HalListWrapper<EntityT, EmbeddedT> emptyWrapper = HalListWrapper.empty(listItemTypeAsNameOrigin);
         return emptyWrapper
                 .withLinks(buildLinksForEntityList(exchange));
     }
 
-    default HalListWrapper<EntityT, EmbeddedT> createEmptyListWrapper(String listName, ServerWebExchange exchange) {
+    default HalListWrapper<EntityT, EmbeddedT> createEmptyListWrapper(@NonNull String listName,
+                                                                      ServerWebExchange exchange) {
         HalListWrapper<EntityT, EmbeddedT> emptyWrapper = HalListWrapper.empty(listName);
         return emptyWrapper
                 .withLinks(buildLinksForEntityList(exchange));

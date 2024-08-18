@@ -20,6 +20,7 @@ package org.kamillion.hateoflux.assembler;
 
 import org.kamillion.hateoflux.model.hal.HalEntityWrapper;
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
@@ -32,14 +33,14 @@ import java.util.List;
  */
 public interface ReactiveFlatHalWrapperAssembler<EntityT> extends FlatHalWrapperAssembler<EntityT> {
 
-    default Mono<HalListWrapper<EntityT, Void>> toListWrapper(Flux<EntityT> entitiesToWrap,
+    default Mono<HalListWrapper<EntityT, Void>> toListWrapper(@NonNull Flux<EntityT> entitiesToWrap,
                                                               ServerWebExchange exchange) {
         return entitiesToWrap.collectList()
                 .map(entitiesToWrapValue -> toListWrapper(entitiesToWrapValue, exchange));
     }
 
-    default Mono<HalListWrapper<EntityT, Void>> toPagedListWrapper(Flux<EntityT> entitiesToWrap,
-                                                                   Mono<Long> totalElements,
+    default Mono<HalListWrapper<EntityT, Void>> toPagedListWrapper(@NonNull Flux<EntityT> entitiesToWrap,
+                                                                   @NonNull Mono<Long> totalElements,
                                                                    int pageSize,
                                                                    @Nullable Long offset,
                                                                    ServerWebExchange exchange) {
@@ -49,7 +50,7 @@ public interface ReactiveFlatHalWrapperAssembler<EntityT> extends FlatHalWrapper
                         offset, exchange));
     }
 
-    default Mono<HalEntityWrapper<EntityT, Void>> toEntityWrapper(Mono<EntityT> entityToWrap,
+    default Mono<HalEntityWrapper<EntityT, Void>> toEntityWrapper(@NonNull Mono<EntityT> entityToWrap,
                                                                   ServerWebExchange exchange) {
 
         return entityToWrap.map(e -> toEntityWrapper(e, exchange));

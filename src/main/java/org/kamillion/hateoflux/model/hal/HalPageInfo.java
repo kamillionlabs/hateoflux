@@ -20,6 +20,7 @@ package org.kamillion.hateoflux.model.hal;
 
 import lombok.Builder;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.util.List;
@@ -35,11 +36,12 @@ public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, 
         return new HalPageInfo(size, totalElements, totalPages, number);
     }
 
-    public static HalPageInfo assemble(List<?> entities, long totalElements, int pageSize) {
+    public static HalPageInfo assemble(@NonNull List<?> entities, long totalElements, int pageSize) {
         return assemble(entities.size(), totalElements, pageSize, null);
     }
 
-    public static HalPageInfo assemble(List<?> entities, long totalElements, int pageSize, @Nullable Long offset) {
+    public static HalPageInfo assemble(@NonNull List<?> entities, long totalElements, int pageSize,
+                                       @Nullable Long offset) {
         return assemble(entities.size(), totalElements, pageSize, offset);
     }
 

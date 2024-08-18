@@ -21,6 +21,7 @@ package org.kamillion.hateoflux.assembler;
 import org.kamillion.hateoflux.model.hal.HalEntityWrapper;
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
 import org.kamillion.hateoflux.model.hal.HalPageInfo;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -34,12 +35,12 @@ public non-sealed interface FlatHalWrapperAssembler<EntityT> extends
         SealedEntityListAssemblerModule<EntityT, Void> {
 
 
-    default HalListWrapper<EntityT, Void> toListWrapper(List<EntityT> entitiesToWrap,
+    default HalListWrapper<EntityT, Void> toListWrapper(@NonNull List<EntityT> entitiesToWrap,
                                                         ServerWebExchange exchange) {
         return toPagedListWrapper(entitiesToWrap, null, exchange);
     }
 
-    default HalListWrapper<EntityT, Void> toPagedListWrapper(List<EntityT> entitiesToWrap,
+    default HalListWrapper<EntityT, Void> toPagedListWrapper(@NonNull List<EntityT> entitiesToWrap,
                                                              long totalElements,
                                                              int pageSize,
                                                              @Nullable Long offset,
@@ -48,7 +49,7 @@ public non-sealed interface FlatHalWrapperAssembler<EntityT> extends
         return toPagedListWrapper(entitiesToWrap, pageInfo, exchange);
     }
 
-    default HalListWrapper<EntityT, Void> toPagedListWrapper(List<EntityT> entitiesToWrap,
+    default HalListWrapper<EntityT, Void> toPagedListWrapper(@NonNull List<EntityT> entitiesToWrap,
                                                              @Nullable HalPageInfo pageInfo,
                                                              ServerWebExchange exchange) {
         List<HalEntityWrapper<EntityT, Void>> listOfWrappedEntities =
@@ -66,7 +67,7 @@ public non-sealed interface FlatHalWrapperAssembler<EntityT> extends
         }
     }
 
-    default HalEntityWrapper<EntityT, Void> toEntityWrapper(EntityT entityToWrap,
+    default HalEntityWrapper<EntityT, Void> toEntityWrapper(@NonNull EntityT entityToWrap,
                                                             ServerWebExchange exchange) {
         return HalEntityWrapper.wrap(entityToWrap)
                 .withLinks(buildLinksForEntity(entityToWrap, exchange));
