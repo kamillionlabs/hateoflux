@@ -18,10 +18,10 @@
 
 package org.kamillion.hateoflux.assembler;
 
-import org.kamillion.hateoflux.model.Pair;
-import org.kamillion.hateoflux.model.Pairs;
 import org.kamillion.hateoflux.model.hal.HalEntityWrapper;
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
+import org.kamillion.hateoflux.utility.Pair;
+import org.kamillion.hateoflux.utility.Pairs;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;

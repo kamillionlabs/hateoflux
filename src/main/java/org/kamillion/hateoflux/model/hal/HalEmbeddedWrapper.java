@@ -26,6 +26,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static org.kamillion.hateoflux.utility.MessageTemplates.valueIsNotAllowedToBeOfType;
+import static org.kamillion.hateoflux.utility.MessageTemplates.valueNotAllowedToBeNull;
 
 /**
  * @author Younes El Ouarti
@@ -45,9 +47,9 @@ public final class HalEmbeddedWrapper<EmbeddedT> extends HalWrapper<HalEmbeddedW
     }
 
     public static <EmbeddedT> HalEmbeddedWrapper<EmbeddedT> wrap(@NonNull EmbeddedT entityToWrap) {
-        Assert.notNull(entityToWrap, "Entity to embed is not allowed to be null");
-        Assert.isTrue(!(entityToWrap instanceof Iterable<?>), "Entity to embed is not allowed to be a " +
-                "collection/iterable");
+        Assert.notNull(entityToWrap, valueNotAllowedToBeNull("Entity to embed"));
+        Assert.isTrue(!(entityToWrap instanceof Iterable<?>), valueIsNotAllowedToBeOfType("Entity to embed",
+                "collection/iterable"));
         return new HalEmbeddedWrapper<>(entityToWrap);
     }
 

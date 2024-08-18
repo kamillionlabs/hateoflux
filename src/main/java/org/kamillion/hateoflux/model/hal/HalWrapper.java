@@ -30,6 +30,9 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 
+import static org.kamillion.hateoflux.utility.MessageTemplates.requiredValueWasNonExisting;
+import static org.kamillion.hateoflux.utility.MessageTemplates.valueNotAllowedToBeNull;
+
 /**
  * @author Younes El Ouarti
  */
@@ -63,12 +66,14 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
 
     @JsonIgnore
     public Link getRequiredLink(IanaRelation relation) {
-        return links.get(LinkRelation.of(relation));
+        return getLink(relation).orElseThrow(() -> new IllegalStateException(
+                requiredValueWasNonExisting("link with the relation '" + relation + "'")));
     }
 
     @JsonIgnore
     public Link getRequiredLink(String relation) {
-        return links.get(LinkRelation.of(relation));
+        return getLink(relation).orElseThrow(() -> new IllegalStateException(
+                requiredValueWasNonExisting("link with the relation '" + relation + "'")));
     }
 
     public HalWrapperT withLinks(@Nullable Link... links) {
@@ -86,12 +91,12 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
     }
 
     protected void add(@NonNull final Iterable<Link> links) {
-        Assert.notNull(links, "Links is not allowed to be null");
+        Assert.notNull(links, valueNotAllowedToBeNull("Links"));
         links.forEach(this::add);
     }
 
     protected void add(@NonNull final Link link) {
-        Assert.notNull(link, "Link is not allowed to be null");
+        Assert.notNull(link, valueNotAllowedToBeNull("Link"));
         final LinkRelation linkRelation = link.getLinkRelation();
         Assert.notNull(linkRelation, "Link must have a relation");
         Assert.isTrue(!linkRelation.getRelation().isBlank(), "Link must have a non empty relation");
@@ -153,7 +158,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
      *         If the object is null or empty.
      */
     protected static String determineRelationNameForObject(Object object) {
-        Assert.notNull(object, "Object is not allowed to be when determining relation names");
+        Assert.notNull(object, "Object is not allowed to be null when determining relation names");
         if (object instanceof Iterable<?> iterable) {
             Iterator<?> iterator = iterable.iterator();
             Assert.isTrue(iterator.hasNext(), "Iterable cannot be empty when determining relation names");

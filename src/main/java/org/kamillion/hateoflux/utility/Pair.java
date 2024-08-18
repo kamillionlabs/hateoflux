@@ -16,7 +16,7 @@
  * @since 13.07.2024
  */
 
-package org.kamillion.hateoflux.model;
+package org.kamillion.hateoflux.utility;
 
 /**
  * @author Younes El Ouarti
