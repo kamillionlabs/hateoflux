@@ -18,44 +18,42 @@
 
 package org.kamillion.hateoflux.assembler;
 
-import org.kamillion.hateoflux.model.Pair;
+import org.kamillion.hateoflux.model.Pairs;
 import org.kamillion.hateoflux.model.hal.HalEmbeddedWrapper;
 import org.kamillion.hateoflux.model.hal.HalEntityWrapper;
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
 import org.kamillion.hateoflux.model.hal.HalPageInfo;
-import org.kamillion.hateoflux.model.link.Link;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Younes El Ouarti
  */
-public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
+public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extends
+        SealedEntityLinkAssemblerModule<EntityT>,
+        SealedEntityListAssemblerModule<EntityT, EmbeddedT>,
+        SealedEmbeddedLinkAssemblerModule<EmbeddedT> {
 
-    default HalListWrapper<EntityT, EmbeddedT> toEmptyListWrapper(Class<?> listItemTypeAsNameOrigin,
+    default HalListWrapper<EntityT, EmbeddedT> toListWrapper(Pairs<EntityT, EmbeddedT> entitiesToWrap,
+                                                             ServerWebExchange exchange) {
+        return toPagedListWrapper(entitiesToWrap, null, exchange);
+    }
+
+    default HalListWrapper<EntityT, EmbeddedT> toPagedListWrapper(Pairs<EntityT, EmbeddedT> entitiesToWrap,
+                                                                  long totalElements,
+                                                                  int pageSize,
+                                                                  @Nullable Long offset,
                                                                   ServerWebExchange exchange) {
-        HalListWrapper<EntityT, EmbeddedT> emptyWrapper = HalListWrapper.empty(listItemTypeAsNameOrigin);
-        return emptyWrapper
-                .withLinks(buildLinksForEntityList(null, exchange));
+        HalPageInfo pageInfo = HalPageInfo.assemble(entitiesToWrap, totalElements, pageSize, offset);
+        return toPagedListWrapper(entitiesToWrap, pageInfo, exchange);
     }
 
-    default HalListWrapper<EntityT, EmbeddedT> toEmptyListWrapper(String listName, ServerWebExchange exchange) {
-        HalListWrapper<EntityT, EmbeddedT> emptyWrapper = HalListWrapper.empty(listName);
-        return emptyWrapper
-                .withLinks(buildLinksForEntityList(null, exchange));
-    }
 
-    default HalListWrapper<EntityT, EmbeddedT> toListWrapper(List<Pair<EntityT, EmbeddedT>> entitiesToWrap,
-                                                             ServerWebExchange exchange) {
-        return toListWrapper(entitiesToWrap, null, exchange);
-    }
-
-    default HalListWrapper<EntityT, EmbeddedT> toListWrapper(List<Pair<EntityT, EmbeddedT>> entitiesToWrap,
-                                                             @Nullable HalPageInfo pageInfo,
-                                                             ServerWebExchange exchange) {
+    default HalListWrapper<EntityT, EmbeddedT> toPagedListWrapper(Pairs<EntityT, EmbeddedT> entitiesToWrap,
+                                                                  @Nullable HalPageInfo pageInfo,
+                                                                  ServerWebExchange exchange) {
         List<HalEntityWrapper<EntityT, EmbeddedT>> listOfWrappedEntitiesWithEmbedded =
                 entitiesToWrap.stream()
                         .map(pair -> {
@@ -65,7 +63,7 @@ public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
                         }).toList();
 
         HalListWrapper<EntityT, EmbeddedT> result = HalListWrapper.wrap(listOfWrappedEntitiesWithEmbedded)
-                .withLinks(buildLinksForEntityList(entitiesToWrap, exchange));
+                .withLinks(buildLinksForEntityList(exchange));
 
         if (pageInfo == null) {
             return result;
@@ -73,7 +71,6 @@ public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
             return result.withPageInfo(pageInfo);
         }
     }
-
 
     default HalEntityWrapper<EntityT, EmbeddedT> toEntityWrapper(EntityT entityToWrap,
                                                                  EmbeddedT embedded,
@@ -123,45 +120,4 @@ public interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> {
                 .toList();
     }
 
-    default List<Link> buildLinksForEntityList(List<Pair<EntityT, EmbeddedT>> entityToWrap,
-                                               ServerWebExchange exchange) {
-        List<Link> links = new ArrayList<>();
-        links.add(buildSelfLinkForEntityList(entityToWrap, exchange));
-        links.addAll(buildOtherLinksForEntityList(entityToWrap, exchange));
-        return links;
-    }
-
-    default List<Link> buildOtherLinksForEntityList(List<Pair<EntityT, EmbeddedT>> entityToWrap,
-                                                    ServerWebExchange exchange) {
-        return List.of();
-    }
-
-    Link buildSelfLinkForEntityList(List<Pair<EntityT, EmbeddedT>> entitiesToWrap,
-                                    ServerWebExchange exchange);
-
-    default List<Link> buildLinksForEntity(EntityT entityToWrap, ServerWebExchange exchange) {
-        List<Link> links = new ArrayList<>();
-        links.add(buildSelfLinkForEntity(entityToWrap, exchange));
-        links.addAll(buildOtherLinksForEntity(entityToWrap, exchange));
-        return links;
-    }
-
-    Link buildSelfLinkForEntity(EntityT entityToWrap, ServerWebExchange exchange);
-
-    default List<Link> buildOtherLinksForEntity(EntityT entityToWrap, ServerWebExchange exchange) {
-        return List.of();
-    }
-
-    default List<Link> buildLinksForEmbedded(EmbeddedT embedded, ServerWebExchange exchange) {
-        List<Link> links = new ArrayList<>();
-        links.add(buildSelfLinkForEmbedded(embedded, exchange));
-        links.addAll(buildOtherLinksForEmbedded(embedded, exchange));
-        return links;
-    }
-
-    Link buildSelfLinkForEmbedded(EmbeddedT embedded, ServerWebExchange exchange);
-
-    default List<Link> buildOtherLinksForEmbedded(EmbeddedT embedded, ServerWebExchange exchange) {
-        return List.of();
-    }
 }

@@ -22,6 +22,7 @@ tasks.named('test') {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'com.github.spotbugs:spotbugs-annotations:4.8.6'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

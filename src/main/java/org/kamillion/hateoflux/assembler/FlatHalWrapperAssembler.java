@@ -21,46 +21,43 @@ package org.kamillion.hateoflux.assembler;
 import org.kamillion.hateoflux.model.hal.HalEntityWrapper;
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
 import org.kamillion.hateoflux.model.hal.HalPageInfo;
-import org.kamillion.hateoflux.model.link.Link;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Younes El Ouarti
  */
-public interface FlatHalWrapperAssembler<EntityT> {
+public non-sealed interface FlatHalWrapperAssembler<EntityT> extends
+        SealedEntityLinkAssemblerModule<EntityT>,
+        SealedEntityListAssemblerModule<EntityT, Void> {
 
-    default HalListWrapper<EntityT, Void> toEmptyListWrapper(Class<?> listItemTypeAsNameOrigin,
+
+    default HalListWrapper<EntityT, Void> toListWrapper(List<EntityT> entitiesToWrap,
+                                                        ServerWebExchange exchange) {
+        return toPagedListWrapper(entitiesToWrap, null, exchange);
+    }
+
+    default HalListWrapper<EntityT, Void> toPagedListWrapper(List<EntityT> entitiesToWrap,
+                                                             long totalElements,
+                                                             int pageSize,
+                                                             @Nullable Long offset,
                                                              ServerWebExchange exchange) {
-        HalListWrapper<EntityT, Void> emptyWrapper = HalListWrapper.empty(listItemTypeAsNameOrigin);
-        return emptyWrapper
-                .withLinks(buildLinksForEntityList(null, exchange));
+        HalPageInfo pageInfo = HalPageInfo.assemble(entitiesToWrap, totalElements, pageSize, offset);
+        return toPagedListWrapper(entitiesToWrap, pageInfo, exchange);
     }
 
-    default HalListWrapper<EntityT, Void> toEmptyListWrapper(String listName, ServerWebExchange exchange) {
-        HalListWrapper<EntityT, Void> emptyWrapper = HalListWrapper.empty(listName);
-        return emptyWrapper
-                .withLinks(buildLinksForEntityList(null, exchange));
-    }
-
-    default HalListWrapper<EntityT, Void> toListWrapper(List<EntityT> entitiesToWrap,
-                                                        ServerWebExchange exchange) {
-        return toListWrapper(entitiesToWrap, null, exchange);
-    }
-
-    default HalListWrapper<EntityT, Void> toListWrapper(List<EntityT> entitiesToWrap,
-                                                        @Nullable HalPageInfo pageInfo,
-                                                        ServerWebExchange exchange) {
+    default HalListWrapper<EntityT, Void> toPagedListWrapper(List<EntityT> entitiesToWrap,
+                                                             @Nullable HalPageInfo pageInfo,
+                                                             ServerWebExchange exchange) {
         List<HalEntityWrapper<EntityT, Void>> listOfWrappedEntities =
                 entitiesToWrap.stream()
                         .map(entity -> toEntityWrapper(entity, exchange))
                         .toList();
 
         HalListWrapper<EntityT, Void> result = HalListWrapper.wrap(listOfWrappedEntities)
-                .withLinks(buildLinksForEntityList(entitiesToWrap, exchange));
+                .withLinks(buildLinksForEntityList(exchange));
 
         if (pageInfo == null) {
             return result;
@@ -75,32 +72,4 @@ public interface FlatHalWrapperAssembler<EntityT> {
                 .withLinks(buildLinksForEntity(entityToWrap, exchange));
     }
 
-    default List<Link> buildLinksForEntityList(List<EntityT> entityToWrap,
-                                               ServerWebExchange exchange) {
-        List<Link> links = new ArrayList<>();
-        links.add(buildSelfLinkForEntityList(entityToWrap, exchange));
-        links.addAll(buildOtherLinksForEntityList(entityToWrap, exchange));
-        return links;
-    }
-
-    default List<Link> buildOtherLinksForEntityList(List<EntityT> entityToWrap,
-                                                    ServerWebExchange exchange) {
-        return List.of();
-    }
-
-    Link buildSelfLinkForEntityList(List<EntityT> entitiesToWrap,
-                                    ServerWebExchange exchange);
-
-    default List<Link> buildLinksForEntity(EntityT entityToWrap, ServerWebExchange exchange) {
-        List<Link> links = new ArrayList<>();
-        links.add(buildSelfLinkForEntity(entityToWrap, exchange));
-        links.addAll(buildOtherLinksForEntity(entityToWrap, exchange));
-        return links;
-    }
-
-    Link buildSelfLinkForEntity(EntityT entityToWrap, ServerWebExchange exchange);
-
-    default List<Link> buildOtherLinksForEntity(EntityT entityToWrap, ServerWebExchange exchange) {
-        return List.of();
-    }
 }

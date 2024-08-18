@@ -21,8 +21,6 @@ package org.kamillion.hateoflux.model.hal;
 import lombok.Builder;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.lang.Nullable;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -37,30 +35,16 @@ public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, 
         return new HalPageInfo(size, totalElements, totalPages, number);
     }
 
-    public static HalPageInfo of(List<?> entities, long totalElements, int pageSize) {
-        return calculatePageInfo(entities.size(), totalElements, pageSize, null);
+    public static HalPageInfo assemble(List<?> entities, long totalElements, int pageSize) {
+        return assemble(entities.size(), totalElements, pageSize, null);
     }
 
-    public static HalPageInfo of(List<?> entities, long totalElements, int pageSize, @Nullable Long offset) {
-        return calculatePageInfo(entities.size(), totalElements, pageSize, offset);
+    public static HalPageInfo assemble(List<?> entities, long totalElements, int pageSize, @Nullable Long offset) {
+        return assemble(entities.size(), totalElements, pageSize, offset);
     }
 
-    public static Mono<HalPageInfo> of(Flux<?> entities, Mono<Long> totalElements, int pageSize,
-                                       @Nullable Long offset) {
-        Mono<Integer> sizeMono = entities.count().map(Long::intValue);
 
-        return Mono.zip(sizeMono, totalElements)
-                .map(tuple -> calculatePageInfo(tuple.getT1(), tuple.getT2(), pageSize, offset));
-    }
-
-    public static Mono<HalPageInfo> of(Flux<?> entities, Mono<Long> totalElements, int pageSize) {
-        Mono<Integer> sizeMono = entities.count().map(Long::intValue);
-
-        return Mono.zip(sizeMono, totalElements)
-                .map(tuple -> calculatePageInfo(tuple.getT1(), tuple.getT2(), pageSize, null));
-    }
-
-    private static HalPageInfo calculatePageInfo(int size, long totalElements, int pageSize, @Nullable Long offset) {
+    public static HalPageInfo assemble(int size, long totalElements, int pageSize, @Nullable Long offset) {
         long offsetEffective = offset == null ? 0L : offset;
 
         int totalPages = (int) Math.ceil((double) totalElements / pageSize);

@@ -34,7 +34,7 @@ import static java.lang.String.format;
  * @author Younes El Ouarti
  */
 public class UriExpander {
-    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{([^}]+)\\}");
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{([^}]+)}");
 
     private static final String TOO_MANY_ARGS_MESSAGE = "Too many arguments provided for the URI template. " +
             "Template was: '%s', path variables were: %s";

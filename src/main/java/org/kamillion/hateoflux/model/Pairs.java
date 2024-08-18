@@ -18,120 +18,161 @@
 
 package org.kamillion.hateoflux.model;
 
-import org.springframework.lang.NonNull;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import org.springframework.util.Assert;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Younes El Ouarti
  */
-public class Pairs {
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+public class Pairs<LeftT, RightT> extends LinkedList<Pair<LeftT, RightT>> {
 
-    public static <LeftT, RightT> List<Pair<LeftT, RightT>> of(@NonNull LeftT l1, @NonNull RightT r1) {
-        List<Pair<LeftT, RightT>> pairs = new ArrayList<>();
+    private Pairs(List<Pair<LeftT, RightT>> pairs) {
+        addAll(pairs);
+    }
+
+    public void add(LeftT left, RightT right) {
+        add(new Pair<>(left, right));
+    }
+
+    public LeftT getLeft(int i) {
+        return get(i).left();
+    }
+
+    public RightT getRight(int i) {
+        return get(i).right();
+    }
+
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(List<Pair<LeftT, RightT>> pairs) {
+        return new Pairs<>(pairs);
+    }
+
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(List<LeftT> lefts, List<RightT> rights) {
+        Assert.notNull(lefts, "lefts must not be null");
+        Assert.notNull(rights, "rights must not be null");
+        Assert.isTrue(lefts.size() == rights.size(), "Different sizes in lefts and rights are not allowed");
+
+        List<Pair<LeftT, RightT>> pairs = new LinkedList<>();
+        for (int i = 0; i < lefts.size(); i++) {
+            pairs.add(new Pair<>(lefts.get(i), rights.get(i)));
+        }
+        return new Pairs<>(pairs);
+    }
+
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(Map<LeftT, RightT> pairs) {
+        return new Pairs<>(pairs.entrySet().stream()
+                .map(e -> Pair.of(e.getKey(), e.getValue()))
+                .toList());
+    }
+
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(LeftT l1, RightT r1) {
+        List<Pair<LeftT, RightT>> pairs = new LinkedList<>();
         pairs.add(Pair.of(l1, r1));
+        return new Pairs<>(pairs);
+    }
+
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(LeftT l1, RightT r1,
+                                                          LeftT l2, RightT r2) {
+        var pairs = Pairs.of(l1, r1);
+        pairs.add(l2, r2);
         return pairs;
     }
 
-    public static <LeftT, RightT> List<Pair<LeftT, RightT>> of(@NonNull LeftT l1, @NonNull RightT r1,
-                                                               @NonNull LeftT l2, @NonNull RightT r2) {
-        List<Pair<LeftT, RightT>> pairs = new ArrayList<>();
-        pairs.add(Pair.of(l1, r1));
-        pairs.add(Pair.of(l2, r2));
-        return pairs;
-    }
-
-    public static <LeftT, RightT> List<Pair<LeftT, RightT>> of(@NonNull LeftT l1, @NonNull RightT r1,
-                                                               @NonNull LeftT l2, @NonNull RightT r2,
-                                                               @NonNull LeftT l3, @NonNull RightT r3) {
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(LeftT l1, RightT r1,
+                                                          LeftT l2, RightT r2,
+                                                          LeftT l3, RightT r3) {
         var pairs = Pairs.of(l1, r1, l2, r2);
-        pairs.add(Pair.of(l3, r3));
+        pairs.add(l3, r3);
         return pairs;
     }
 
-    public static <LeftT, RightT> List<Pair<LeftT, RightT>> of(@NonNull LeftT l1, @NonNull RightT r1,
-                                                               @NonNull LeftT l2, @NonNull RightT r2,
-                                                               @NonNull LeftT l3, @NonNull RightT r3,
-                                                               @NonNull LeftT l4, @NonNull RightT r4) {
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(LeftT l1, RightT r1,
+                                                          LeftT l2, RightT r2,
+                                                          LeftT l3, RightT r3,
+                                                          LeftT l4, RightT r4) {
         var pairs = Pairs.of(l1, r1, l2, r2, l3, r3);
-        pairs.add(Pair.of(l4, r4));
+        pairs.add(l4, r4);
         return pairs;
     }
 
-    public static <LeftT, RightT> List<Pair<LeftT, RightT>> of(@NonNull LeftT l1, @NonNull RightT r1,
-                                                               @NonNull LeftT l2, @NonNull RightT r2,
-                                                               @NonNull LeftT l3, @NonNull RightT r3,
-                                                               @NonNull LeftT l4, @NonNull RightT r4,
-                                                               @NonNull LeftT l5, @NonNull RightT r5) {
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(LeftT l1, RightT r1,
+                                                          LeftT l2, RightT r2,
+                                                          LeftT l3, RightT r3,
+                                                          LeftT l4, RightT r4,
+                                                          LeftT l5, RightT r5) {
         var pairs = Pairs.of(l1, r1, l2, r2, l3, r3, l4, r4);
-        pairs.add(Pair.of(l5, r5));
+        pairs.add(l5, r5);
         return pairs;
     }
 
-    public static <LeftT, RightT> List<Pair<LeftT, RightT>> of(@NonNull LeftT l1, @NonNull RightT r1,
-                                                               @NonNull LeftT l2, @NonNull RightT r2,
-                                                               @NonNull LeftT l3, @NonNull RightT r3,
-                                                               @NonNull LeftT l4, @NonNull RightT r4,
-                                                               @NonNull LeftT l5, @NonNull RightT r5,
-                                                               @NonNull LeftT l6, @NonNull RightT r6) {
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(LeftT l1, RightT r1,
+                                                          LeftT l2, RightT r2,
+                                                          LeftT l3, RightT r3,
+                                                          LeftT l4, RightT r4,
+                                                          LeftT l5, RightT r5,
+                                                          LeftT l6, RightT r6) {
         var pairs = Pairs.of(l1, r1, l2, r2, l3, r3, l4, r4, l5, r5);
-        pairs.add(Pair.of(l6, r6));
+        pairs.add(l6, r6);
         return pairs;
     }
 
-    public static <LeftT, RightT> List<Pair<LeftT, RightT>> of(@NonNull LeftT l1, @NonNull RightT r1,
-                                                               @NonNull LeftT l2, @NonNull RightT r2,
-                                                               @NonNull LeftT l3, @NonNull RightT r3,
-                                                               @NonNull LeftT l4, @NonNull RightT r4,
-                                                               @NonNull LeftT l5, @NonNull RightT r5,
-                                                               @NonNull LeftT l6, @NonNull RightT r6,
-                                                               @NonNull LeftT l7, @NonNull RightT r7) {
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(LeftT l1, RightT r1,
+                                                          LeftT l2, RightT r2,
+                                                          LeftT l3, RightT r3,
+                                                          LeftT l4, RightT r4,
+                                                          LeftT l5, RightT r5,
+                                                          LeftT l6, RightT r6,
+                                                          LeftT l7, RightT r7) {
         var pairs = Pairs.of(l1, r1, l2, r2, l3, r3, l4, r4, l5, r5, l6, r6);
-        pairs.add(Pair.of(l7, r7));
+        pairs.add(l7, r7);
         return pairs;
     }
 
-    public static <LeftT, RightT> List<Pair<LeftT, RightT>> of(@NonNull LeftT l1, @NonNull RightT r1,
-                                                               @NonNull LeftT l2, @NonNull RightT r2,
-                                                               @NonNull LeftT l3, @NonNull RightT r3,
-                                                               @NonNull LeftT l4, @NonNull RightT r4,
-                                                               @NonNull LeftT l5, @NonNull RightT r5,
-                                                               @NonNull LeftT l6, @NonNull RightT r6,
-                                                               @NonNull LeftT l7, @NonNull RightT r7,
-                                                               @NonNull LeftT l8, @NonNull RightT r8) {
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(LeftT l1, RightT r1,
+                                                          LeftT l2, RightT r2,
+                                                          LeftT l3, RightT r3,
+                                                          LeftT l4, RightT r4,
+                                                          LeftT l5, RightT r5,
+                                                          LeftT l6, RightT r6,
+                                                          LeftT l7, RightT r7,
+                                                          LeftT l8, RightT r8) {
         var pairs = Pairs.of(l1, r1, l2, r2, l3, r3, l4, r4, l5, r5, l6, r6, l7, r7);
-        pairs.add(Pair.of(l8, r8));
+        pairs.add(l8, r8);
         return pairs;
     }
 
-    public static <LeftT, RightT> List<Pair<LeftT, RightT>> of(@NonNull LeftT l1, @NonNull RightT r1,
-                                                               @NonNull LeftT l2, @NonNull RightT r2,
-                                                               @NonNull LeftT l3, @NonNull RightT r3,
-                                                               @NonNull LeftT l4, @NonNull RightT r4,
-                                                               @NonNull LeftT l5, @NonNull RightT r5,
-                                                               @NonNull LeftT l6, @NonNull RightT r6,
-                                                               @NonNull LeftT l7, @NonNull RightT r7,
-                                                               @NonNull LeftT l8, @NonNull RightT r8,
-                                                               @NonNull LeftT l9, @NonNull RightT r9) {
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(LeftT l1, RightT r1,
+                                                          LeftT l2, RightT r2,
+                                                          LeftT l3, RightT r3,
+                                                          LeftT l4, RightT r4,
+                                                          LeftT l5, RightT r5,
+                                                          LeftT l6, RightT r6,
+                                                          LeftT l7, RightT r7,
+                                                          LeftT l8, RightT r8,
+                                                          LeftT l9, RightT r9) {
         var pairs = Pairs.of(l1, r1, l2, r2, l3, r3, l4, r4, l5, r5, l6, r6, l7, r7, l8, r8);
-        pairs.add(Pair.of(l9, r9));
+        pairs.add(l9, r9);
         return pairs;
     }
 
-    public static <LeftT, RightT> List<Pair<LeftT, RightT>> of(@NonNull LeftT l1, @NonNull RightT r1,
-                                                               @NonNull LeftT l2, @NonNull RightT r2,
-                                                               @NonNull LeftT l3, @NonNull RightT r3,
-                                                               @NonNull LeftT l4, @NonNull RightT r4,
-                                                               @NonNull LeftT l5, @NonNull RightT r5,
-                                                               @NonNull LeftT l6, @NonNull RightT r6,
-                                                               @NonNull LeftT l7, @NonNull RightT r7,
-                                                               @NonNull LeftT l8, @NonNull RightT r8,
-                                                               @NonNull LeftT l9, @NonNull RightT r9,
-                                                               @NonNull LeftT l10, @NonNull RightT r10) {
+    public static <LeftT, RightT> Pairs<LeftT, RightT> of(LeftT l1, RightT r1,
+                                                          LeftT l2, RightT r2,
+                                                          LeftT l3, RightT r3,
+                                                          LeftT l4, RightT r4,
+                                                          LeftT l5, RightT r5,
+                                                          LeftT l6, RightT r6,
+                                                          LeftT l7, RightT r7,
+                                                          LeftT l8, RightT r8,
+                                                          LeftT l9, RightT r9,
+                                                          LeftT l10, RightT r10) {
         var pairs = Pairs.of(l1, r1, l2, r2, l3, r3, l4, r4, l5, r5, l6, r6, l7, r7, l8, r8, l9, r9);
-        pairs.add(Pair.of(l10, r10));
+        pairs.add(l10, r10);
         return pairs;
     }
-
 }

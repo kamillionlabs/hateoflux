@@ -24,7 +24,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -100,12 +99,6 @@ public class SpringControllerLinkBuilder {
         fullPath = appendQueryParams(fullPath, queryParameters);
 
         return fullPath;
-    }
-
-    private static String getNameFromAnnotation(Parameter parameter, Annotation annotation) {
-        return Optional.ofNullable(parameter.getAnnotation(PathVariable.class))//
-                .map(PathVariable::value)//
-                .orElse(parameter.getName());
     }
 
     /**
