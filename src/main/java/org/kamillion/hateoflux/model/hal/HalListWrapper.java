@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static org.kamillion.hateoflux.utility.MessageTemplates.valueNotAllowedToBeEmpty;
+import static org.kamillion.hateoflux.utility.MessageTemplates.valueNotAllowedToBeNull;
 
 /**
  * @author Younes El Ouarti
@@ -64,21 +66,21 @@ public final class HalListWrapper<EntityT, EmbeddedT>
         this.withLinks(links);
     }
 
-    public static <EntityT, EmbeddedT> HalListWrapper<EntityT, EmbeddedT> wrap(@NonNull List<HalEntityWrapper<EntityT
-            , EmbeddedT>> listToWrap) {
-        Assert.notNull(listToWrap, "List is not allowed to be null");
-        Assert.notEmpty(listToWrap, "List is not allowed to be a empty");
+    public static <EntityT, EmbeddedT> HalListWrapper<EntityT, EmbeddedT> wrap(
+            @NonNull List<HalEntityWrapper<EntityT, EmbeddedT>> listToWrap) {
+        Assert.notNull(listToWrap, valueNotAllowedToBeNull("List to embed"));
+        Assert.notEmpty(listToWrap, valueNotAllowedToBeEmpty("List to embed"));
         String name = determineRelationNameForObject(listToWrap);
         return new HalListWrapper<>(name, listToWrap);
     }
 
     public static <EntityT, EmbeddedT> HalListWrapper<EntityT, EmbeddedT> empty(@NonNull String listName) {
-        Assert.hasText(listName, "List name is not allowed to be empty");
+        Assert.hasText(listName, valueNotAllowedToBeEmpty("List name"));
         return new HalListWrapper<>(listName, new ArrayList<>());
     }
 
     public static <EntityT, EmbeddedT> HalListWrapper<EntityT, EmbeddedT> empty(@NonNull Class<?> listItemTypeAsNameOrigin) {
-        Assert.notNull(listItemTypeAsNameOrigin, "List item type name is not allowed to be null");
+        Assert.notNull(listItemTypeAsNameOrigin, valueNotAllowedToBeNull("List item type name"));
         String name = determineCollectionRelationName(listItemTypeAsNameOrigin);
         return new HalListWrapper<>(name, new ArrayList<>());
     }

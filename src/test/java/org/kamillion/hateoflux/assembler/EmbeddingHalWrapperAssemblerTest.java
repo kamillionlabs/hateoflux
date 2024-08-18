@@ -3,13 +3,13 @@ package org.kamillion.hateoflux.assembler;
 import org.junit.jupiter.api.Test;
 import org.kamillion.hateoflux.dummy.model.Author;
 import org.kamillion.hateoflux.dummy.model.Book;
-import org.kamillion.hateoflux.model.Pairs;
 import org.kamillion.hateoflux.model.hal.HalEmbeddedWrapper;
 import org.kamillion.hateoflux.model.hal.HalEntityWrapper;
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
 import org.kamillion.hateoflux.model.hal.HalPageInfo;
 import org.kamillion.hateoflux.model.link.IanaRelation;
 import org.kamillion.hateoflux.model.link.Link;
+import org.kamillion.hateoflux.utility.Pairs;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.util.List;

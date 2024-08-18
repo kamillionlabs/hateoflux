@@ -63,7 +63,7 @@ class HalWrapperTest {
     void givenObjectIsNull_whenDetermineRelationNameForObject_thenThrowsException() {
         assertThatThrownBy(() -> determineRelationNameForObject(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Object is not allowed to be when determining relation names");
+                .hasMessage("Object is not allowed to be null when determining relation names");
     }
 
     @Test

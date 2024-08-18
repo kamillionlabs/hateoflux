@@ -28,6 +28,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.Map;
 
+import static org.kamillion.hateoflux.utility.MessageTemplates.valueNotAllowedToBeEmpty;
+
 /**
  * Represents a hypermedia link with various attributes defining aspects of the link such as
  * href, templated nature, and media type among others.
@@ -209,7 +211,7 @@ public class Link {
      * @return A new {@link Link} object with the specified relation added.
      */
     public Link withRel(String relation) {
-        Assert.hasText(relation, "relation must not be empty");
+        Assert.hasText(relation, valueNotAllowedToBeEmpty("relation"));
         return new Link(LinkRelation.of(relation), this.href, this.title, this.name, this.media, this.type,
                 this.templated, this.deprecation, this.profile, this.hreflang);
     }

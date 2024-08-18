@@ -25,7 +25,7 @@ class HalEntityWrapperTest {
     void givenContentIsAnIterable_whenWrapping_thenExceptionIsThrown() {
         assertThatThrownBy(() -> HalEntityWrapper.wrap(List.of(new Book())))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Entity is not allowed to be a collection/iterable. Use HalListWrapper instead");
+                .hasMessage("Entity is not allowed to be of type collection/iterable. Use HalListWrapper instead");
     }
 
     @Test
@@ -43,7 +43,7 @@ class HalEntityWrapperTest {
                 .withEmbeddedEntity(null))
                 //THEN
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Embedded null is not allowed");
+                .hasMessage("Embedded is not allowed to be null");
     }
 
     @Test
@@ -135,7 +135,7 @@ class HalEntityWrapperTest {
                 .withEmbeddedList(" ", embedded))
                 //THEN
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Name for embedded must not be empty or contain only whitespace");
+                .hasMessage("Name for embedded is not allowed to be empty");
     }
 
     @Test

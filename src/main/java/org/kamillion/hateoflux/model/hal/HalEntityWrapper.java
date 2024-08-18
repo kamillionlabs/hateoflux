@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static org.kamillion.hateoflux.utility.MessageTemplates.*;
 
 /**
  * Represents a wrapper class for adding hypermedia links to any arbitrary entity object and,
@@ -120,9 +121,9 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
      * @return a new instance containing the wrapped entity
      */
     public static <EntityT> HalEntityWrapper<EntityT, Void> wrap(@NonNull EntityT entity) {
-        Assert.notNull(entity, "Entity is not allowed to be null");
-        Assert.isTrue(!(entity instanceof Iterable<?>), "Entity is not allowed to be a collection/iterable. Use " +
-                "HalListWrapper instead");
+        Assert.notNull(entity, valueNotAllowedToBeNull("Entity"));
+        Assert.isTrue(!(entity instanceof Iterable<?>), valueIsNotAllowedToBeOfType("Entity", "collection/iterable. " +
+                "Use HalListWrapper instead"));
         return new HalEntityWrapper<>(entity);
     }
 
@@ -150,7 +151,7 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
      */
     public <NewEmbeddedT> HalEntityWrapper<EntityT, NewEmbeddedT> withEmbeddedEntity(
             @NonNull HalEmbeddedWrapper<NewEmbeddedT> embedded) {
-        Assert.notNull(embedded, "Embedded null is not allowed");
+        Assert.notNull(embedded, valueNotAllowedToBeNull("Embedded"));
         String name = determineRelationNameForObject(embedded.getEmbeddedEntity());
         return new HalEntityWrapper<>(this.entity, name, embedded, this.getLinks());
     }
@@ -178,8 +179,8 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
      */
     public <NewEmbeddedT> HalEntityWrapper<EntityT, NewEmbeddedT> withNonEmptyEmbeddedList(
             @NonNull List<HalEmbeddedWrapper<NewEmbeddedT>> entitiesToEmbed) {
-        Assert.notNull(entitiesToEmbed, "List to embed is not allowed to be null");
-        Assert.notEmpty(entitiesToEmbed, "List to embed is not allowed to be empty");
+        Assert.notNull(entitiesToEmbed, valueNotAllowedToBeNull("List to embed"));
+        Assert.notEmpty(entitiesToEmbed, valueNotAllowedToBeEmpty("List to embed"));
         String name = determineRelationNameForObject(entitiesToEmbed);
         return new HalEntityWrapper<>(this.entity, name, entitiesToEmbed, this.getLinks());
     }
@@ -204,9 +205,9 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
      */
     public <NewEmbeddedT> HalEntityWrapper<EntityT, NewEmbeddedT> withEmbeddedList(
             @NonNull String embeddedListName, List<HalEmbeddedWrapper<NewEmbeddedT>> entitiesToEmbed) {
-        Assert.notNull(embeddedListName, "Name for embedded must not be null");
-        Assert.hasText(embeddedListName, "Name for embedded must not be empty or contain only whitespace");
-        Assert.notNull(entitiesToEmbed, "List to embed is not allowed to be null");
+        Assert.notNull(embeddedListName, valueNotAllowedToBeNull("Name for embedded"));
+        Assert.hasText(embeddedListName, valueNotAllowedToBeEmpty("Name for embedded"));
+        Assert.notNull(entitiesToEmbed, valueNotAllowedToBeNull("List to embed"));
         return new HalEntityWrapper<>(this.entity, embeddedListName, entitiesToEmbed, this.getLinks());
     }
 
@@ -232,8 +233,8 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
      */
     public <NewEmbeddedT> HalEntityWrapper<EntityT, NewEmbeddedT> withEmbeddedList(
             @NonNull Class<?> embeddedTypeAsNameOrigin, List<HalEmbeddedWrapper<NewEmbeddedT>> entitiesToEmbed) {
-        Assert.notNull(embeddedTypeAsNameOrigin, "Embedded type must not be null");
-        Assert.notNull(entitiesToEmbed, "List to embed is not allowed to be null");
+        Assert.notNull(embeddedTypeAsNameOrigin, valueNotAllowedToBeNull("Embedded type name"));
+        Assert.notNull(entitiesToEmbed, valueNotAllowedToBeNull("List to embed"));
         String name = determineCollectionRelationName(embeddedTypeAsNameOrigin);
         return new HalEntityWrapper<>(this.entity, name, entitiesToEmbed, this.getLinks());
     }
@@ -256,15 +257,15 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
 
     @JsonIgnore
     public List<HalEmbeddedWrapper<EmbeddedT>> getRequiredEmbedded() {
+
         return getEmbedded()
-                .orElseThrow(() -> new IllegalStateException("Attempted to retrieve a required, but non existing " +
-                        "embedded"));
+                .orElseThrow(() -> new IllegalStateException(requiredValueWasNonExisting("embedded")));
     }
 
     @JsonIgnore
     public String getRequiredNameOfEmbedded() {
+
         return getNameOfEmbedded()
-                .orElseThrow(() -> new IllegalStateException("Attempted to retrieve the name of a required, but non " +
-                        "existing embedded"));
+                .orElseThrow(() -> new IllegalStateException(requiredValueWasNonExisting("name of embedded")));
     }
 }
