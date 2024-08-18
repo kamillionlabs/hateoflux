@@ -21,6 +21,7 @@ package org.kamillion.hateoflux.model.hal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import org.kamillion.hateoflux.model.link.IanaRelation;
 import org.kamillion.hateoflux.model.link.Link;
 import org.kamillion.hateoflux.model.link.LinkRelation;
 import org.springframework.lang.NonNull;
@@ -33,7 +34,7 @@ import java.util.*;
  * @author Younes El Ouarti
  */
 @Data
-public abstract class HalWrapper<HalResourceT extends HalWrapper<? extends HalResourceT>> {
+public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWrapperT>> {
 
     protected final Map<LinkRelation, Link> links = new LinkedHashMap<>();
 
@@ -41,7 +42,7 @@ public abstract class HalWrapper<HalResourceT extends HalWrapper<? extends HalRe
     }
 
     @JsonProperty("_links")
-    public Map<LinkRelation, Link> getCopyOfAllLinksAsMap() {
+    private Map<LinkRelation, Link> getCopyOfAllLinksAsMap() {
         return new HashMap<>(this.links);
     }
 
@@ -50,34 +51,38 @@ public abstract class HalWrapper<HalResourceT extends HalWrapper<? extends HalRe
         return new ArrayList<>(links.values());
     }
 
-    public Optional<Link> getLink(LinkRelation relation) {
-        return Optional.ofNullable(links.get(relation));
+    @JsonIgnore
+    public Optional<Link> getLink(IanaRelation relation) {
+        return Optional.ofNullable(links.get(LinkRelation.of(relation)));
     }
 
+    @JsonIgnore
     public Optional<Link> getLink(String relation) {
         return Optional.ofNullable(links.get(LinkRelation.of(relation)));
     }
 
-    public Link getRequiredLink(LinkRelation relation) {
-        return links.get(relation);
+    @JsonIgnore
+    public Link getRequiredLink(IanaRelation relation) {
+        return links.get(LinkRelation.of(relation));
     }
 
+    @JsonIgnore
     public Link getRequiredLink(String relation) {
         return links.get(LinkRelation.of(relation));
     }
 
-    public HalResourceT withLinks(@Nullable Link... links) {
+    public HalWrapperT withLinks(@Nullable Link... links) {
         if (links != null && links.length > 0) {
             Arrays.stream(links).forEach(this::add);
         }
-        return (HalResourceT) this;
+        return (HalWrapperT) this;
     }
 
-    public HalResourceT withLinks(@Nullable Iterable<Link> links) {
+    public HalWrapperT withLinks(@Nullable Iterable<Link> links) {
         if (links != null && links.iterator().hasNext()) {
             add(links);
         }
-        return (HalResourceT) this;
+        return (HalWrapperT) this;
     }
 
     protected void add(@NonNull final Iterable<Link> links) {
@@ -154,8 +159,11 @@ public abstract class HalWrapper<HalResourceT extends HalWrapper<? extends HalRe
             Assert.isTrue(iterator.hasNext(), "Iterable cannot be empty when determining relation names");
             Object firstElement = iterator.next();
             Class<?> clazz = firstElement.getClass();
+            if (firstElement instanceof HalEmbeddedWrapper<?> wrapper) {
+                clazz = wrapper.getEmbeddedEntity().getClass();
+            }
             if (firstElement instanceof HalEntityWrapper<?, ?> wrapper) {
-                clazz = wrapper.getContent().getClass();
+                clazz = wrapper.getEntity().getClass();
             }
             return determineCollectionRelationName(clazz);
         } else {

@@ -25,14 +25,14 @@ class HalEntityWrapperTest {
     void givenContentIsAnIterable_whenWrapping_thenExceptionIsThrown() {
         assertThatThrownBy(() -> HalEntityWrapper.wrap(List.of(new Book())))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Content is not allowed to be a collection/iterable. Use HalCollectionWrapper instead");
+                .hasMessage("Entity is not allowed to be a collection/iterable. Use HalListWrapper instead");
     }
 
     @Test
     void givenContentIsNull_whenWrapping_thenExceptionIsThrown() {
         assertThatThrownBy(() -> HalEntityWrapper.wrap(null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Content is not allowed to be null");
+                .hasMessage("Entity is not allowed to be null");
     }
 
     @Test
@@ -49,7 +49,7 @@ class HalEntityWrapperTest {
     @Test
     void givenEmbeddedIsNotNull_whenWithEmbeddedEntity_thenEmbeddedIsAccessible() {
         //GIVEN
-        var embedded = HalEntityWrapper.wrap(new UnannotatedBook());
+        var embedded = HalEmbeddedWrapper.wrap(new UnannotatedBook());
 
         //WHEN
         var entity = HalEntityWrapper.wrap(new Book())
@@ -57,40 +57,40 @@ class HalEntityWrapperTest {
 
         //THEN
         assertThat(entity.hasEmbedded()).isEqualTo(true);
-        assertThat(entity.getRequiredEmbedded()).isEqualTo(embedded);
+        assertThat(entity.getRequiredEmbedded()).isEqualTo(List.of(embedded));
         assertThat(entity.getRequiredNameOfEmbedded()).isEqualTo("unannotatedBook");
     }
 
     @Test
-    void givenNull_whenWithNonEmptyEmbeddedCollection_thenExceptionIsThrown() {
+    void givenNull_whenWithNonEmptyEmbeddedList_thenExceptionIsThrown() {
         //GIVEN
         assertThatThrownBy(() -> HalEntityWrapper.wrap(new Book())
                 //WHEN
-                .withNonEmptyEmbeddedCollection(null))
+                .withNonEmptyEmbeddedList(null))
                 //THEN
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Collection to embed is not allowed to be null");
+                .hasMessage("List to embed is not allowed to be null");
     }
 
     @Test
-    void givenEmptyCollection_whenWithNonEmptyEmbeddedCollection_thenExceptionIsThrown() {
+    void givenEmptyCollection_whenWithNonEmptyEmbeddedList_thenExceptionIsThrown() {
         //GIVEN
         assertThatThrownBy(() -> HalEntityWrapper.wrap(new Book())
                 //WHEN
-                .withNonEmptyEmbeddedCollection(new ArrayList<>()))
+                .withNonEmptyEmbeddedList(new ArrayList<>()))
                 //THEN
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Collection to embed is not allowed to be empty");
+                .hasMessage("List to embed is not allowed to be empty");
     }
 
     @Test
     void givenNonEmptyCollection_whenWithNonEmptyEmbeddedCollection_thenEmbeddedIsAccessible() {
         //GIVEN
-        var embedded = List.of(HalEntityWrapper.wrap(new UnannotatedBook()));
+        var embedded = List.of(HalEmbeddedWrapper.wrap(new UnannotatedBook()));
 
         //WHEN
         var entity = HalEntityWrapper.wrap(new Book())
-                .withNonEmptyEmbeddedCollection(embedded);
+                .withNonEmptyEmbeddedList(embedded);
 
         //THEN
         assertThat(entity.hasEmbedded()).isEqualTo(true);
@@ -101,12 +101,12 @@ class HalEntityWrapperTest {
     @Test
     void givenNonEmptyCollectionWithCustomName_whenWithEmbeddedCollection_thenEmbeddedIsAccessibleViaCustomName() {
         //GIVEN
-        var embedded = List.of(HalEntityWrapper.wrap(new UnannotatedBook()));
+        var embedded = List.of(HalEmbeddedWrapper.wrap(new UnannotatedBook()));
         String customName = "customName";
 
         //WHEN
         var entity = HalEntityWrapper.wrap(new Book())
-                .withEmbeddedCollection(customName, embedded);
+                .withEmbeddedList(customName, embedded);
 
         //THEN
         assertThat(entity.getEmbedded().get()).isEqualTo(embedded);
@@ -119,7 +119,7 @@ class HalEntityWrapperTest {
         String customName = "customName";
         var entity = HalEntityWrapper.wrap(new UnannotatedBook())
                 //WHEN
-                .withEmbeddedCollection(customName, new ArrayList<>());
+                .withEmbeddedList(customName, new ArrayList<>());
 
         //THEN
         assertThat(entity.getEmbedded().get()).isEqualTo(new ArrayList<>());
@@ -129,10 +129,10 @@ class HalEntityWrapperTest {
     @Test
     void givenEmptyWhiteSpaceAsCustomName_whenWithEmbeddedCollection_thenEmbeddedIsAccessibleViaCustomName() {
         //GIVEN
-        var embedded = List.of(HalEntityWrapper.wrap(new UnannotatedBook()));
+        var embedded = List.of(HalEmbeddedWrapper.wrap(new UnannotatedBook()));
         assertThatThrownBy(() -> HalEntityWrapper.wrap(new Book())
                 //WHEN
-                .withEmbeddedCollection(" ", embedded))
+                .withEmbeddedList(" ", embedded))
                 //THEN
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Name for embedded must not be empty or contain only whitespace");
@@ -143,10 +143,10 @@ class HalEntityWrapperTest {
         //GIVEN
         var entity = HalEntityWrapper.wrap(new EmptyRelationBook())
                 //WHEN
-                .withEmbeddedCollection(Book.class, new ArrayList<>());
+                .withEmbeddedList(Book.class, new ArrayList<>());
 
         //THEN
         assertThat(entity.getEmbedded().get()).isEqualTo(new ArrayList<>());
-        assertThat(entity.getNameOfEmbedded().get()).isEqualTo("customBook");
+        assertThat(entity.getNameOfEmbedded().get()).isEqualTo("customBooks");
     }
 }

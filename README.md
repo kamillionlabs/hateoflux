@@ -16,14 +16,17 @@ rewritten accordingly.
     * CollectionModel
     * PagedModel
 * Serialization
+* Assemblers
 
 ## Backlog
 
-* Assemblers
+* changelog
+* RequiredXyz() - Consistent behaviour: Exception or null
+* Javadocs on assembler
 * linkTo()
     * Build links with base URL
     * set "templated" attribute if href is a template; otherwise it shouldn't
-    * Link.of(<template string with _query_ parameters>)
+    * Link.of(template string with _query_ parameters)
     * Query parameters (@RequestParam) for collections with distinction between with or without @NonComposite
 * Forwarded header handling
 

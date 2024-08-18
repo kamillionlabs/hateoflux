@@ -20,15 +20,39 @@ package org.kamillion.hateoflux.model.hal;
 
 import lombok.Builder;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
+import java.util.List;
 
 /**
  * @author Younes El Ouarti
  */
 @Builder
 @Jacksonized
-public record HalPageInfo(Integer size, Integer totalElements, Integer totalPages, Integer number) {
+public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, Integer number) {
 
-    public static HalPageInfo of(Integer size, Integer totalElements, Integer totalPages, Integer number) {
+    public static HalPageInfo of(Integer size, Long totalElements, Integer totalPages, Integer number) {
         return new HalPageInfo(size, totalElements, totalPages, number);
     }
+
+    public static HalPageInfo assemble(@NonNull List<?> entities, long totalElements, int pageSize) {
+        return assemble(entities.size(), totalElements, pageSize, null);
+    }
+
+    public static HalPageInfo assemble(@NonNull List<?> entities, long totalElements, int pageSize,
+                                       @Nullable Long offset) {
+        return assemble(entities.size(), totalElements, pageSize, offset);
+    }
+
+
+    public static HalPageInfo assemble(int size, long totalElements, int pageSize, @Nullable Long offset) {
+        long offsetEffective = offset == null ? 0L : offset;
+
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        int number = (int) (offsetEffective / pageSize);
+
+        return new HalPageInfo(size, totalElements, totalPages, number);
+    }
+
 }
