@@ -26,10 +26,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
-
-import static java.net.URLEncoder.encode;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Younes El Ouarti
@@ -69,7 +69,7 @@ public class SpringControllerLinkBuilder {
     }
 
     private static String expandTemplatedPath(String fullPath, MethodCaptureInterceptor interceptor) {
-        Map<String, Object> pathVariables = new HashMap<>();
+        Map<String, Object> variables = new HashMap<>();
         Map<String, Object> queryParameters = new HashMap<>();
         Parameter[] parameters = interceptor.getCapturedMethod().getParameters();
         Object[] parameterValues = interceptor.getCapturedArguments();
@@ -84,7 +84,7 @@ public class SpringControllerLinkBuilder {
                         .map(PathVariable::value) //
                         .filter(n -> !n.isEmpty()) //
                         .orElse(parameter.getName());
-                pathVariables.put(parameterName, parameterValue);
+                variables.put(parameterName, parameterValue);
             }
             if (parameter.isAnnotationPresent(RequestParam.class)) {
                 String parameterName = Optional.ofNullable(parameter.getAnnotation(RequestParam.class)) //
@@ -95,7 +95,7 @@ public class SpringControllerLinkBuilder {
             }
 
         }
-        fullPath = UriExpander.expand(fullPath, pathVariables);
+        fullPath = UriExpander.expand(fullPath, variables);
         fullPath = appendQueryParams(fullPath, queryParameters);
 
         return fullPath;
@@ -110,21 +110,12 @@ public class SpringControllerLinkBuilder {
      *         The map containing query parameters and their values.
      * @return A URI string with appended query parameters.
      */
-    public static String appendQueryParams(String uriToAppendTo, Map<String, Object> args) {
+    private static String appendQueryParams(String uriToAppendTo, Map<String, Object> args) {
         if (args == null || args.isEmpty()) {
             return uriToAppendTo;
         }
-
-        boolean hasParams = uriToAppendTo.contains("?");
-        StringJoiner joiner = new StringJoiner("&", hasParams ? "&" : "?", "");
-
-        for (var entry : args.entrySet()) {
-            // Encode keys and values to ensure they are URL safe
-            String key = encode(entry.getKey(), UTF_8);
-            String value = encode(entry.getValue().toString(), UTF_8);
-            joiner.add(key + "=" + value);
-        }
-        return uriToAppendTo + joiner;
+        String expandedQueryParameterUriPart = UriExpander.constructExpandedQueryParameterUriPart(args);
+        return uriToAppendTo + expandedQueryParameterUriPart;
     }
 
     public static <ControllerT> Link linkTo(Class<ControllerT> controllerClass) {

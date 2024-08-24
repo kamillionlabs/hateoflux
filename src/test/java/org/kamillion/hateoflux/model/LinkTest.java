@@ -12,6 +12,25 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class LinkTest {
 
+    @ParameterizedTest
+    @NullAndEmptySource
+    public void givenEmptyOrNullPath_whenIsTemplated_thenCorrectlyEvaluateFalse(String uriPath) {
+        Link link = Link.of(uriPath);
+        assertThat(link.isTemplated()).isEqualTo(false);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ //
+            "https://example.com, false", //
+            "some-path/{var}, true", //
+            "{var}/some-path/, true", //
+            "{var1}/some-path/{var2}, true", //
+            "{var1}/some-path/{?var2}, true", //
+    })
+    public void givenUriPath_whenIsTemplated_thenCorrectlyEvaluate(String uriPath, boolean expected) {
+        Link link = Link.of(uriPath);
+        assertThat(link.isTemplated()).isEqualTo(expected);
+    }
 
     @ParameterizedTest
     @NullAndEmptySource
