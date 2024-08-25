@@ -37,7 +37,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class UriExpander {
 
-    public static String constructExpandedQueryParameterUriPart(Map<String, Object> parameters) {
+    public static String constructExpandedQueryParameterUriPart(Map<String, ?> parameters) {
         if (parameters == null || parameters.isEmpty()) {
             return "";
         }
@@ -105,8 +105,51 @@ public class UriExpander {
         return queryParameterMap;
     }
 
-
-    public static String expand(String uriAsTemplate, Map<String, Object> parameters) {
+    /**
+     * Expands the URI template using a map of named path or query parameters. If the template contains no placeholders,
+     * the original string is returned. Placeholders for query parameters follow the structure suggested by RFC6570.
+     * Given {@code var} is a templated variable this means:
+     * <ol>
+     *     <li>{@code {var}} is a mandatory variable</li>
+     *     <li>{@code {?var}} is an optional variable used specifically as query parameter</li>
+     *     <li>{@code {?var1,var2}} are 2 optional query parameters</li>
+     * </ol>
+     * <p>
+     * <b>Example usages:</b><br>
+     * <i>Path and Query Parameters</i>
+     * <blockquote><pre>
+     * Map<String, Object> map = Map.of("id", 15, "limit", 50, "page", 2);
+     * String expanded = UriExpander.expand("/users/{id}/activity{?limit,page}", map);
+     *
+     * // Outputs: /users/15/activity?limit=50&page=2
+     * </pre></blockquote>
+     * <p>
+     * <i>Non Existing Query Parameters in Map</i>
+     * <blockquote><pre>
+     * Map<String, Object> map = Map.of("id", 15);
+     * String expanded = UriExpander.expand("/users/{id}/activity{?limit,page}", map);
+     *
+     * // Outputs: /users/15/activity
+     * </pre></blockquote>
+     * <p>
+     * <i>Query Parameters in Template with None Provided</i>
+     * <blockquote><pre>
+     * String expanded = UriExpander.expand("/users/15/activity{?limit,page}", Map.of());
+     *
+     * // Outputs: /users/15/activity
+     * </pre></blockquote>
+     *
+     * @param uriAsTemplate
+     *         the URI template containing placeholders
+     * @param parameters
+     *         a map containing key-value pairs where keys match the placeholders' names
+     * @return the expanded or original URI
+     *
+     * @throws IllegalArgumentException
+     *         if any placeholders are unmatched or if there are mismatches in the number of
+     *         arguments
+     */
+    public static String expand(String uriAsTemplate, Map<String, ?> parameters) {
         UriTemplateData uriTemplateData = UriTemplateData.of(uriAsTemplate);
         if ((parameters == null || parameters.isEmpty())) {
             if (!uriTemplateData.isTemplated()) {
@@ -129,7 +172,7 @@ public class UriExpander {
         URI expandedUriWithPathParametersOnly = uriTemplate.expand(parameters);
 
         List<String> queryParameterNames = uriTemplateData.getQueryParameters();
-        Map<String, Object> queryParameters = filterAccordingToWhitelist(queryParameterNames, parameters);
+        Map<String, ?> queryParameters = filterAccordingToWhitelist(queryParameterNames, parameters);
         String queryParameterUriPart = constructExpandedQueryParameterUriPart(queryParameters);
 
         return expandedUriWithPathParametersOnly + queryParameterUriPart;
@@ -152,32 +195,29 @@ public class UriExpander {
         }
     }
 
-    private static void assertConsistentParameterMap(UriTemplateData uriTemplateData, Map<String, Object> parameters) {
+    private static void assertConsistentParameterMap(UriTemplateData uriTemplateData, Map<String, ?> parameters) {
         Set<String> parameterNamesToTest = Optional.ofNullable(parameters)
                 .map(p -> new HashSet<>(p.keySet()))
                 .orElse(new HashSet<>());
 
         String originalUriTemplate = uriTemplateData.getOriginalUriTemplate();
-        String parameterNames = String.join(",", parameterNamesToTest);
 
         if (uriTemplateData.doesNotIncludeAllPathParameters(parameterNamesToTest)) {
-            String providedValues = parameterNames.isEmpty() ? "empty or null" : String.join(", ",
-                    parameterNames);
             throw new IllegalArgumentException(format(
                     "Not enough mandatory path parameters provided for URI template expansion. " +
-                            "Template was '%s', parameters were [%s]", originalUriTemplate, providedValues));
+                            "Template was '%s', parameters were %s", originalUriTemplate, parameters));
         }
 
         if (!parameterNamesToTest.isEmpty() && uriTemplateData.includesUnknownParameters(parameterNamesToTest)) {
             throw new IllegalArgumentException(format(
                     "Unknown parameters provided for URI template expansion. " +
-                            "Template was '%s', parameters were [%s]", originalUriTemplate, parameterNames));
+                            "Template was '%s', parameters were %s", originalUriTemplate, parameters));
 
         }
     }
 
-    private static Map<String, Object> filterAccordingToWhitelist(List<String> parameterWhiteList, Map<String,
-            Object> parameters) {
+    private static Map<String, ?> filterAccordingToWhitelist(List<String> parameterWhiteList, Map<String,
+            ?> parameters) {
         if (parameters == null || parameters.isEmpty()) {
             return parameters;
         }

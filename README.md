@@ -22,7 +22,9 @@ rewritten accordingly.
 
 ## Backlog
 
-* Javadocs on assembler
+* Javadocs on:
+    * assembler
+    * Link.expand() (from UriExpander)
 * linkTo()
     * Build links with base URL
     * Query parameters (@RequestParam) for collections with distinction between with or without @NonComposite
