@@ -11,6 +11,8 @@ rewritten accordingly.
     * Expand templated URIs
     * Build query parameters in URI from Controller
     * Uses custom names for @PathVariable and @RequestParam
+    * "templated" attribute is set depending on whether href is a template
+    * Link.of(template string with _query_ parameters)
 * Representation model equivalents
     * EntityModel
     * CollectionModel
@@ -20,11 +22,11 @@ rewritten accordingly.
 
 ## Backlog
 
-* Javadocs on assembler
+* Javadocs on:
+    * assembler
+    * Link.expand() (from UriExpander)
 * linkTo()
     * Build links with base URL
-    * set "templated" attribute if href is a template; otherwise it shouldn't
-    * Link.of(template string with _query_ parameters)
     * Query parameters (@RequestParam) for collections with distinction between with or without @NonComposite
 * Forwarded header handling
 

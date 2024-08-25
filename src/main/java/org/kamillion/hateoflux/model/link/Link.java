@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.Value;
 import org.kamillion.hateoflux.linkbuilder.UriExpander;
+import org.kamillion.hateoflux.linkbuilder.UriTemplateData;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -118,7 +119,7 @@ public class Link {
     }
 
     public boolean isTemplated() {
-        return UriExpander.isTemplated(href);
+        return UriTemplateData.of(href).isTemplated();
     }
 
     /**
@@ -147,13 +148,13 @@ public class Link {
     }
 
 
-    public Link expand(Object... pathVariables) {
-        String newHref = UriExpander.expand(this.href, pathVariables);
+    public Link expand(Object... variables) {
+        String newHref = UriExpander.expand(this.href, variables);
         return this.withHref(newHref);
     }
 
-    public Link expand(Map<String, Object> pathVariables) {
-        String newHref = UriExpander.expand(this.href, pathVariables);
+    public Link expand(Map<String, Object> variables) {
+        String newHref = UriExpander.expand(this.href, variables);
         return this.withHref(newHref);
     }
 
