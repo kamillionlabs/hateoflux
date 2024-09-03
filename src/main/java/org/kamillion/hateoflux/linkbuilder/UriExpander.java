@@ -37,6 +37,35 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class UriExpander {
 
+    public static String constructExpandedQueryParameterUriPart(List<QueryParameter> parameters) {
+        if (parameters == null || parameters.isEmpty()) {
+            return "";
+        }
+
+        StringJoiner joiner = new StringJoiner("&", "?", "");
+
+        for (QueryParameter parameter : parameters) {
+            // Encode keys and values to ensure they are URL safe
+            String key = encode(parameter.getName(), UTF_8);
+            if (parameter.isCollection()) {
+                if (parameter.isSpecifiedAsComposite()) {
+                    for (String value : parameter.getValues()) {
+                        joiner.add(key + "=" + value);
+                    }
+                } else {
+                    String aggregateValues = parameter.getValues().stream()
+                            .filter(Objects::nonNull)
+                            .map(v -> encode(v, UTF_8))
+                            .collect(Collectors.joining(","));
+                    joiner.add(key + "=" + aggregateValues);
+                }
+            } else {
+                joiner.add(key + "=" + encode(parameter.getValue(), UTF_8));
+            }
+        }
+        return joiner.toString();
+    }
+
     public static String constructExpandedQueryParameterUriPart(Map<String, ?> parameters) {
         if (parameters == null || parameters.isEmpty()) {
             return "";

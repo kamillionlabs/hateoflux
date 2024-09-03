@@ -18,9 +18,11 @@
 
 package org.kamillion.hateoflux.dummy.controller;
 
+import org.kamillion.hateoflux.model.hal.Composite;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -51,6 +53,7 @@ public class DummyController {
         return Mono.empty();
     }
 
+
     @PutMapping("/{someUuId}/subresource")
     public Mono<Void> putMappingWithParameterAsSubresource(@PathVariable UUID someUuId) {
         return Mono.empty();
@@ -78,5 +81,16 @@ public class DummyController {
                                                                               @RequestParam String name) {
         return Mono.empty();
     }
+
+    @PostMapping("/names")
+    public Mono<Void> postMappingWithCollectionAsQueryParameter(@RequestParam Collection<String> names) {
+        return Mono.empty();
+    }
+
+    @PostMapping("/names")
+    public Mono<Void> postMappingWithCompositeCollectionAsQueryParameter(@Composite @RequestParam Collection<String> names) {
+        return Mono.empty();
+    }
+
 
 }
