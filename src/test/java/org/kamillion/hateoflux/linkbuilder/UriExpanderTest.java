@@ -1,16 +1,39 @@
 package org.kamillion.hateoflux.linkbuilder;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 class UriExpanderTest {
+
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = {
+            "true; ?val1=123&val2=456&val2=789&val3=hello",
+            "false; ?val1=123&val2=456,789&val3=hello",
+    })
+    void givenRenderingTypeAndMapWithCollections_whenConstructExpandedQueryParameterUriPart_thenCorrectUri(
+            boolean isComposite, String expectedUriPart) {
+        //GIVEN
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("val1", "123");
+        map.put("val2", List.of(456, 789));
+        map.put("val3", Set.of("hello"));
+
+        //WHEN
+        String actual = UriExpander.constructExpandedQueryParameterUriPart(map, isComposite);
+
+        //THEN
+        assertThat(actual).isEqualTo(expectedUriPart);
+    }
 
     @ParameterizedTest
     @CsvSource(delimiter = ';', value = {
@@ -62,25 +85,30 @@ class UriExpanderTest {
     @ParameterizedTest
     @CsvSource(delimiter = ';', value = {
             //Not enough parameters
-            "/users/{userId}/posts/{postId}; 15; " //
-                    + "Not enough mandatory path parameters provided for URI template expansion. " //
-                    + "Template was '/users/{userId}/posts/{postId}', parameter values were [15]",
+            "/users/{userId}/posts/{postId}; 15; " +
+                    "Not enough mandatory path parameters provided for URI template expansion. " +
+                    "Template was '/users/{userId}/posts/{postId}', parameter values were [15]",
 
             //Path has path parameters but none were provided
-            "/users/{userId}/posts/{postId}; ; " //
-                    + "No parameters provided for URI expansion, but mandatory path parameters were detected. " //
-                    + "Template was '/users/{userId}/posts/{postId}'",
+            "/users/{userId}/posts/{postId}; ; " +
+                    "No parameters provided for URI expansion, but mandatory path parameters were detected. " +
+                    "Template was '/users/{userId}/posts/{postId}'",
 
             //Too many parameters
-            "/users/{userId}; 15|1015; " //
-                    + "Provided more parameters for URI template expansion than expected. "  //
-                    + "Template was '/users/{userId}', parameter values were [15,1015]",
+            "/users/{userId}; 15|1015; " +
+                    "Provided more parameters for URI template expansion than expected. " +
+                    "Template was '/users/{userId}', parameter values were [15,1015]",
 
             //URI is not a template but parameters were provided
-            "/no/placeholders ; 15; " //
-                    + "Provided more parameters for URI template expansion than expected. " //
-                    + "Template was '/no/placeholders', parameter values were [15]"
+            "/no/placeholders ; 15; " +
+                    "Provided more parameters for URI template expansion than expected. " +
+                    "Template was '/no/placeholders', parameter values were [15]",
 
+            //Template has parameters with explode modifier
+            "/users{?keyWords*}; 15|1015; " +
+                    "Exploded query parameters cannot be expanded using only values. " +
+                    "Use expansion method that assigns values to dedicated parameters. " +
+                    "Template was '/users{?keyWords*}'",
 
     })
     void givenInvalidInputs_whenExpandWithVars_thenThrowException(String template, String parameters,
@@ -140,33 +168,61 @@ class UriExpanderTest {
             "/users/names/{name}; name=name_with{_brace; /users/names/name_with%7B_brace",
 
             //With query parameter that contains reserved character
-            "/users/names{?name}; name=name_with{_brace; /users/names?name=name_with%7B_brace",})
+            "/users/names{?name}; name=name_with{_brace; /users/names?name=name_with%7B_brace",
+    })
     void givenValidMapInputs_whenExpandWithMap_thenCorrectUri(String template, String keyValues, String expected) {
         Map<String, Object> map = convertToMap(keyValues);
         assertThat(UriExpander.expand(template, map)).isEqualTo(expected);
     }
 
+    @Test
+    void givenExplodedQueryParameter_whenExpandWithMap_thenCorrectUri() {
+        //GIVEN
+        String template = "/users{?keyWords*,limit}";
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("keyWords", List.of("active", "blue", "positive"));
+        map.put("limit", 10);
+
+        //WHEN
+        String actual = UriExpander.expand(template, map);
+
+        //THEN
+        assertThat(actual).isEqualTo("/users?keyWords=active,blue,positive&limit=10");
+    }
+
+    @Test
+    void givenNotExplodedQueryParameter_whenExpandWithMap_thenThrowException() {
+        //GIVEN
+        String template = "/users{?keyWords}";
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("keyWords", List.of("active", "blue", "positive"));
+        assertThatThrownBy(() -> UriExpander.expand(template, map)).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Detected a collection as value for a parameter, but parameter was not exploded in " +
+                        "template (asterisk after parameter name e.g. {?var*}). " +
+                        "Template was '/users{?keyWords}', parameters were {keyWords=[active, blue, positive]}");
+    }
+
     @ParameterizedTest
     @CsvSource(delimiter = ';', value = {
             //Missing path parameter
-            "/users/{userId}/posts/{postId}; userId=15; " //
-                    + "Not enough mandatory path parameters provided for URI template expansion. " //
-                    + "Template was '/users/{userId}/posts/{postId}', parameters were {userId=15}",
+            "/users/{userId}/posts/{postId}; userId=15; " +
+                    "Not enough mandatory path parameters provided for URI template expansion. " +
+                    "Template was '/users/{userId}/posts/{postId}', parameters were {userId=15}",
 
             //Path has path parameters but none were provided
-            "/users/{userId}/posts/{postId}; ; " //
-                    + "No parameters provided for URI expansion, but mandatory path parameters were detected. " //
-                    + "Template was '/users/{userId}/posts/{postId}'",
+            "/users/{userId}/posts/{postId}; ; " +
+                    "No parameters provided for URI expansion, but mandatory path parameters were detected. " +
+                    "Template was '/users/{userId}/posts/{postId}'",
 
             //Added unknown parameter
-            "/users/{userId}; userId=15|somethingElse=1015; " //
-                    + "Unknown parameters provided for URI template expansion. " //
-                    + "Template was '/users/{userId}', parameters were {userId=15, somethingElse=1015}",
+            "/users/{userId}; userId=15|somethingElse=1015; " +
+                    "Unknown parameters provided for URI template expansion. " +
+                    "Template was '/users/{userId}', parameters were {userId=15, somethingElse=1015}",
 
             //URI is not a template but parameter were provided
-            "/no/placeholders ; something=15; " //
-                    + "Unknown parameters provided for URI template expansion. " //
-                    + "Template was '/no/placeholders', parameters were {something=15}"
+            "/no/placeholders ; something=15; " +
+                    "Unknown parameters provided for URI template expansion. " +
+                    "Template was '/no/placeholders', parameters were {something=15}"
     })
     void givenInvalidInputs_whenExpandWithMaps_thenThrowException(String template, String parameters,
                                                                   String expectedExceptionMessage) {

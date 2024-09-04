@@ -21,6 +21,7 @@ package org.kamillion.hateoflux.model.link;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Value;
 import org.kamillion.hateoflux.linkbuilder.UriExpander;
 import org.kamillion.hateoflux.linkbuilder.UriTemplateData;
@@ -81,11 +82,6 @@ public class Link {
     String type;
 
     /**
-     * Indicates whether the href is a URI template that should be templated with variables.
-     */
-    Boolean templated;
-
-    /**
      * A URL that provides information about the deprecation of the link, useful
      * for alerting API consumers that a resource is outdated or scheduled for removal.
      */
@@ -104,7 +100,7 @@ public class Link {
     String hreflang;
 
     private Link(final LinkRelation linkRelation, final String href, final String title, final String name,
-                 final String media, final String type, final Boolean templated, final String deprecation,
+                 final String media, final String type, final String deprecation,
                  final String profile, final String hreflang) {
         this.linkRelation = linkRelation;
         this.href = href;
@@ -112,18 +108,29 @@ public class Link {
         this.name = name;
         this.media = media;
         this.type = type;
-        this.templated = templated;
         this.deprecation = deprecation;
         this.profile = profile;
         this.hreflang = hreflang;
     }
 
+    @JsonProperty("templated")
+    private Boolean isTemplatedForJsonRendering() {
+        return UriTemplateData.of(href).isTemplated() ? true : null;
+    }
+
+    /**
+     * TODO
+     *
+     * @return
+     */
+    @JsonIgnore
     public boolean isTemplated() {
         return UriTemplateData.of(href).isTemplated();
     }
 
     /**
-     * Appends a specified URI part to the current {@Link}'s href. The method ensures proper formatting with slashes.
+     * Appends a specified URI part to the current {@link Link}'s href. The method ensures proper formatting with
+     * slashes.
      *
      * @param uriPart
      *         The URI part to be appended.
@@ -148,19 +155,24 @@ public class Link {
     }
 
 
-    public Link expand(Object... variables) {
-        String newHref = UriExpander.expand(this.href, variables);
+    public Link expand(Object... parameters) {
+        String newHref = UriExpander.expand(this.href, parameters);
         return this.withHref(newHref);
     }
 
-    public Link expand(Map<String, Object> variables) {
-        String newHref = UriExpander.expand(this.href, variables);
+    public Link expand(Map<String, Object> parameters, boolean collectionRenderedAsComposite) {
+        String newHref = UriExpander.expand(this.href, parameters, collectionRenderedAsComposite);
+        return this.withHref(newHref);
+    }
+
+    public Link expand(Map<String, Object> parameters) {
+        String newHref = UriExpander.expand(this.href, parameters, false);
         return this.withHref(newHref);
     }
 
 
     private Link(String href) {
-        this(null, href, null, null, null, null, null, null, null, null);
+        this(null, href, null, null, null, null, null, null, null);
     }
 
     /**
@@ -187,7 +199,7 @@ public class Link {
      */
     public static Link of(IanaRelation relation, String href) {
         Assert.notNull(relation, "relation must not be null");
-        return new Link(LinkRelation.of(relation), href, null, null, null, null, null, null, null, null);
+        return new Link(LinkRelation.of(relation), href, null, null, null, null, null, null, null);
     }
 
     /**
@@ -214,7 +226,7 @@ public class Link {
     public Link withRel(String relation) {
         Assert.hasText(relation, valueNotAllowedToBeEmpty("relation"));
         return new Link(LinkRelation.of(relation), this.href, this.title, this.name, this.media, this.type,
-                this.templated, this.deprecation, this.profile, this.hreflang);
+                this.deprecation, this.profile, this.hreflang);
     }
 
 
@@ -229,7 +241,7 @@ public class Link {
     public Link withRel(IanaRelation relation) {
         Assert.notNull(relation, "relation must not be null");
         return new Link(LinkRelation.of(relation), this.href, this.title, this.name, this.media, this.type,
-                this.templated, this.deprecation, this.profile, this.hreflang);
+                this.deprecation, this.profile, this.hreflang);
     }
 
     /**
@@ -251,7 +263,7 @@ public class Link {
      * @return A new {@link Link} object with the updated href.
      */
     public Link withHref(String href) {
-        return new Link(this.linkRelation, href, this.title, this.name, this.media, this.type, this.templated,
+        return new Link(this.linkRelation, href, this.title, this.name, this.media, this.type,
                 this.deprecation, this.profile, this.hreflang);
     }
 
@@ -264,7 +276,7 @@ public class Link {
      * @return A new {@link Link} object with the updated title.
      */
     public Link withTitle(String title) {
-        return new Link(this.linkRelation, this.href, title, this.name, this.media, this.type, this.templated,
+        return new Link(this.linkRelation, this.href, title, this.name, this.media, this.type,
                 this.deprecation, this.profile, this.hreflang);
     }
 
@@ -277,7 +289,7 @@ public class Link {
      * @return A new {@link Link} object with the updated name.
      */
     public Link withName(String name) {
-        return new Link(this.linkRelation, this.href, this.title, name, this.media, this.type, this.templated,
+        return new Link(this.linkRelation, this.href, this.title, name, this.media, this.type,
                 this.deprecation, this.profile, this.hreflang);
     }
 
@@ -290,7 +302,7 @@ public class Link {
      * @return A new {@link Link} object with the updated media type.
      */
     public Link withMedia(String media) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated,
+        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type,
                 this.deprecation, this.profile, this.hreflang);
     }
 
@@ -304,7 +316,7 @@ public class Link {
      * @return A new {@link Link} object with the updated templated flag.
      */
     public Link withTemplated(boolean templated) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, templated,
+        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type,
                 this.deprecation, this.profile, this.hreflang);
     }
 
@@ -318,7 +330,7 @@ public class Link {
      * @return A new {@link Link} object with the updated deprecation URL.
      */
     public Link withDeprecation(String deprecation) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated,
+        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type,
                 deprecation, this.profile, this.hreflang);
     }
 
@@ -332,7 +344,7 @@ public class Link {
      * @return A new {@link Link} object with the updated profile.
      */
     public Link withProfile(String profile) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated,
+        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type,
                 this.deprecation, profile, this.hreflang);
     }
 
@@ -346,7 +358,7 @@ public class Link {
      * @return A new {@link Link} object with the updated language code.
      */
     public Link withHreflang(String hreflang) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type, this.templated,
+        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type,
                 this.deprecation, this.profile, hreflang);
     }
 }

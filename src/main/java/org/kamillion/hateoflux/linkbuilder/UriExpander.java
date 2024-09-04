@@ -48,12 +48,13 @@ public class UriExpander {
             // Encode keys and values to ensure they are URL safe
             String key = encode(parameter.getName(), UTF_8);
             if (parameter.isCollection()) {
-                if (parameter.isSpecifiedAsComposite()) {
-                    for (String value : parameter.getValues()) {
+                List<String> listOfValues = parameter.getListOfValues();
+                if (parameter.isRenderedAsComposite()) {
+                    for (String value : listOfValues) {
                         joiner.add(key + "=" + value);
                     }
                 } else {
-                    String aggregateValues = parameter.getValues().stream()
+                    String aggregateValues = listOfValues.stream()
                             .filter(Objects::nonNull)
                             .map(v -> encode(v, UTF_8))
                             .collect(Collectors.joining(","));
@@ -66,20 +67,27 @@ public class UriExpander {
         return joiner.toString();
     }
 
-    public static String constructExpandedQueryParameterUriPart(Map<String, ?> parameters) {
+
+    public static String constructExpandedQueryParameterUriPart(Map<String, ?> parameters,
+                                                                boolean collectionRenderedAsComposite) {
         if (parameters == null || parameters.isEmpty()) {
             return "";
         }
 
-        StringJoiner joiner = new StringJoiner("&", "?", "");
-
+        //convert to list of query parameters
+        List<QueryParameter> queryParameterList = new ArrayList<>();
         for (var entry : parameters.entrySet()) {
-            // Encode keys and values to ensure they are URL safe
-            String key = encode(entry.getKey(), UTF_8);
-            String value = encode(entry.getValue().toString(), UTF_8);
-            joiner.add(key + "=" + value);
+            var builder = QueryParameter.builder();
+            builder.name(entry.getKey());
+            Object value = entry.getValue();
+            if (value instanceof Collection<?> valueAsCollection) {
+                builder.listOfValues(valueAsCollection, collectionRenderedAsComposite);
+            } else {
+                builder.value(value);
+            }
+            queryParameterList.add(builder.build());
         }
-        return joiner.toString();
+        return constructExpandedQueryParameterUriPart(queryParameterList);
     }
 
 
@@ -102,8 +110,8 @@ public class UriExpander {
 
         assertConsistentParameterArray(uriAsTemplate, parameters, uriTemplateData);
 
-        List<String> pathParameterNames = uriTemplateData.getPathParameters();
-        List<String> queryParameterNames = uriTemplateData.getQueryParameters();
+        List<String> pathParameterNames = uriTemplateData.getPathParameterNames();
+        List<String> queryParameterNames = uriTemplateData.getQueryParameterNames();
 
         //We expect the parameters to be in order, with path parameters provided first, followed by query parameters
         UriTemplate uriTemplate = new UriTemplate(uriTemplateData.getUriTemplateWithoutQueryParameters());
@@ -114,7 +122,9 @@ public class UriExpander {
             Map<String, Object> queryParameterMap =
                     createQueryParameterMap(parameters, pathParameterNames, queryParameterNames);
 
-            queryParameterUriPart = constructExpandedQueryParameterUriPart(queryParameterMap);
+            //collectionRenderedAsComposite is set as false but is not used anyway because in this expand method it is
+            //not possible to have exploded parameters
+            queryParameterUriPart = constructExpandedQueryParameterUriPart(queryParameterMap, false);
         }
 
         return expandedUriWithPathParametersOnly + queryParameterUriPart;
@@ -167,18 +177,23 @@ public class UriExpander {
      *
      * // Outputs: /users/15/activity
      * </pre></blockquote>
+     * <p>
+     * TODO explodedParam
      *
      * @param uriAsTemplate
      *         the URI template containing placeholders
      * @param parameters
      *         a map containing key-value pairs where keys match the placeholders' names
+     * @param collectionRenderedAsComposite
+     *         TODO
      * @return the expanded or original URI
      *
      * @throws IllegalArgumentException
      *         if any placeholders are unmatched or if there are mismatches in the number of
      *         arguments
      */
-    public static String expand(String uriAsTemplate, Map<String, ?> parameters) {
+    public static String expand(String uriAsTemplate, Map<String, ?> parameters,
+                                boolean collectionRenderedAsComposite) {
         UriTemplateData uriTemplateData = UriTemplateData.of(uriAsTemplate);
         if ((parameters == null || parameters.isEmpty())) {
             if (!uriTemplateData.isTemplated()) {
@@ -200,23 +215,42 @@ public class UriExpander {
         UriTemplate uriTemplate = new UriTemplate(uriTemplateData.getUriTemplateWithoutQueryParameters());
         URI expandedUriWithPathParametersOnly = uriTemplate.expand(parameters);
 
-        List<String> queryParameterNames = uriTemplateData.getQueryParameters();
+        List<String> queryParameterNames = uriTemplateData.getQueryParameterNames();
         Map<String, ?> queryParameters = filterAccordingToWhitelist(queryParameterNames, parameters);
-        String queryParameterUriPart = constructExpandedQueryParameterUriPart(queryParameters);
+        String queryParameterUriPart = constructExpandedQueryParameterUriPart(
+                queryParameters, collectionRenderedAsComposite);
 
         return expandedUriWithPathParametersOnly + queryParameterUriPart;
     }
 
+    /**
+     * TODO
+     *
+     * @param uriAsTemplate
+     * @param parameters
+     * @return
+     */
+    public static String expand(String uriAsTemplate, Map<String, ?> parameters) {
+        return expand(uriAsTemplate, parameters, false);
+    }
+
     private static void assertConsistentParameterArray(String uriAsTemplate, Object[] parameters,
                                                        UriTemplateData uriTemplateData) {
+        if (uriTemplateData.hasExplodedQueryParameters()) {
+            throw new IllegalArgumentException(format("Exploded query parameters cannot be expanded using only " +
+                    "values. Use expansion method that assigns values to dedicated parameters. " +
+                    "Template was '%s'", uriAsTemplate));
+        }
+
         String parameterValues = Arrays.stream(parameters).map(Object::toString).collect(Collectors.joining(","));
+
         if (parameters.length > uriTemplateData.getTotalNumberOfParameters()) {
             throw new IllegalArgumentException(format("Provided more parameters for URI template expansion than " +
                             "expected. Template was '%s', parameter values were [%s]",
                     uriAsTemplate, parameterValues));
         }
 
-        if (parameters.length < uriTemplateData.getPathParameters().size()) {
+        if (parameters.length < uriTemplateData.getPathParameterNames().size()) {
             throw new IllegalArgumentException(format(
                     "Not enough mandatory path parameters provided for URI template expansion. " +
                             "Template was '%s', parameter values were [%s]",
@@ -243,6 +277,19 @@ public class UriExpander {
                             "Template was '%s', parameters were %s", originalUriTemplate, parameters));
 
         }
+
+        for (var parameterName : parameterNamesToTest) {
+            Object parameterValue = parameters.get(parameterName);
+            if (parameterValue instanceof Collection<?>) {
+                if (!uriTemplateData.isExplodedQueryParameter(parameterName)) {
+                    throw new IllegalArgumentException(format(
+                            "Detected a collection as value for a parameter, but parameter was not exploded in " +
+                                    "template (asterisk after parameter name e.g. {?var*}). " +
+                                    "Template was '%s', parameters were %s", originalUriTemplate, parameters
+                    ));
+                }
+            }
+        }
     }
 
     private static Map<String, ?> filterAccordingToWhitelist(List<String> parameterWhiteList, Map<String,
@@ -252,10 +299,10 @@ public class UriExpander {
         }
 
         if (parameterWhiteList == null || parameterWhiteList.isEmpty()) {
-            return new HashMap<>();
+            return new LinkedHashMap<>();
         }
 
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new LinkedHashMap<>();
         for (var whiteListedParameter : parameterWhiteList) {
             for (var key : parameters.keySet()) {
                 if (whiteListedParameter.equals(key)) {

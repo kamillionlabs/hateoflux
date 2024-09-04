@@ -18,31 +18,81 @@
 
 package org.kamillion.hateoflux.linkbuilder;
 
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * @author Younes El Ouarti
  */
 @Data
-@Builder
 public class QueryParameter {
 
-    @Builder.Default
     private String name = "";
 
-    @Builder.Default
-    private List<String> values = new ArrayList<>();
+    private List<String> listOfValues = new ArrayList<>();
 
     private boolean isCollection;
 
-    private boolean isSpecifiedAsComposite;
+    private boolean isRenderedAsComposite;
 
     public String getValue() {
-        return values.isEmpty() ? "" : values.get(0);
+        return listOfValues.isEmpty() ? "" : listOfValues.get(0);
     }
 
+    private QueryParameter(String name, List<String> listOfValues, boolean isCollection,
+                           boolean isRenderedAsComposite) {
+        this.name = name;
+        this.listOfValues = listOfValues;
+        this.isCollection = isCollection;
+        this.isRenderedAsComposite = isRenderedAsComposite;
+    }
+
+    public QueryParameter of(String name, String value) {
+        return new QueryParameter(name, List.of(value), false, false);
+    }
+
+    public QueryParameter of(String name, List<String> values, boolean isRenderedAsComposite) {
+        return new QueryParameter(name, values, true, isRenderedAsComposite);
+    }
+
+    public static QueryParameterBuilder builder() {
+        return new QueryParameterBuilder();
+    }
+
+    public static class QueryParameterBuilder {
+        private String name = "";
+        private List<String> values = new ArrayList<>();
+        private boolean isCollection = false;
+        private boolean isSpecifiedAsComposite = false;
+
+        public QueryParameterBuilder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public QueryParameterBuilder value(String value) {
+            this.values = List.of(value);
+            this.isCollection = false;
+            this.isSpecifiedAsComposite = false;
+            return this;
+        }
+
+        public QueryParameterBuilder value(Object value) {
+            return value(String.valueOf(value));
+        }
+
+        public QueryParameterBuilder listOfValues(Collection<?> values, boolean isRenderedAsComposite) {
+            this.values = values == null ? List.of() : values.stream().map(String::valueOf).toList();
+            this.isCollection = true;
+            this.isSpecifiedAsComposite = isRenderedAsComposite;
+            return this;
+        }
+
+        public QueryParameter build() {
+            return new QueryParameter(name, values, isCollection, isSpecifiedAsComposite);
+        }
+    }
 }

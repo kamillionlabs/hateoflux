@@ -22,7 +22,7 @@ import org.kamillion.hateoflux.model.hal.HalEmbeddedWrapper;
 import org.kamillion.hateoflux.model.hal.HalEntityWrapper;
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
 import org.kamillion.hateoflux.model.hal.HalPageInfo;
-import org.kamillion.hateoflux.utility.Pairs;
+import org.kamillion.hateoflux.utility.PairList;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
@@ -37,12 +37,12 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
         SealedEntityListAssemblerModule<EntityT, EmbeddedT>,
         SealedEmbeddedLinkAssemblerModule<EmbeddedT> {
 
-    default HalListWrapper<EntityT, EmbeddedT> toListWrapper(@NonNull Pairs<EntityT, EmbeddedT> entitiesToWrap,
+    default HalListWrapper<EntityT, EmbeddedT> toListWrapper(@NonNull PairList<EntityT, EmbeddedT> entitiesToWrap,
                                                              ServerWebExchange exchange) {
         return toPagedListWrapper(entitiesToWrap, null, exchange);
     }
 
-    default HalListWrapper<EntityT, EmbeddedT> toPagedListWrapper(@NonNull Pairs<EntityT, EmbeddedT> entitiesToWrap,
+    default HalListWrapper<EntityT, EmbeddedT> toPagedListWrapper(@NonNull PairList<EntityT, EmbeddedT> entitiesToWrap,
                                                                   long totalElements,
                                                                   int pageSize,
                                                                   @Nullable Long offset,
@@ -52,7 +52,7 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
     }
 
 
-    default HalListWrapper<EntityT, EmbeddedT> toPagedListWrapper(@NonNull Pairs<EntityT, EmbeddedT> entitiesToWrap,
+    default HalListWrapper<EntityT, EmbeddedT> toPagedListWrapper(@NonNull PairList<EntityT, EmbeddedT> entitiesToWrap,
                                                                   @Nullable HalPageInfo pageInfo,
                                                                   ServerWebExchange exchange) {
         List<HalEntityWrapper<EntityT, EmbeddedT>> listOfWrappedEntitiesWithEmbedded =

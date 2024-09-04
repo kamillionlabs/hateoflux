@@ -33,6 +33,9 @@ class UriTemplateDataTest {
 
             //With multiple query parameters
             "/some-path/{?var1,var2}; -; var1|var2; /some-path/",
+
+            //Single exploded query parameter
+            "/some-path/{?var1*}; -; var1; /some-path/",
     })
     void givenTemplatedUri_whenConstructorCalled_ThenCorrectlyInitialize(String uri,
                                                                          String expectedPathParams,
@@ -49,8 +52,8 @@ class UriTemplateDataTest {
 
         //THEN
         assertThat(actualTemplate.getOriginalUriTemplate()).isEqualTo(uri);
-        assertThat(actualTemplate.getPathParameters()).containsExactly(expectedPathParamsArray);
-        assertThat(actualTemplate.getQueryParameters()).containsExactly(expectedQueryParamsArray);
+        assertThat(actualTemplate.getPathParameterNames()).containsExactly(expectedPathParamsArray);
+        assertThat(actualTemplate.getQueryParameterNames()).containsExactly(expectedQueryParamsArray);
         assertThat(actualTemplate.getUriTemplateWithoutQueryParameters()).isEqualTo(expectedPathWithoutQueryParams);
     }
 

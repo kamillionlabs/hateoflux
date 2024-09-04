@@ -13,6 +13,10 @@ rewritten accordingly.
     * Uses custom names for @PathVariable and @RequestParam
     * "templated" attribute is set depending on whether href is a template
     * Link.of(template string with _query_ parameters)
+* Query parameters (@RequestParam) can be collections
+    * Can be used either manually with Link.expand(href, map) or
+    * with linkTo() on a Controller method. @Composite can be used to influence rendering of the list of variables (akin
+      to Spring's @NonComposite)
 * Representation model equivalents
     * EntityModel
     * CollectionModel
@@ -25,9 +29,9 @@ rewritten accordingly.
 * Javadocs on:
     * assembler
     * Link.expand() (from UriExpander)
+    * Link getter (generate getter without lombok and move javadocs from attributes to the new getter)
 * linkTo()
     * Build links with base URL
-    * Query parameters (@RequestParam) for collections with distinction between with or without @NonComposite
 * Forwarded header handling
 
 ## Currently out of scope

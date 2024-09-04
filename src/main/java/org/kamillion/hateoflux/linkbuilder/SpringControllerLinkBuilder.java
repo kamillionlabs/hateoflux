@@ -18,6 +18,7 @@
 
 package org.kamillion.hateoflux.linkbuilder;
 
+import org.kamillion.hateoflux.model.hal.Composite;
 import org.kamillion.hateoflux.model.link.Link;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.stereotype.Controller;
@@ -93,14 +94,11 @@ public class SpringControllerLinkBuilder {
 
                 var builder = QueryParameter.builder()
                         .name(parameterName);
+
                 if (parameterValue instanceof Collection<?> collectionParameterValue) {
-                    builder.isCollection(true)
-                            .values(collectionParameterValue.stream().map(String::valueOf).toList())
-                            .isSpecifiedAsComposite(hasToBeExpandedAsComposite(parameter));
+                    builder.listOfValues(collectionParameterValue, hasToBeExpandedAsComposite(parameter));
                 } else {
-                    builder.values(List.of(String.valueOf(parameterValue)))
-                            .isCollection(false)
-                            .isSpecifiedAsComposite(false);
+                    builder.value(parameterValue);
                 }
                 queryParameters.add(builder.build());
             }
@@ -112,7 +110,8 @@ public class SpringControllerLinkBuilder {
     }
 
     private static boolean hasToBeExpandedAsComposite(Parameter parameter) {
-        return false;
+        return Optional.ofNullable(parameter.getAnnotation(Composite.class))
+                .isPresent(); //NonComposite is default
     }
 
     /**

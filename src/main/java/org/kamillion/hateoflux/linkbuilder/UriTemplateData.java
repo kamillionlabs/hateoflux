@@ -18,7 +18,11 @@
 
 package org.kamillion.hateoflux.linkbuilder;
 
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
+import org.kamillion.hateoflux.utility.Pair;
+import org.kamillion.hateoflux.utility.PairList;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -36,7 +40,8 @@ public class UriTemplateData {
 
     private static final Pattern PATH_VARIABLE_PATTERN = Pattern.compile("(?<!\\?)\\{([^?}]+)}");
 
-    private static final String QUERY_PARAMETER_PLACEHOLDER_REGEX = "\\{\\?([a-zA-Z0-9_-]+(?:,\\s*[a-zA-Z0-9_-]+)*)}$";
+    private static final String QUERY_PARAMETER_PLACEHOLDER_REGEX =
+            "\\{\\?([a-zA-Z0-9_-]+\\*?(?:,\\s*[a-zA-Z0-9_-]+\\*?)*)}$";
 
     private static final Pattern QUERY_VARIABLE_PATTERN = Pattern.compile(QUERY_PARAMETER_PLACEHOLDER_REGEX);
 
@@ -44,10 +49,14 @@ public class UriTemplateData {
 
     private String uriTemplateWithoutQueryParameters = "";
 
-    private List<String> pathParameters = new ArrayList<>();
+    private List<String> pathParameterNames = new ArrayList<>();
 
-    private List<String> queryParameters = new ArrayList<>();
+    @Getter(AccessLevel.PRIVATE)
+    private PairList<String, Boolean> queryParameterNamesByExplodability = new PairList<>();
 
+    public List<String> getQueryParameterNames() {
+        return queryParameterNamesByExplodability.getLefts();
+    }
 
     public static UriTemplateData of(String originalUriTemplate) {
         return new UriTemplateData(originalUriTemplate);
@@ -57,41 +66,59 @@ public class UriTemplateData {
         if (uriTemplate != null && !uriTemplate.isEmpty()) {
             this.originalUriTemplate = uriTemplate;
             this.uriTemplateWithoutQueryParameters = uriTemplate.replaceAll(QUERY_PARAMETER_PLACEHOLDER_REGEX, "");
-            this.pathParameters = extractPathParameters(uriTemplate);
-            this.queryParameters = extractQueryParameters(uriTemplate);
+            this.pathParameterNames = extractPathParameters(uriTemplate);
+            this.queryParameterNamesByExplodability = extractQueryParametersByExplodability(uriTemplate);
         }
     }
 
+    public boolean hasExplodedQueryParameters() {
+        return queryParameterNamesByExplodability.getRights().stream()
+                .anyMatch(p -> p); // is any boolean in the list true?
+    }
+
+    public boolean isExplodedQueryParameter(String parameterName) {
+        return queryParameterNamesByExplodability.stream()
+                .filter(Pair::right) // when right==true --> is explodable
+                .anyMatch(p -> p.left().equals(parameterName));
+    }
+
     public boolean hasOnlyQueryParameters() {
-        return pathParameters.isEmpty() && !queryParameters.isEmpty();
+        return pathParameterNames.isEmpty() && !queryParameterNamesByExplodability.isEmpty();
     }
 
     public boolean doesNotIncludeAllPathParameters(Set<String> parameterNamesToTest) {
-        return !parameterNamesToTest.containsAll(pathParameters);
+        return !parameterNamesToTest.containsAll(pathParameterNames);
     }
 
     public boolean includesUnknownParameters(Set<String> parameterNamesToTest) {
         Set<String> mergedParameters = new HashSet<>();
-        mergedParameters.addAll(pathParameters);
-        mergedParameters.addAll(queryParameters);
+        mergedParameters.addAll(pathParameterNames);
+        mergedParameters.addAll(getQueryParameterNames());
 
         return parameterNamesToTest.stream().anyMatch(p -> !mergedParameters.contains(p));
     }
 
     public int getTotalNumberOfParameters() {
-        return pathParameters.size() + queryParameters.size();
+        return pathParameterNames.size() + queryParameterNamesByExplodability.size();
     }
 
 
-    private List<String> extractQueryParameters(String uriTemplate) {
+    private PairList<String, Boolean> extractQueryParametersByExplodability(String uriTemplate) {
         Matcher queryParameterMatcher = QUERY_VARIABLE_PATTERN.matcher(uriTemplate);
         if (queryParameterMatcher.find()) {
             String parameters = queryParameterMatcher.group(1);
             String[] parameterNames = parameters.split(",");
-            List<String> result = Arrays.stream(parameterNames).toList();
-            boolean hasNoWhiteSpaceInVariableName = result.stream().allMatch(var -> {
-                String trimmedVar = var.trim();
-                return trimmedVar.equals(var);
+            List<Pair<String, Boolean>> listOfPairs = Arrays.stream(parameterNames)
+                    .map(p -> {
+                        boolean explodable = p.contains("*");
+                        String name = p.replaceAll("\\*", "");
+                        return Pair.of(name, explodable);
+                    }).toList();
+            PairList<String, Boolean> result = PairList.of(listOfPairs);
+            boolean hasNoWhiteSpaceInVariableName = result.stream().allMatch(pair -> {
+                String parameterName = pair.left();
+                String trimmedParameter = parameterName.trim();
+                return trimmedParameter.equals(parameterName);
             });
             Assert.isTrue(hasNoWhiteSpaceInVariableName,
                     format("Leading or trailing whitespace in any query parameter is not allowed (also before or " +
@@ -99,7 +126,7 @@ public class UriTemplateData {
             return result;
         }
 
-        return new ArrayList<>();
+        return PairList.of();
     }
 
     private List<String> extractPathParameters(String uriTemplate) {

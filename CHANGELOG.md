@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0]
+
+### Added
+
+* Query parameters can now be collections
+* @Composite can be used on Controller classes to render query parameter lists as a composite
+  (e.g. ?var=1&var=2 as opposed to ?var=1,2)
+
+### Changed
+
+* Renamed Pairs to PairList
+
+### Fixed
+
+* Link#templated is now only read dynamically and not directly settable
+
 ## [0.4.0]
 
 ### Added

@@ -9,7 +9,7 @@ import org.kamillion.hateoflux.model.hal.HalListWrapper;
 import org.kamillion.hateoflux.model.hal.HalPageInfo;
 import org.kamillion.hateoflux.model.link.IanaRelation;
 import org.kamillion.hateoflux.model.link.Link;
-import org.kamillion.hateoflux.utility.Pairs;
+import org.kamillion.hateoflux.utility.PairList;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.util.List;
@@ -149,7 +149,7 @@ class EmbeddingHalWrapperAssemblerTest {
 
         //WHEN
         HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.toListWrapper(
-                Pairs.of(entity, embedded,
+                PairList.of(entity, embedded,
                         entity, embedded),
                 null
         );
@@ -186,7 +186,7 @@ class EmbeddingHalWrapperAssemblerTest {
 
         //WHEN
         HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.toPagedListWrapper(
-                Pairs.of(entity, embedded,
+                PairList.of(entity, embedded,
                         entity, embedded),
                 100L,
                 2,
@@ -221,7 +221,7 @@ class EmbeddingHalWrapperAssemblerTest {
 
         //WHEN
         HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.toPagedListWrapper(
-                Pairs.of(entity, embedded,
+                PairList.of(entity, embedded,
                         entity, embedded),
                 HalPageInfo.assemble(30, 1000L, 10, 20L),
                 null
