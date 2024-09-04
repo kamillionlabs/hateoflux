@@ -6,6 +6,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.kamillion.hateoflux.model.link.Link;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -65,6 +66,19 @@ class LinkTest {
         Link link = Link.of("http://example.com/{someId}");
         Link actual = link.expand(Map.of("someId", 54));
         assertThat(actual.getHref()).isEqualTo("http://example.com/54");
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = {
+            "true; http://example.com?keyWords=blue&keyWords=red",
+            "false; http://example.com?keyWords=blue,red"
+    })
+    public void givenMapToExpandWithExplodedParameter_whenExpand_thenPlaceholdersCorrectlySet(
+            boolean collectionRenderedAsComposite, String expectedUri) {
+        Link link = Link.of("http://example.com{?keyWords*}");
+        Map<String, Object> parameters = Map.of("keyWords", List.of("blue", "red"));
+        Link actual = link.expand(parameters, collectionRenderedAsComposite);
+        assertThat(actual.getHref()).isEqualTo(expectedUri);
     }
 
 }

@@ -45,7 +45,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
     }
 
     @JsonProperty("_links")
-    private Map<LinkRelation, Link> getCopyOfAllLinksAsMap() {
+    private Map<LinkRelation, Link> getLinksForJsonRendering() {
         return new HashMap<>(this.links);
     }
 

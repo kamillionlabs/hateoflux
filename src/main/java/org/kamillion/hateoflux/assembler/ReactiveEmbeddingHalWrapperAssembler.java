@@ -21,7 +21,7 @@ package org.kamillion.hateoflux.assembler;
 import org.kamillion.hateoflux.model.hal.HalEntityWrapper;
 import org.kamillion.hateoflux.model.hal.HalListWrapper;
 import org.kamillion.hateoflux.utility.Pair;
-import org.kamillion.hateoflux.utility.Pairs;
+import org.kamillion.hateoflux.utility.PairList;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
@@ -39,7 +39,7 @@ public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extend
     default Mono<HalListWrapper<EntityT, EmbeddedT>> toListWrapper(@NonNull Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap,
                                                                    ServerWebExchange exchange) {
         return convertToPairs(entitiesToWrap)
-                .map(pairs -> toListWrapper(pairs, exchange));
+                .map(pairList -> toListWrapper(pairList, exchange));
     }
 
     default Mono<HalListWrapper<EntityT, EmbeddedT>> toPagedListWrapper(@NonNull Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap,
@@ -47,14 +47,14 @@ public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extend
                                                                         int pageSize,
                                                                         @Nullable Long offset,
                                                                         ServerWebExchange exchange) {
-        Mono<Pairs<EntityT, EmbeddedT>> entitiesAsPairs = convertToPairs(entitiesToWrap);
+        Mono<PairList<EntityT, EmbeddedT>> entitiesAsPairs = convertToPairs(entitiesToWrap);
         return Mono.zip(entitiesAsPairs, totalElements,
                 (entities, total) -> toPagedListWrapper(entities, total, pageSize, offset, exchange));
     }
 
 
-    private Mono<Pairs<EntityT, EmbeddedT>> convertToPairs(@NonNull Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap) {
-        return entitiesToWrap.collect(Pairs::new, Pairs::add);
+    private Mono<PairList<EntityT, EmbeddedT>> convertToPairs(@NonNull Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap) {
+        return entitiesToWrap.collect(PairList::new, PairList::add);
     }
 
 

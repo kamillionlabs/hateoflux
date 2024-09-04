@@ -1,9 +1,14 @@
 package org.kamillion.hateoflux.linkbuilder;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.kamillion.hateoflux.dummy.controller.DummyController;
 import org.kamillion.hateoflux.model.link.Link;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -11,6 +16,59 @@ import static org.kamillion.hateoflux.linkbuilder.SpringControllerLinkBuilder.li
 
 
 class SpringControllerLinkBuilderTest {
+
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void givenPostMappingWithCompositeCollectionAsQueryParameter_whenProvidedEmptyOrNullValues_thenLinkUnchanged(List<String> args) {
+        //GIVEN & WHEN
+        Link link = linkTo(DummyController.class, c -> c.postMappingWithCollectionAsQueryParameter(args));
+
+        //THEN
+        assertThat(link.getHref()).isEqualTo("/dummy/names");
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = { //
+            "val1; ?names=val1",
+            "val1|val2; ?names=val1&names=val2"
+    })
+    void givenPostMappingWithCompositeCollectionAsQueryParameter_whenProvidedValues_thenLinkIsCorrect(
+            String args, String expectedQueryParameters) {
+        //GIVEN & WHEN
+        List<String> argsAsList = Arrays.stream(args.split("\\|")).toList();
+        Link link = linkTo(DummyController.class,
+                c -> c.postMappingWithCompositeCollectionAsQueryParameter(argsAsList));
+
+        //THEN
+        assertThat(link.getHref()).isEqualTo("/dummy/names" + expectedQueryParameters);
+    }
+
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void givenPostMappingWithCollectionAsQueryParameter_whenProvidedEmptyOrNullValues_thenLinkUnchanged(List<String> args) {
+        //GIVEN & WHEN
+        Link link = linkTo(DummyController.class, c -> c.postMappingWithCollectionAsQueryParameter(args));
+
+        //THEN
+        assertThat(link.getHref()).isEqualTo("/dummy/names");
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = { //
+            "val1; ?names=val1",
+            "val1|val2; ?names=val1,val2"
+    })
+    void givenPostMappingWithCollectionAsQueryParameter_whenProvidedValues_thenLinkIsCorrect(
+            String args, String expectedQueryParameters) {
+        //GIVEN & WHEN
+        List<String> argsAsList = Arrays.stream(args.split("\\|")).toList();
+        Link link = linkTo(DummyController.class, c -> c.postMappingWithCollectionAsQueryParameter(argsAsList));
+
+        //THEN
+        assertThat(link.getHref()).isEqualTo("/dummy/names" + expectedQueryParameters);
+    }
 
 
     @Test

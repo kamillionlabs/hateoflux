@@ -18,6 +18,7 @@
 
 package org.kamillion.hateoflux.linkbuilder;
 
+import org.kamillion.hateoflux.model.hal.Composite;
 import org.kamillion.hateoflux.model.link.Link;
 import org.springframework.cglib.proxy.Enhancer;
 import org.springframework.stereotype.Controller;
@@ -26,10 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author Younes El Ouarti
@@ -70,13 +68,15 @@ public class SpringControllerLinkBuilder {
 
     private static String expandTemplatedPath(String fullPath, MethodCaptureInterceptor interceptor) {
         Map<String, Object> variables = new HashMap<>();
-        Map<String, Object> queryParameters = new HashMap<>();
+        List<QueryParameter> queryParameters = new ArrayList<>();
         Parameter[] parameters = interceptor.getCapturedMethod().getParameters();
         Object[] parameterValues = interceptor.getCapturedArguments();
         for (int i = 0; i < parameters.length; i++) {
             Parameter parameter = parameters[i];
             Object parameterValue = parameterValues[i];
-            if (parameterValue == null) {
+            if (parameterValue == null
+                    || (parameterValue instanceof Collection
+                    && ((Collection<?>) parameterValue).isEmpty())) {
                 continue;
             }
             if (parameter.isAnnotationPresent(PathVariable.class)) {
@@ -91,9 +91,17 @@ public class SpringControllerLinkBuilder {
                         .map(RequestParam::value) //
                         .filter(n -> !n.isEmpty()) //
                         .orElse(parameter.getName());
-                queryParameters.put(parameterName, parameterValue);
-            }
 
+                var builder = QueryParameter.builder()
+                        .name(parameterName);
+
+                if (parameterValue instanceof Collection<?> collectionParameterValue) {
+                    builder.listOfValues(collectionParameterValue, hasToBeExpandedAsComposite(parameter));
+                } else {
+                    builder.value(parameterValue);
+                }
+                queryParameters.add(builder.build());
+            }
         }
         fullPath = UriExpander.expand(fullPath, variables);
         fullPath = appendQueryParams(fullPath, queryParameters);
@@ -101,20 +109,25 @@ public class SpringControllerLinkBuilder {
         return fullPath;
     }
 
+    private static boolean hasToBeExpandedAsComposite(Parameter parameter) {
+        return Optional.ofNullable(parameter.getAnnotation(Composite.class))
+                .isPresent(); //NonComposite is default
+    }
+
     /**
      * Appends query parameters to a given URI based on a map of arguments.
      *
      * @param uriToAppendTo
-     *         The base URI to which query parameters will be appended.
-     * @param args
-     *         The map containing query parameters and their values.
+     *         base URI to which query parameters will be appended.
+     * @param queryParameters
+     *         list containing query parameters and their values.
      * @return A URI string with appended query parameters.
      */
-    private static String appendQueryParams(String uriToAppendTo, Map<String, Object> args) {
-        if (args == null || args.isEmpty()) {
+    private static String appendQueryParams(String uriToAppendTo, List<QueryParameter> queryParameters) {
+        if (queryParameters == null || queryParameters.isEmpty()) {
             return uriToAppendTo;
         }
-        String expandedQueryParameterUriPart = UriExpander.constructExpandedQueryParameterUriPart(args);
+        String expandedQueryParameterUriPart = UriExpander.constructExpandedQueryParameterUriPart(queryParameters);
         return uriToAppendTo + expandedQueryParameterUriPart;
     }
 
