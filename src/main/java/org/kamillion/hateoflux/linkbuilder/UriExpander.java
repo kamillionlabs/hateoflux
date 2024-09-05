@@ -30,13 +30,45 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Utility class for expanding URI templates. Provides methods to expand URI templates using either ordered parameters
- * or named parameters from a map. The class handles templates indicated by placeholders enclosed in curly braces {}. If
- * a provided URI string does not contain placeholders, it is returned as is.
+ * or named parameters from a map. The class handles templates indicated by placeholders enclosed in curly braces {}.
  *
  * @author Younes El Ouarti
  */
 public class UriExpander {
 
+    /**
+     * Constructs a URL-encoded query string from a list of query parameters. This method supports both single values
+     * and collections of values. Collections are encoded as multiple key-value pairs or as a single key with a
+     * comma-separated list
+     * of values, depending on the properties of each {@link QueryParameter} object.
+     * <p>
+     * <b>Example usages:</b><br>
+     * <i>Query Parameters with Composite Rendering ({@code true})</i>
+     * <blockquote><pre>
+     * List<QueryParameter> params = List.of(
+     *     QueryParameter.of("size", "medium"),
+     *     QueryParameter.of("color", List.of("blue", "green"), true)
+     * );                                                       ^^^^
+     * String uriPart = constructExpandedQueryParameterUriPart(params);
+     *
+     * // Expected output: ?size=medium&color=blue&color=green
+     * </pre></blockquote>
+     * <p>
+     * <i>Query Parameters with Non-Composite Rendering ({@code false})</i>
+     * <blockquote><pre>
+     * List<QueryParameter> params = List.of(
+     *     QueryParameter.of("author", "johndoe"),
+     *     QueryParameter.of("tag", List.of("fit", "gym"), false)
+     * );                                                  ^^^^^
+     * String uriPart = constructExpandedQueryParameterUriPart(params);
+     *
+     * // Expected output: ?author=johndoe&tag=fit,gym
+     * </pre></blockquote>
+     *
+     * @param parameters
+     *         a list of {@link QueryParameter} objects representing the query parameters to be included in the URI part
+     * @return a string representing the URI part constructed from the query parameters
+     */
     public static String constructExpandedQueryParameterUriPart(List<QueryParameter> parameters) {
         if (parameters == null || parameters.isEmpty()) {
             return "";
@@ -67,6 +99,42 @@ public class UriExpander {
         return joiner.toString();
     }
 
+    /**
+     * Constructs a URL-encoded query string from a map of parameters. It supports both single values and collections
+     * of values, with the output depending on the {@code collectionRenderedAsComposite} flag, which dictates whether
+     * collections are rendered in a composite or non-composite way.
+     * <p>
+     * <b>Example usages:</b><br>
+     * <i>Query Parameters with Composite Rendering ({@code true})</i>
+     * <blockquote><pre>
+     * Map<String, Object> params = Map.of(
+     *     "size", "medium",
+     *     "color", List.of("blue", "green")
+     * );
+     * var o = constructExpandedQueryParameterUriPart(params, true);
+     *                                                        ^^^^
+     * // Expected output: ?size=medium&color=blue&color=green
+     * </pre></blockquote>
+     * <p>
+     * <i>Query Parameters with Non-Composite Rendering ({@code false})</i>
+     * <blockquote><pre>
+     * Map<String, Object> params = Map.of(
+     *     "author", "johndoe",
+     *     "tag", List.of("fit", "gym")
+     * );
+     * var o =constructExpandedQueryParameterUriPart(params, false);
+     *                                                       ^^^^^
+     * // Expected output: ?author=johndoe&tag=fit,gym
+     * </pre></blockquote>
+     *
+     * @param parameters
+     *         a map where each entry consists of a parameter name and its associated value(s), either as a single value
+     *         or a collection
+     * @param collectionRenderedAsComposite
+     *         a boolean flag that determines whether collections of values are rendered in a composite (true) or
+     *         non-composite (false) way
+     * @return a string representing the URI part constructed from the query parameters
+     */
 
     public static String constructExpandedQueryParameterUriPart(Map<String, ?> parameters,
                                                                 boolean collectionRenderedAsComposite) {
@@ -91,6 +159,36 @@ public class UriExpander {
     }
 
 
+    /**
+     * Expands the URI template using a list of anonymous parameters provided in the order they appear within the
+     * template. Placeholders for parameters follow the structure suggested by RFC6570. Given that {@code var} is a
+     * placeholder, i.e., a templated variable, the following applies:
+     * <ol>
+     *     <li>{@code {var}} is a mandatory variable.</li>
+     *     <li>{@code {?var}} is an optional variable used specifically as a query parameter.</li>
+     *     <li>{@code {?var1,var2}} are two optional query parameters.</li>
+     * </ol>
+     * This method does not support exploded query parameters (if required use this {@link #expand(String, Map)
+     * expand()} instead).<br>
+     * <br>
+     * <p>
+     * <b>Example usage:</b>
+     * <blockquote><pre>
+     * String template = "/users/{userId}/posts{?limit,page}"
+     * String expanded = expand(template, 42, 10, 2);
+     *
+     * // Outputs: /users/42/posts?limit=10&page=2
+     * </pre></blockquote>
+     *
+     * @param uriAsTemplate
+     *         URI template containing placeholders
+     * @param parameters
+     *         a sequence of objects that correspond in order to the placeholders in the URI template
+     * @return the expanded or original URI if expansion is not applicable
+     *
+     * @throws IllegalArgumentException
+     *         if template and parameters are incompatible
+     */
     public static String expand(String uriAsTemplate, Object... parameters) {
         UriTemplateData uriTemplateData = UriTemplateData.of(uriAsTemplate);
         if (parameters == null || parameters.length == 0) {
@@ -145,52 +243,40 @@ public class UriExpander {
     }
 
     /**
-     * Expands the URI template using a map of named path or query parameters. If the template contains no placeholders,
-     * the original string is returned. Placeholders for query parameters follow the structure suggested by RFC6570.
-     * Given {@code var} is a templated variable this means:
-     * <ol>
-     *     <li>{@code {var}} is a mandatory variable</li>
-     *     <li>{@code {?var}} is an optional variable used specifically as query parameter</li>
-     *     <li>{@code {?var1,var2}} are 2 optional query parameters</li>
-     * </ol>
+     * Expands the URI template using a map of named path or query parameters. The full documentation can be found at
+     * {@link #expand(String, Map)}. This variation of {@code expand()} adds the ability to influence how exploded
+     * parameters are rendered when a collection is provided.
      * <p>
      * <b>Example usages:</b><br>
-     * <i>Path and Query Parameters</i>
-     * <blockquote><pre>
-     * Map<String, Object> map = Map.of("id", 15, "limit", 50, "page", 2);
-     * String expanded = UriExpander.expand("/users/{id}/activity{?limit,page}", map);
-     *
-     * // Outputs: /users/15/activity?limit=50&page=2
-     * </pre></blockquote>
      * <p>
-     * <i>Non Existing Query Parameters in Map</i>
+     * <i>Exploded Query Parameter with Non-Composite Rendering ({@code false})</i>
      * <blockquote><pre>
-     * Map<String, Object> map = Map.of("id", 15);
-     * String expanded = UriExpander.expand("/users/{id}/activity{?limit,page}", map);
-     *
-     * // Outputs: /users/15/activity
+     * var map = Map.of("keyWords", List.of("blue","active"));
+     * String expanded = expand("/users{?keyWords*}", map, false);
+     *                                                     ^^^^^
+     * // Outputs: /users?keyWords=blue,active
      * </pre></blockquote>
+     *
      * <p>
-     * <i>Query Parameters in Template with None Provided</i>
+     * <i>Exploded Query Parameter with Composite Rendering ({@code true})</i>
      * <blockquote><pre>
-     * String expanded = UriExpander.expand("/users/15/activity{?limit,page}", Map.of());
-     *
-     * // Outputs: /users/15/activity
+     * var map = Map.of("keyWords", List.of("blue","active"));
+     * String expanded = expand("/users{?keyWords*}", map, true);
+     *                                                     ^^^^
+     * // Outputs: /users?keyWords=blue&keyWords=active
      * </pre></blockquote>
-     * <p>
-     * TODO explodedParam
      *
      * @param uriAsTemplate
-     *         the URI template containing placeholders
+     *         URI template containing placeholders
      * @param parameters
-     *         a map containing key-value pairs where keys match the placeholders' names
+     *         a map containing key-value pairs where keys match the placeholders' names. Values for exploded parameters
+     *         can be a {@link Collection}.
      * @param collectionRenderedAsComposite
-     *         TODO
-     * @return the expanded or original URI
+     *         specifies whether the collection should be rendered as composite (true) or non-composite (false)
+     * @return the expanded or original URI if expansion is not applicable
      *
      * @throws IllegalArgumentException
-     *         if any placeholders are unmatched or if there are mismatches in the number of
-     *         arguments
+     *         if template and parameters are incompatible
      */
     public static String expand(String uriAsTemplate, Map<String, ?> parameters,
                                 boolean collectionRenderedAsComposite) {
@@ -223,12 +309,68 @@ public class UriExpander {
         return expandedUriWithPathParametersOnly + queryParameterUriPart;
     }
 
+
     /**
-     * TODO
+     * Expands the URI template using a map of named path or query parameters. If the template contains no
+     * placeholders, the original string is returned. Placeholders for parameters follow the structure suggested
+     * by RFC6570. Given that {@code var} is a placeholder, i.e., a templated variable, the following applies:
+     * <ol>
+     *     <li>{@code {var}} is a mandatory variable.</li>
+     *     <li>{@code {?var}} is an optional variable used specifically as a query parameter.</li>
+     *     <li>{@code {?var1,var2}} are two optional query parameters.</li>
+     *     <li>{@code {?var*}} is an exploded query parameter, i.e., it can represent a list.</li>
+     * </ol>
+     * <b>Hints on the explode modifier ('*'):</b><p>
+     * <ul>
+     *     <li>A collection of values is only allowed for query parameters.</li>
+     *     <li>To accept a collection as a value, a query parameter must be marked with the
+     *     explode modifier ('*' i.e., asterisk).</li>
+     *     <li>The expansion of exploded parameters is configurable via {@link #expand(String, Map, boolean)}. It can
+     *     be expanded in a composite or non-composite way.</li>
+     *     <li>This method expands parameters in a non-composite way by default
+     *     (e.g., ?var=1,2 as opposed to ?var=1&var=2).</li>
+     * </ul>
+     *
+     * <p>
+     * <b>Example usages:</b><br>
+     * <i>Path and Query Parameters</i>
+     * <blockquote><pre>
+     * var map = Map.of("id", 15,
+     *                  "limit", 50,
+     *                  "page", 2);
+     * String expanded = expand("/users/{id}/activity{?limit,page}", map);
+     *
+     * // Outputs: /users/15/activity?limit=50&page=2
+     * </pre></blockquote>
+     *
+     * <p>
+     * <i>Unused Query Parameters in Template</i>
+     * <blockquote><pre>
+     * var map = Map.of("id", 15);
+     * String expanded = expand("/users/{id}/activity{?limit,page}", map);
+     *
+     * // Outputs: /users/15/activity
+     * </pre></blockquote>
+     *
+     * <p>
+     * <i>Exploded Query Parameter</i>
+     * <blockquote><pre>
+     * var map = Map.of("keyWords", List.of("blue","active")
+     *                                      "page", 3));
+     * String expanded = expand("/users{?keyWords*,page}", map);
+     *
+     * // Outputs: /users?keyWords=blue,active&page=3
+     * </pre></blockquote>
      *
      * @param uriAsTemplate
+     *         URI template containing placeholders
      * @param parameters
-     * @return
+     *         a map containing key-value pairs, where keys match the placeholders' names. Values for exploded
+     *         parameters are allowed to be a {@link Collection}
+     * @return the expanded or original URI if expansion is not applicable
+     *
+     * @throws IllegalArgumentException
+     *         if template and parameters are incompatible
      */
     public static String expand(String uriAsTemplate, Map<String, ?> parameters) {
         return expand(uriAsTemplate, parameters, false);

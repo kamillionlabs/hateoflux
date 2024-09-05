@@ -28,8 +28,6 @@ rewritten accordingly.
 
 * Javadocs on:
     * assembler
-    * Link.expand() (from UriExpander)
-    * Link getter (generate getter without lombok and move javadocs from attributes to the new getter)
 * linkTo()
     * Build links with base URL
 * Forwarded header handling
