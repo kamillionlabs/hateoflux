@@ -47,13 +47,13 @@ class EmbeddingHalWrapperAssemblerTest {
     private final AssemblerUnderTest assemblerUnderTest = new AssemblerUnderTest();
 
     @Test
-    public void givenEntityWithEmbedded_whenToEntityWrapper_thenAllFieldsAreFilled() {
+    public void givenEntityWithEmbedded_whenWrapInEntityWrapper_thenAllFieldsAreFilled() {
         //GIVEN
         Book entity = new Book();
         Author embedded = new Author();
 
         //WHEN
-        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.toEntityWrapper(
+        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInEntityWrapper(
                 entity,
                 embedded,
                 null
@@ -81,13 +81,13 @@ class EmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenEntityWithEmbeddedList_whenToEntityWrapper_thenEmbeddedHas2Entities() {
+    public void givenEntityWithEmbeddedList_whenWrapInEntityWrapper_thenEmbeddedHas2Entities() {
         //GIVEN
         Book entity = new Book();
         Author embedded = new Author();
 
         //WHEN
-        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.toEntityWrapper(
+        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInEntityWrapper(
                 entity,
                 List.of(embedded, embedded),
                 null
@@ -100,13 +100,13 @@ class EmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenEntityWithEmbeddedEmptyListAndStringName_whenToEntityWrapper_thenEmbeddedHasGivenName() {
+    public void givenEntityWithEmbeddedEmptyListAndStringName_whenWrapInEntityWrapper_thenEmbeddedHasGivenName() {
         //GIVEN
         Book entity = new Book();
         String embeddedListName = "testEmbeddedListName";
 
         //WHEN
-        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.toEntityWrapper(
+        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInEntityWrapper(
                 entity,
                 embeddedListName,
                 List.of(),
@@ -121,13 +121,13 @@ class EmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenEntityWithEmbeddedEmptyListAndClassAsName_whenToEntityWrapper_thenEmbeddedHasGivenClassName() {
+    public void givenEntityWithEmbeddedEmptyListAndClassAsName_whenWrapInEntityWrapper_thenEmbeddedHasGivenClassName() {
         //GIVEN
         Book entity = new Book();
         Class<?> clazz = Book.class;
 
         //WHEN
-        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.toEntityWrapper(
+        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInEntityWrapper(
                 entity,
                 clazz,
                 List.of(),
@@ -142,13 +142,13 @@ class EmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenEntitiesEachWithEmbedded_whenToListWrapper_thenAllFieldsAreFilled() {
+    public void givenEntitiesEachWithEmbedded_whenWrapInListWrapper_thenAllFieldsAreFilled() {
         //GIVEN
         Book entity = new Book();
         Author embedded = new Author();
 
         //WHEN
-        HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.toListWrapper(
+        HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
                 PairList.of(entity, embedded,
                         entity, embedded),
                 null
@@ -179,13 +179,13 @@ class EmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenEntitiesAndADataForPageInfo_toPagedListWrapper_thenAllFieldsAreFilled() {
+    public void givenEntitiesAndADataForPageInfo_wrapInListWrapper_thenAllFieldsAreFilled() {
         //GIVEN
         Book entity = new Book();
         Author embedded = new Author();
 
         //WHEN
-        HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.toPagedListWrapper(
+        HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
                 PairList.of(entity, embedded,
                         entity, embedded),
                 100L,
@@ -214,13 +214,13 @@ class EmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenEntitiesAndAPageInfo_toPagedListWrapper_thenAllFieldsAreFilled() {
+    public void givenEntitiesAndAPageInfo_wrapInListWrapper_thenAllFieldsAreFilled() {
         //GIVEN
         Book entity = new Book();
         Author embedded = new Author();
 
         //WHEN
-        HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.toPagedListWrapper(
+        HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
                 PairList.of(entity, embedded,
                         entity, embedded),
                 HalPageInfo.assemble(30, 1000L, 10, 20L),
