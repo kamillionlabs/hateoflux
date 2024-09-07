@@ -33,7 +33,18 @@ import java.util.*;
 import static org.kamillion.hateoflux.utility.MessageTemplates.requiredValueWasNonExisting;
 import static org.kamillion.hateoflux.utility.MessageTemplates.valueNotAllowedToBeNull;
 
+
 /**
+ * Abstract base class for HAL wrappers, providing essential functionality for managing hypermedia links according to
+ * HAL (Hypertext Application Language) standards. This class facilitates the inclusion and handling of hypermedia
+ * links, crucial for API navigability.
+ * <p>
+ * {@link HalWrapper} includes utility functions to manage hypermedia links. These functions allow subclasses to add,
+ * and retrieve links, supporting structured implementation of HAL responses.
+ * <p>
+ * Subclasses are responsible for specific data implementations (e.g., entities, lists, pagination), using this class's
+ * link management capabilities.
+ *
  * @author Younes El Ouarti
  */
 @Data
@@ -49,33 +60,76 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
         return new HashMap<>(this.links);
     }
 
+    /**
+     * Get the list of links of the wrapped entity/entities.
+     *
+     * @return the list of links of the wrapped entity/entities.
+     */
     @JsonIgnore
     public List<Link> getLinks() {
         return new ArrayList<>(links.values());
     }
 
+
+    /**
+     * Get a specific link of the links of the wrapped entity/entities.
+     *
+     * @param relation
+     *         Relation with which the link to retrieve is identified
+     * @return Found link
+     */
     @JsonIgnore
     public Optional<Link> getLink(IanaRelation relation) {
         return Optional.ofNullable(links.get(LinkRelation.of(relation)));
     }
 
+    /**
+     * Get a specific link of the links of the wrapped entity/entities.
+     *
+     * @param relation
+     *         Relation with which the link to retrieve is identified
+     * @return Found link
+     */
     @JsonIgnore
     public Optional<Link> getLink(String relation) {
         return Optional.ofNullable(links.get(LinkRelation.of(relation)));
     }
 
+    /**
+     * Get a specific link of the links of the wrapped entity/entities. In contrast to {@link #getLink(IanaRelation)},
+     * this method assumes, that the link with the provided relation exists. Otherwise, an exception is thrown.
+     *
+     * @param relation
+     *         Relation with which the link to retrieve is identified
+     * @return Found link
+     */
     @JsonIgnore
     public Link getRequiredLink(IanaRelation relation) {
         return getLink(relation).orElseThrow(() -> new IllegalStateException(
                 requiredValueWasNonExisting("link with the relation '" + relation + "'")));
     }
 
+    /**
+     * Get a specific link of the links of the wrapped entity/entities. In contrast to {@link #getLink(IanaRelation)},
+     * this method assumes, that the link with the provided relation exists. Otherwise, an exception is thrown.
+     *
+     * @param relation
+     *         Relation with which the link to retrieve is identified
+     * @return Found link
+     */
     @JsonIgnore
     public Link getRequiredLink(String relation) {
         return getLink(relation).orElseThrow(() -> new IllegalStateException(
                 requiredValueWasNonExisting("link with the relation '" + relation + "'")));
     }
 
+    /**
+     * Adds {@link Link}s to the currently wrapped entity.
+     *
+     * @param links
+     *         links to add
+     * @return New wrapper with the added links
+     */
     public HalWrapperT withLinks(@Nullable Link... links) {
         if (links != null && links.length > 0) {
             Arrays.stream(links).forEach(this::add);
@@ -83,6 +137,13 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
         return (HalWrapperT) this;
     }
 
+    /**
+     * Adds {@link Link}s to the currently wrapped entity.
+     *
+     * @param links
+     *         links to add
+     * @return New wrapper with the added links
+     */
     public HalWrapperT withLinks(@Nullable Iterable<Link> links) {
         if (links != null && links.iterator().hasNext()) {
             add(links);

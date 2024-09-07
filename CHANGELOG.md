@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* Added JavaDocs on numerous classes however, mainly on assemblers and UriExpander
+* Added JavaDocs on numerous classes, notably on Assemblers, Wrappers and the UriExpander
 
 ### Changed
 

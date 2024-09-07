@@ -28,8 +28,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-//TODO: Add detail that it contains reactive and non reactive methods
-
 /**
  * Reactive interface for managing the transformation of standalone entities into HAL-compliant representations,
  * supplemented with hypermedia links in a reactive programming context. This interface is tailored for reactive

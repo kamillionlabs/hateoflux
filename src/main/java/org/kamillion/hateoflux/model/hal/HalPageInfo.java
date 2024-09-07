@@ -26,26 +26,89 @@ import org.springframework.lang.Nullable;
 import java.util.List;
 
 /**
- * @author Younes El Ouarti
+ * Represents pagination details in a hypermedia-driven format. This record provides necessary information to handle
+ * paging of large datasets, including the size of the current page, the total number of elements across all pages, the
+ * total number of pages, and the current page number.
+ *
+ * @param size
+ *         the number of elements in the current page
+ * @param totalElements
+ *         the total number of elements across all pages
+ * @param totalPages
+ *         the total number of pages
+ * @param number
+ *         the current page number, typically zero-based
  */
 @Builder
 @Jacksonized
 public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, Integer number) {
 
+    /**
+     * Creates a {@link HalPageInfo} instance using provided individual parameters.
+     *
+     * @param size
+     *         the size of the page
+     * @param totalElements
+     *         the total number of elements
+     * @param totalPages
+     *         the total number of pages calculated from total elements and page size
+     * @param number
+     *         the current page number
+     * @return a new instance of {@link HalPageInfo}
+     */
     public static HalPageInfo of(Integer size, Long totalElements, Integer totalPages, Integer number) {
         return new HalPageInfo(size, totalElements, totalPages, number);
     }
 
+    /**
+     * Computes pagination information based on a list of entities, total number of elements, and a given page size.
+     * This method assumes the initial page (offset is null).
+     *
+     * @param entities
+     *         the list of entities from which to calculate the current page size
+     * @param totalElements
+     *         the total number of elements
+     * @param pageSize
+     *         the size of each page
+     * @return a new instance of {@link HalPageInfo}
+     */
     public static HalPageInfo assemble(@NonNull List<?> entities, long totalElements, int pageSize) {
         return assemble(entities.size(), totalElements, pageSize, null);
     }
 
+    /**
+     * Computes pagination information based on a list of entities, total number of elements, page size, and an optional
+     * offset marking the start of pagination.
+     *
+     * @param entities
+     *         the list of entities from which to calculate the current page size
+     * @param totalElements
+     *         the total number of elements
+     * @param pageSize
+     *         the size of each page
+     * @param offset
+     *         the offset from which to start pagination, can be null
+     * @return a new instance of {@link HalPageInfo}
+     */
     public static HalPageInfo assemble(@NonNull List<?> entities, long totalElements, int pageSize,
                                        @Nullable Long offset) {
         return assemble(entities.size(), totalElements, pageSize, offset);
     }
 
 
+    /**
+     * Computes pagination information based on size, total number of elements, page size, and an optional offset.
+     *
+     * @param size
+     *         the current page size calculated from entities list
+     * @param totalElements
+     *         the total number of elements
+     * @param pageSize
+     *         the size of each page
+     * @param offset
+     *         the offset from which to start pagination, can be null
+     * @return a new instance of {@code HalPageInfo}
+     */
     public static HalPageInfo assemble(int size, long totalElements, int pageSize, @Nullable Long offset) {
         long offsetEffective = offset == null ? 0L : offset;
 

@@ -28,29 +28,23 @@ import org.kamillion.hateoflux.model.link.Link;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static org.kamillion.hateoflux.utility.MessageTemplates.*;
 
 /**
- * Represents a wrapper class for adding hypermedia links to any arbitrary entity object and,
- * optionally, incorporating embedded entities. This class serves a similar purpose
- * to Spring HATEOAS' {@code EntityModel} but specifically adheres to HAL standards.
+ * Represents an immutable wrapper class for adding hypermedia links to any arbitrary entity object and, optionally,
+ * incorporating embedded entities, adhering to HAL standards.
  * <p>
- * The {@link HalEntityWrapper} is a final class and not intended for extension. It encapsulates
- * an instance of {@code EntityT}, representing the primary entity, and can optionally include
- * an instance of {@code EmbeddedT} for additional embedded entities related to the primary entity.
- * This wrapper ensures that when serialized, the fields of the entity object are presented at the
- * top level.
+ * The {@link HalEntityWrapper} is a final class and not intended for extension. It encapsulates an instance of
+ * {@code EntityT}, representing the primary or main entity, and can optionally include an instance of
+ * {@code EmbeddedT} for additional embedded entities related to said main entity. This wrapper ensures that when
+ * serialized, the fields of the entity object are presented at the top level.
  * <p>
- * Usage of this class involves creating an instance with the entity and, if necessary, embedded
- * entities. Links can then be added to enrich the entity model with HAL's hypermedia-driven format.
- * During serialization, this wrapper directly integrates the entity and any embedded entities into
- * the enclosing structure.
+ * Usage of this class involves creating an instance with the entity and, if necessary, embedded entities. Links can
+ * then be added to enrich the entity model with HAL's hypermedia-driven format. During serialization, this wrapper
+ * directly integrates the entity and any embedded entities into the enclosing structure.
  *
  * @param <EntityT>
  *         the type of the object being wrapped, which contains the main data
@@ -240,31 +234,71 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
     }
 
 
+    /**
+     * Returns the embedded entity/entities. The embedded entity is stored in form of a list and thus will return a list
+     * even if a single entity was embedded.
+     *
+     * @return List with embedded entities
+     */
     @JsonIgnore
     public Optional<List<HalEmbeddedWrapper<EmbeddedT>>> getEmbedded() {
-        return Optional.ofNullable(embedded).map(Map.Entry::getValue);
+        return Optional.ofNullable(embedded).map(Map.Entry::getValue).map(ArrayList::new);
     }
 
+    /**
+     * Returns the name of the embedded entity or list of entities.
+     *
+     * @return Name of the embedded entity
+     */
     @JsonIgnore
     public Optional<String> getNameOfEmbedded() {
         return Optional.ofNullable(embedded).map(Map.Entry::getKey);
     }
 
+    /**
+     * Indicates whether the {@link HalEntityWrapper} has an embedded entity
+     *
+     * @return true if an embedded entity exists, else false
+     */
     @JsonIgnore
     public boolean hasEmbedded() {
         return embedded != null;
     }
 
+
+    /**
+     * Returns the embedded entity/entities. The embedded entity is stored in form of a list and thus will return a
+     * list even if a single entity was embedded.
+     *
+     * <p>
+     * In contrast to {@link #getEmbedded()}, it is assumed, that the embedded entity/entities exist, otherwise an
+     * exception is thrown.
+     *
+     * @return List with embedded entities
+     *
+     * @throws IllegalArgumentException
+     *         if no embedded entity i.e. entities exist
+     */
     @JsonIgnore
     public List<HalEmbeddedWrapper<EmbeddedT>> getRequiredEmbedded() {
-
         return getEmbedded()
                 .orElseThrow(() -> new IllegalStateException(requiredValueWasNonExisting("embedded")));
     }
 
+    /**
+     * Returns the name of the embedded entity or list of entities.
+     *
+     * <p>
+     * In contrast to {@link #getNameOfEmbedded()}, it is assumed, that the embedded entity/entities exist, otherwise an
+     * exception is thrown.
+     *
+     * @return Name of the embedded entity
+     *
+     * @throws IllegalArgumentException
+     *         if no embedded entity i.e. entities exist
+     */
     @JsonIgnore
     public String getRequiredNameOfEmbedded() {
-
         return getNameOfEmbedded()
                 .orElseThrow(() -> new IllegalStateException(requiredValueWasNonExisting("name of embedded")));
     }
