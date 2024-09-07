@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Renamed all assembler methods from "toXyzWrapper" to "wrapInXyzWrapper"
 
+### Fixed
+
+* Some getters in the wrappers were giving the entities away as they are, instead of creating new lists (immutability)
+
 ## [0.5.0]
 
 ### Added
