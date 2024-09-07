@@ -35,12 +35,12 @@ class ReactiveFlatHalWrapperAssemblerTest {
     private final AssemblerUnderTest assemblerUnderTest = new AssemblerUnderTest();
 
     @Test
-    public void givenEntityWithEmbedded_toEntityWrapper_thenAllFieldsAreFilled() {
+    public void givenEntityWithEmbedded_wrapInEntityWrapper_thenAllFieldsAreFilled() {
         //GIVEN
         Book entity = new Book();
 
         //WHEN
-        HalEntityWrapper<Book, Void> actualWrapper = assemblerUnderTest.toEntityWrapper(
+        HalEntityWrapper<Book, Void> actualWrapper = assemblerUnderTest.wrapInEntityWrapper(
                 Mono.just(entity),
                 null
         ).block();
@@ -59,12 +59,12 @@ class ReactiveFlatHalWrapperAssemblerTest {
 
 
     @Test
-    public void givenEntities_toListWrapper_thenAllFieldsAreFilled() {
+    public void givenEntities_wrapInListWrapper_thenAllFieldsAreFilled() {
         //GIVEN
         Book entity = new Book();
 
         //WHEN
-        HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.toListWrapper(
+        HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.WrapInListWrapper(
                 Flux.fromIterable(List.of(entity,
                         entity)),
                 null
@@ -93,12 +93,12 @@ class ReactiveFlatHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenEntitiesAndADataForPageInfo_toPagedListWrapper_thenAllFieldsAreFilled() {
+    public void givenEntitiesAndADataForPageInfo_wrapInListWrapper_thenAllFieldsAreFilled() {
         //GIVEN
         Book entity = new Book();
 
         //WHEN
-        HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.toPagedListWrapper(
+        HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.wrapInListWrapper(
                 Flux.fromIterable(List.of(entity,
                         entity)),
                 Mono.just(25L), 5, 10L,

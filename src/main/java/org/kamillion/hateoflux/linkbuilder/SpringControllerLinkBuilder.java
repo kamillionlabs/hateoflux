@@ -30,10 +30,67 @@ import java.lang.reflect.Parameter;
 import java.util.*;
 
 /**
+ * Provides functionality to build URI links pointing to Spring controllers. It is designed to work seamlessly with
+ * various Spring annotations such as {@link RestController}, {@link GetMapping}, {@link PathVariable},
+ * {@link RequestParam}, etc. This class aims to be a direct replacement for the {@code WebMvcLinkBuilder} i.e.
+ * {@code WebFluxLinkBuilder} in Spring HATEOAS, offering a similar interface and usage.
+ *
  * @author Younes El Ouarti
  */
 public class SpringControllerLinkBuilder {
 
+
+    /**
+     * Creates a {@link Link} object that represents a link to the entity or entities addressed by calling the API of
+     * the specified controller class. This method uses the {@link ControllerMethodReference} to ensure type-safe
+     * referencing of controller methods. The link is expanded using the parameters in the template and the parameters
+     * with which the method reference was called.
+     * <p>
+     * The method distinguishes between {@link PathVariable} and {@link RequestParam} (i.e., query parameters). When
+     * parameters of the latter type are used, collections are allowed. By default, collections are expanded in a
+     * non-composite way (i.e., var=1,2 as opposed to var=1&var=2). If the parameter in the controller class is
+     * annotated with {@link Composite}, then {@code linkTo()} will adhere to it, i.e., render it in the composite way.
+     * <p>
+     * <b>Example usage:</b><br>
+     * <i>@ signs are prepended with "_" because of a javadocs bug where the @ the beginning of a
+     * line is interpreted and thus messes up the code example</i>
+     * <p>
+     * Given the following class:
+     * <blockquote><pre>
+     * _@Controller
+     * _@RequestMapping("/user")
+     * public class UserController {
+     *
+     *    _@GetMapping("/{userId}")
+     *    public User getUser(@PathVariable userId){
+     *    ...
+     *    }
+     *  }
+     * </pre></blockquote>
+     * <p>
+     * When the {@code linkTo()} method is called as follows:
+     * <blockquote><pre>
+     * Link link = linkTo(UserController.class, c -> c.getUser("12345"));
+     * </pre></blockquote>
+     * <p>
+     * The resulting link has then the href: {@code /user/12345}
+     * <br>
+     *
+     * @param <ControllerT>
+     *         the type of the controller
+     * @param controllerClass
+     *         the class of the controller containing the target method. This class must be
+     *         annotated with {@link RestController} or {@link Controller} to be valid.
+     * @param methodRef
+     *         a functional interface implementation that references the controller method
+     *         for which the link is to be generated.
+     * @return a {@link Link} object that encapsulates the URI pointing to the entity as exposed by the
+     * controller method referenced
+     *
+     * @throws IllegalArgumentException
+     *         if the controller class is not correctly annotated as a {@link Controller}
+     *         or {@link RestController}, which is necessary for the correct functioning of the method reference.
+     */
     public static <ControllerT> Link linkTo(Class<ControllerT> controllerClass,
                                             ControllerMethodReference<ControllerT> methodRef) {
 
@@ -64,6 +121,23 @@ public class SpringControllerLinkBuilder {
         fullPath = expandTemplatedPath(fullPath, interceptor);
 
         return Link.linkAsSelfOf(fullPath);
+    }
+
+    /**
+     * Variation of the {@link #linkTo(Class, ControllerMethodReference)} method. Please refer to the mentioned method
+     * for full documentation and usage examples. This method calls the aforementioned method with
+     * {@code methodRef=null}.
+     *
+     * @param <ControllerT>
+     *         the type of the controller
+     * @param controllerClass
+     *         the class of the controller containing the target method. This class must be
+     *         annotated with {@link RestController} or {@link Controller} to be valid.
+     * @return a {@link Link} object that encapsulates the URI pointing to the entity as exposed by the
+     * controller method referenced
+     */
+    public static <ControllerT> Link linkTo(Class<ControllerT> controllerClass) {
+        return linkTo(controllerClass, null);
     }
 
     private static String expandTemplatedPath(String fullPath, MethodCaptureInterceptor interceptor) {
@@ -129,10 +203,6 @@ public class SpringControllerLinkBuilder {
         }
         String expandedQueryParameterUriPart = UriExpander.constructExpandedQueryParameterUriPart(queryParameters);
         return uriToAppendTo + expandedQueryParameterUriPart;
-    }
-
-    public static <ControllerT> Link linkTo(Class<ControllerT> controllerClass) {
-        return linkTo(controllerClass, null);
     }
 
     private static <ControllerT> void assertClassIsCorrectlyAnnotated(final Class<ControllerT> controllerClass) {

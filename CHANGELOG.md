@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0]
+
+### Added
+
+* Added JavaDocs on numerous classes, notably on Assemblers, Wrappers and the UriExpander
+
+### Changed
+
+* Renamed all assembler methods from "toXyzWrapper" to "wrapInXyzWrapper"
+
+### Fixed
+
+* Some getters in the wrappers were giving the entities away as they are, instead of creating new lists (immutability)
+
 ## [0.5.0]
 
 ### Added

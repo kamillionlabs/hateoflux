@@ -3,6 +3,8 @@
 Lightweight HATEOAS library designed to work with Spring Webflux. This readme is currently just a todo list and will be
 rewritten accordingly.
 
+ℹ️ **Implementation of main logic is done. Documentation, build and publishing process remain**
+
 ## Implemented
 
 * linkTo()
@@ -23,16 +25,6 @@ rewritten accordingly.
     * PagedModel
 * Serialization
 * Assemblers
-
-## Backlog
-
-* Javadocs on:
-    * assembler
-    * Link.expand() (from UriExpander)
-    * Link getter (generate getter without lombok and move javadocs from attributes to the new getter)
-* linkTo()
-    * Build links with base URL
-* Forwarded header handling
 
 ## Currently out of scope
 

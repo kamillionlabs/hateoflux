@@ -19,6 +19,16 @@
 package org.kamillion.hateoflux.linkbuilder;
 
 /**
+ * Functional interface for method references to a controller method in the context of URI generation. This interface
+ * enables type-safe referencing of specific methods within a controller when constructing links with
+ * {@link SpringControllerLinkBuilder}.
+ * <p>
+ * It facilitates the {@link SpringControllerLinkBuilder#linkTo(Class, ControllerMethodReference)}  method in accepting
+ * controller method references, which allows dynamic construction of URIs based on the actual method signatures and
+ * runtime values of their parameters.
+ *
+ * @param <ControllerT>
+ *         the type of the controller that contains the method being referenced
  * @author Younes El Ouarti
  */
 @FunctionalInterface

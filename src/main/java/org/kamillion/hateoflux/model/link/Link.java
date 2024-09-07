@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 import lombok.Value;
 import org.kamillion.hateoflux.linkbuilder.UriExpander;
 import org.kamillion.hateoflux.linkbuilder.UriTemplateData;
@@ -38,6 +39,7 @@ import static org.kamillion.hateoflux.utility.MessageTemplates.valueNotAllowedTo
  *
  * @author Younes El Ouarti
  */
+@Getter
 @JsonInclude(Include.NON_NULL)
 @Value
 public class Link {
@@ -99,6 +101,8 @@ public class Link {
      */
     String hreflang;
 
+    // CONSTRUCTORS AND CREATORS ---------------------------------------------------------------------------------------
+
     private Link(final LinkRelation linkRelation, final String href, final String title, final String name,
                  final String media, final String type, final String deprecation,
                  final String profile, final String hreflang) {
@@ -113,67 +117,10 @@ public class Link {
         this.hreflang = hreflang;
     }
 
-    @JsonProperty("templated")
-    private Boolean isTemplatedForJsonRendering() {
-        return UriTemplateData.of(href).isTemplated() ? true : null;
-    }
-
-    /**
-     * TODO
-     *
-     * @return
-     */
-    @JsonIgnore
-    public boolean isTemplated() {
-        return UriTemplateData.of(href).isTemplated();
-    }
-
-    /**
-     * Appends a specified URI part to the current {@link Link}'s href. The method ensures proper formatting with
-     * slashes.
-     *
-     * @param uriPart
-     *         The URI part to be appended.
-     * @return A new instance of {@link Link} with the appended URI part.
-     */
-    public Link slash(String uriPart) {
-        StringBuffer newHref = new StringBuffer(this.href);
-
-        if (!this.href.endsWith("/")) {
-            newHref.append("/");
-        }
-
-        if (StringUtils.hasText(uriPart)) {
-            if (uriPart.startsWith("/")) {
-                newHref.append(uriPart.substring(1));
-            } else {
-                newHref.append(uriPart);
-            }
-        }
-
-        return this.withHref(newHref.toString());
-    }
-
-
-    public Link expand(Object... parameters) {
-        String newHref = UriExpander.expand(this.href, parameters);
-        return this.withHref(newHref);
-    }
-
-    public Link expand(Map<String, Object> parameters, boolean collectionRenderedAsComposite) {
-        String newHref = UriExpander.expand(this.href, parameters, collectionRenderedAsComposite);
-        return this.withHref(newHref);
-    }
-
-    public Link expand(Map<String, Object> parameters) {
-        String newHref = UriExpander.expand(this.href, parameters, false);
-        return this.withHref(newHref);
-    }
-
-
     private Link(String href) {
         this(null, href, null, null, null, null, null, null, null);
     }
+
 
     /**
      * Creates a new {@link Link} instance with the specified href but without any IANA relation.
@@ -214,6 +161,23 @@ public class Link {
         return of(IanaRelation.SELF, href);
     }
 
+
+    // SPECIAL GETTERS -------------------------------------------------------------------------------------------------
+
+    @JsonProperty("templated")
+    private Boolean isTemplatedForJsonRendering() {
+        return UriTemplateData.of(href).isTemplated() ? true : null;
+    }
+
+    /**
+     * Indicates whether the href is a URI template that should be templated with variables.
+     */
+    @JsonIgnore
+    public boolean isTemplated() {
+        return UriTemplateData.of(href).isTemplated();
+    }
+
+    // SETTER ----------------------------------------------------------------------------------------------------------
 
     /**
      * Returns a new {@link Link} that is a copy of the current link. The new link
@@ -307,20 +271,6 @@ public class Link {
     }
 
     /**
-     * Returns a new {@link Link} that is a copy of the current link, with the templated
-     * flag set to the specified value. This indicates whether the href attribute is
-     * a URI template.
-     *
-     * @param templated
-     *         The new value for the templated flag.
-     * @return A new {@link Link} object with the updated templated flag.
-     */
-    public Link withTemplated(boolean templated) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type,
-                this.deprecation, this.profile, this.hreflang);
-    }
-
-    /**
      * Returns a new {@link Link} that is a copy of the current link, with the deprecation
      * URL updated to the specified deprecation URL. This URL indicates that the linked
      * resource is deprecated.
@@ -360,6 +310,61 @@ public class Link {
     public Link withHreflang(String hreflang) {
         return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type,
                 this.deprecation, this.profile, hreflang);
+    }
+
+    // UTILITY ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * Appends a specified URI part to the current {@link Link}'s href. The method ensures proper formatting with
+     * slashes.
+     *
+     * @param uriPart
+     *         The URI part to be appended.
+     * @return A new instance of {@link Link} with the appended URI part.
+     */
+    public Link slash(String uriPart) {
+        StringBuffer newHref = new StringBuffer(this.href);
+
+        if (!this.href.endsWith("/")) {
+            newHref.append("/");
+        }
+
+        if (StringUtils.hasText(uriPart)) {
+            if (uriPart.startsWith("/")) {
+                newHref.append(uriPart.substring(1));
+            } else {
+                newHref.append(uriPart);
+            }
+        }
+
+        return this.withHref(newHref.toString());
+    }
+
+
+    /**
+     * Utility method that serves as a proxy for {@link UriExpander#expand(String, Object...)}. Please refer to
+     * mentioned method for full documentation.
+     */
+    public Link expand(Object... parameters) {
+        String newHref = UriExpander.expand(this.href, parameters);
+        return this.withHref(newHref);
+    }
+
+    /**
+     * Utility method that serves as a proxy for {@link UriExpander#expand(String, Map, boolean)}. Please refer to
+     * mentioned method for full documentation.
+     */
+    public Link expand(Map<String, Object> parameters, boolean collectionRenderedAsComposite) {
+        String newHref = UriExpander.expand(this.href, parameters, collectionRenderedAsComposite);
+        return this.withHref(newHref);
+    }
+
+    /**
+     * Utility method that serves as a proxy for {@link UriExpander#expand(String, Map)}. Please refer to
+     * mentioned method for full documentation.
+     */
+    public Link expand(Map<String, Object> parameters) {
+        return expand(parameters, false);
     }
 }
 

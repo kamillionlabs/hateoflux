@@ -26,7 +26,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Identical to Spring's Hateoas @Relation annotation; It Configures the name/relation to be used when embedding objects
+ * Identical to Spring's Hateoas {@code @Relation} annotation; It Configures the name/relation to be used when embedding
+ * objects
  * in HAL representation of {@link HalEntityWrapper} and {@link HalListWrapper}
  *
  * @author Younes El Ouarti
