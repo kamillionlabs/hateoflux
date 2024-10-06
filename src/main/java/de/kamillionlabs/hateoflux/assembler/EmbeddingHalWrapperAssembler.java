@@ -55,6 +55,10 @@ import java.util.List;
  *    entities <b>without</b> embedded entities.</li>
  * </ul>
  *
+ * @param <EntityT>
+ *         the type of the object being wrapped, which contains the main data
+ * @param <EmbeddedT>
+ *         the type of the object representing additional embedded resources related to the main data, if any
  * @author Younes El Ouarti
  */
 public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extends
@@ -74,6 +78,9 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} enriched with hypermedia links and optional pagination details
+     *
+     * @see #wrapInListWrapper(PairList, long, int, Long, ServerWebExchange)
+     * @see #wrapInListWrapper(PairList, ServerWebExchange)
      */
     default HalListWrapper<EntityT, EmbeddedT> wrapInListWrapper(@NonNull PairList<EntityT, EmbeddedT> entitiesToWrap,
                                                                  @Nullable HalPageInfo pageInfo,
@@ -105,6 +112,9 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} equipped with hypermedia links for each entity and the list as a whole
+     *
+     * @see #wrapInListWrapper(PairList, long, int, Long, ServerWebExchange)
+     * @see #wrapInListWrapper(PairList, HalPageInfo, ServerWebExchange)
      */
     default HalListWrapper<EntityT, EmbeddedT> wrapInListWrapper(@NonNull PairList<EntityT, EmbeddedT> entitiesToWrap,
                                                                  ServerWebExchange exchange) {
@@ -126,6 +136,9 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} with hypermedia links and pagination information
+     *
+     * @see #wrapInListWrapper(PairList, HalPageInfo, ServerWebExchange)
+     * @see #wrapInListWrapper(PairList, ServerWebExchange)
      */
     default HalListWrapper<EntityT, EmbeddedT> wrapInListWrapper(@NonNull PairList<EntityT, EmbeddedT> entitiesToWrap,
                                                                  long totalElements,
@@ -148,6 +161,8 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalEntityWrapper} with hypermedia links for the entity and its embedded counterpart
+     *
+     * @see #wrapInEntityWrapper(Object, List, ServerWebExchange)
      */
     default HalEntityWrapper<EntityT, EmbeddedT> wrapInEntityWrapper(@NonNull EntityT entityToWrap,
                                                                      @NonNull EmbeddedT embedded,
@@ -176,6 +191,9 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
      *
      * @throws IllegalArgumentException
      *         if the embedded list is null or empty
+     * @see #wrapInEntityWrapper(Object, Object, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Object, String, List, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Object, Class, List, ServerWebExchange)
      */
     default HalEntityWrapper<EntityT, EmbeddedT> wrapInEntityWrapper(@NonNull EntityT entityToWrap,
                                                                      @NonNull List<EmbeddedT> embeddedList,
@@ -201,6 +219,10 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalEntityWrapper} that includes the main entity and its embedded entities, all enhanced with
      * hypermedia links
+     *
+     * @see #wrapInEntityWrapper(Object, Object, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Object, Class, List, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Object, List, ServerWebExchange)
      */
     default HalEntityWrapper<EntityT, EmbeddedT> wrapInEntityWrapper(@NonNull EntityT entityToWrap,
                                                                      @NonNull String embeddedListName,
@@ -227,6 +249,10 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalEntityWrapper} that includes the main entity and its derived named embedded entities, all
      * enhanced with hypermedia links
+     *
+     * @see #wrapInEntityWrapper(Object, Object, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Object, String, List, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Object, List, ServerWebExchange)
      */
     default HalEntityWrapper<EntityT, EmbeddedT> wrapInEntityWrapper(@NonNull EntityT entityToWrap,
                                                                      @NonNull Class<?> embeddedTypeAsNameOrigin,

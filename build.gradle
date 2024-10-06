@@ -1,9 +1,9 @@
 plugins {
-    id 'java'
-    id 'jacoco'
-    id 'idea'
     id 'org.springframework.boot' version '3.3.2'
     id 'io.spring.dependency-management' version '1.1.3'
+    id 'java-library'
+    id 'jacoco'
+    id 'idea'
     id 'maven-publish'
     id 'signing'
 }
@@ -38,7 +38,6 @@ dependencies {
 
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
-
 }
 
 bootJar.enabled = false
@@ -48,4 +47,72 @@ tasks.register('sourcesJar', Jar) {
     dependsOn classes
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
+}
+
+tasks.register('javadocJar', Jar) {
+    dependsOn javadoc
+    archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact jar
+            artifact tasks.sourcesJar
+            artifact tasks.javadocJar
+
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+
+            pom {
+                name = project.name
+                description = 'Lightweight HATEOAS library designed to work with Spring Webflux.'
+                url = 'https://github.com/kamillionlabs/hateoflux'
+
+
+                licenses {
+                    license {
+                        name = 'Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution = 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'younes'
+                        name = 'Younes El Ouarti'
+                        email = 'younes@kamillionlabs.de'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:git://github.com/kamillionlabs/hateoflux.git'
+                    developerConnection = 'scm:git:ssh://git@github.com/kamillionlabs/hateoflux.git'
+                    url = 'https://github.com/kamillionlabs/hateoflux'
+                }
+
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'OSSRH'
+            url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+
+            credentials {
+                username = project.findProperty('ossrhUsername') ?: ''
+                password = project.findProperty('ossrhPassword') ?: ''
+            }
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+    sign publishing.publications.mavenJava
 }

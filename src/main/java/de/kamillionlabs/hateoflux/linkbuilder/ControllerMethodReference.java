@@ -33,5 +33,12 @@ package de.kamillionlabs.hateoflux.linkbuilder;
  */
 @FunctionalInterface
 public interface ControllerMethodReference<ControllerT> {
+    /**
+     * Method to invoke
+     *
+     * @param controller
+     *         Controller class of which the method should be invoked
+     * @see SpringControllerLinkBuilder#linkTo(Class, ControllerMethodReference)
+     */
     void invoke(ControllerT controller);
 }

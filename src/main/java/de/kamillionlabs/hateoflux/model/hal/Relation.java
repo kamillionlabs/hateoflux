@@ -26,9 +26,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Identical to Spring's Hateoas {@code @Relation} annotation; It Configures the name/relation to be used when embedding
- * objects
- * in HAL representation of {@link HalEntityWrapper} and {@link HalListWrapper}
+ * Identical to Spring's Hateoas {@code @Relation} annotation. It configures the name/relation to be used when embedding
+ * objects in HAL representations of {@link HalEntityWrapper} and {@link HalListWrapper}.
  *
  * @author Younes El Ouarti
  */
@@ -38,18 +37,24 @@ public @interface Relation {
 
     /**
      * Defines the relation to be used when referring to a single resource. Alias for {@link #itemRelation()}.
+     *
+     * @return the relation name for a single resource
      */
     @AliasFor("itemRelation")
     String value() default "";
 
     /**
      * Defines the relation to be used when referring to a single resource. Alias of {@link #value()}.
+     *
+     * @return the relation name for a single resource
      */
     @AliasFor("value")
     String itemRelation() default "";
 
     /**
      * Defines the relation to be used when referring to a collection of resources.
+     *
+     * @return the relation name for a collection of resources
      */
     String collectionRelation() default "";
 }

@@ -23,6 +23,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /**
+ * Represents a link relation type as defined in RFC 8288.
+ * <p>
+ * A link relation can be a standard IANA registered relation or a custom one.
+ *
  * @author Younes El Ouarti
  */
 @EqualsAndHashCode
@@ -36,10 +40,24 @@ public class LinkRelation {
         this.relation = relation;
     }
 
+    /**
+     * Creates a new {@link LinkRelation} from the given relation name.
+     *
+     * @param relation
+     *         the link relation name
+     * @return a new {@link LinkRelation} instance
+     */
     public static LinkRelation of(String relation) {
         return new LinkRelation(relation);
     }
 
+    /**
+     * Creates a new {@link LinkRelation} from a given {@link IanaRelation}.
+     *
+     * @param ianaRelation
+     *         the IANA registered link relation
+     * @return a new {@link LinkRelation} instance
+     */
     public static LinkRelation of(IanaRelation ianaRelation) {
         return new LinkRelation(ianaRelation.getName());
     }

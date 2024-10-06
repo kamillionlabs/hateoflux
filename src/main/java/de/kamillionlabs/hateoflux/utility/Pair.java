@@ -19,9 +19,34 @@
 package de.kamillionlabs.hateoflux.utility;
 
 /**
+ * Represents a generic pair of two values.
+ *
+ * @param left
+ *         the left value
+ * @param right
+ *         the right value
+ * @param <LeftT>
+ *         the type of the left value
+ * @param <RightT>
+ *         the type of the right value
  * @author Younes El Ouarti
+ * @see PairList
  */
 public record Pair<LeftT, RightT>(LeftT left, RightT right) {
+
+    /**
+     * Creates a new {@code Pair} with the specified left and right values.
+     *
+     * @param left
+     *         the left value
+     * @param right
+     *         the right value
+     * @param <LeftT>
+     *         the type of the left value
+     * @param <RightT>
+     *         the type of the right value
+     * @return a new {@code Pair} instance containing the given values
+     */
     public static <LeftT, RightT> Pair<LeftT, RightT> of(LeftT left, RightT right) {
         return new Pair<>(left, right);
     }

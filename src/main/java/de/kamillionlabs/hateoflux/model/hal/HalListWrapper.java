@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
-import static de.kamillionlabs.hateoflux.utility.MessageTemplates.valueNotAllowedToBeEmpty;
-import static de.kamillionlabs.hateoflux.utility.MessageTemplates.valueNotAllowedToBeNull;
+import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueNotAllowedToBeEmpty;
+import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueNotAllowedToBeNull;
 
 
 /**
@@ -84,6 +84,22 @@ public final class HalListWrapper<EntityT, EmbeddedT>
         this.page = page;
         this.withLinks(links);
     }
+
+    /**
+     * Wraps a given list of entities, where each entity needs to be wrapped in a {@link HalEntityWrapper}.
+     * This method ensures that the list of entities conforms to HAL standards. Each {@link HalEntityWrapper}
+     * contains a main entity and an optional embedded entity.
+     *
+     * @param <EntityT>
+     *         the type of the entity to be wrapped
+     * @param <EmbeddedT>
+     *         the type of the embedded entity
+     * @param listToWrap
+     *         the list of entities to be wrapped
+     * @return a new instance containing the wrapped entities
+     *
+     * @see HalEntityWrapper#wrap(Object)
+     */
 
     public static <EntityT, EmbeddedT> HalListWrapper<EntityT, EmbeddedT> wrap(
             @NonNull List<HalEntityWrapper<EntityT, EmbeddedT>> listToWrap) {

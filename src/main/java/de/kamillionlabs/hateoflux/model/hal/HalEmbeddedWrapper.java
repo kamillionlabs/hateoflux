@@ -26,8 +26,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
-import static de.kamillionlabs.hateoflux.utility.MessageTemplates.valueIsNotAllowedToBeOfType;
-import static de.kamillionlabs.hateoflux.utility.MessageTemplates.valueNotAllowedToBeNull;
+import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueIsNotAllowedToBeOfType;
+import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueNotAllowedToBeNull;
 
 /**
  * Represents an immutable wrapper class for encapsulating embedded entities in a hypermedia-driven format, adhering to

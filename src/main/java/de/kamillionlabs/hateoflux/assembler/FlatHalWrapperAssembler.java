@@ -54,6 +54,8 @@ import java.util.List;
  *    entities <b>without</b> embedded entities.</li>
  * </ul>
  *
+ * @param <EntityT>
+ *         the type of the object being wrapped, which contains the main data
  * @author Younes El Ouarti
  */
 public non-sealed interface FlatHalWrapperAssembler<EntityT> extends
@@ -70,6 +72,9 @@ public non-sealed interface FlatHalWrapperAssembler<EntityT> extends
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} that includes the wrapped entities enhanced with hypermedia links
+     *
+     * @see #wrapInListWrapper(List, long, int, Long, ServerWebExchange)
+     * @see #wrapInListWrapper(List, HalPageInfo, ServerWebExchange)
      */
     default HalListWrapper<EntityT, Void> wrapInListWrapper(@NonNull List<EntityT> entitiesToWrap,
                                                             ServerWebExchange exchange) {
@@ -92,6 +97,9 @@ public non-sealed interface FlatHalWrapperAssembler<EntityT> extends
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} that includes the wrapped entities enhanced with hypermedia links, along with
      * pagination information
+     *
+     * @see #wrapInListWrapper(List, HalPageInfo, ServerWebExchange)
+     * @see #wrapInListWrapper(List, ServerWebExchange)
      */
     default HalListWrapper<EntityT, Void> wrapInListWrapper(@NonNull List<EntityT> entitiesToWrap,
                                                             long totalElements,
@@ -114,6 +122,9 @@ public non-sealed interface FlatHalWrapperAssembler<EntityT> extends
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} that includes the wrapped entities enhanced with hypermedia links, and
      * optionally pagination details
+     *
+     * @see #wrapInListWrapper(List, long, int, Long, ServerWebExchange)
+     * @see #wrapInListWrapper(List, ServerWebExchange)
      */
     default HalListWrapper<EntityT, Void> wrapInListWrapper(@NonNull List<EntityT> entitiesToWrap,
                                                             @Nullable HalPageInfo pageInfo,

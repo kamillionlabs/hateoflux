@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
 import java.util.*;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
-import static de.kamillionlabs.hateoflux.utility.MessageTemplates.*;
+import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.*;
 
 /**
  * Represents an immutable wrapper class for adding hypermedia links to any arbitrary entity object and, optionally,
@@ -98,8 +98,7 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
     }
 
     /**
-     * Wrapper for any given entity to make it conform to HAL standards. When serializing, the fields of the entity
-     * will be on top level and not nested in the object they came in.
+     * Wraps any given entity into a {@link HalEntityWrapper} to make it conform to HAL standards.
      *
      * <p>For wrapping a list of entities, use {@link HalListWrapper} instead.</p>
      *
@@ -128,16 +127,15 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
      * name otherwise.
      *
      * <p>Only one embedded element can be held at a time. If multiple objects need to be embedded, use
-     * {@link #withNonEmptyEmbeddedList(List)} or {@link #withEmbeddedList(String, List)}.
-     * Regardless, a {@link HalEntityWrapper} can only contain one type of embedded element at any time.</p>
+     * {@link #withNonEmptyEmbeddedList(List)} or {@link #withEmbeddedList(String, List)}.</p>
      *
      * <p>Calling any {@code withEmbeddedXYZ()} method multiple times results in <b>overriding</b> the previously
      * embedded entity each time.</p>
      *
      * @param <NewEmbeddedT>
-     *         the type of the items in the list to embed
+     *         the type of the entity to embed
      * @param embedded
-     *         the entity to be embedded
+     *         the entity to embed
      * @return new instance with the embedded entity
      *
      * @throws IllegalArgumentException

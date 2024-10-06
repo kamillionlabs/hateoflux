@@ -65,6 +65,10 @@ import java.util.List;
  *    entities <b>without</b> embedded entities.</li>
  * </ul>
  *
+ * @param <EntityT>
+ *         the type of the object being wrapped, which contains the main data
+ * @param <EmbeddedT>
+ *         the type of the object representing additional embedded resources related to the main data, if any
  * @author Younes El Ouarti
  */
 public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extends
@@ -79,6 +83,8 @@ public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extend
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a Mono of a {@link HalListWrapper} containing the entities enhanced with hypermedia links
+     *
+     * @see #wrapInListWrapper(Flux, Mono, int, Long, ServerWebExchange)
      */
     default Mono<HalListWrapper<EntityT, EmbeddedT>> wrapInListWrapper(@NonNull Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap,
                                                                        ServerWebExchange exchange) {
@@ -102,6 +108,8 @@ public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extend
      *         provides the context of the current web exchange, such as the base URL
      * @return a Mono of a {@link HalListWrapper} containing the paginated list of entities enhanced with hypermedia
      * links
+     *
+     * @see #wrapInListWrapper(Flux, ServerWebExchange)
      */
     default Mono<HalListWrapper<EntityT, EmbeddedT>> wrapInListWrapper(@NonNull Flux<Pair<EntityT, EmbeddedT>> entitiesToWrap,
                                                                        @NonNull Mono<Long> totalElements,
@@ -131,6 +139,8 @@ public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extend
      *         provides the context of the current web exchange, such as the base URL
      * @return a Mono of a {@link HalEntityWrapper} containing the wrapped entity and embedded entity, enhanced with
      * hypermedia links
+     *
+     * @see #wrapInEntityWrapper(Mono, Flux, ServerWebExchange)
      */
     default Mono<HalEntityWrapper<EntityT, EmbeddedT>> wrapInEntityWrapper(@NonNull Mono<EntityT> entityToWrap,
                                                                            @NonNull Mono<EmbeddedT> embedded,
@@ -156,6 +166,9 @@ public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extend
      *
      * @throws IllegalArgumentException
      *         if the embedded list is null or empty
+     * @see #wrapInEntityWrapper(Mono, String, Flux, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Mono, Class, Flux, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Mono, Mono, ServerWebExchange)
      */
     default Mono<HalEntityWrapper<EntityT, EmbeddedT>> wrapInEntityWrapper(@NonNull Mono<EntityT> entityWrap,
                                                                            @NonNull Flux<EmbeddedT> embeddedList,
@@ -181,6 +194,10 @@ public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extend
      *         provides the context of the current web exchange, such as the base URL
      * @return a Mono of a {@link HalEntityWrapper} that includes the main entity and its named list of embedded
      * entities, all enhanced with hypermedia links
+     *
+     * @see #wrapInEntityWrapper(Mono, Class, Flux, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Mono, Flux, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Mono, Mono, ServerWebExchange)
      */
     default Mono<HalEntityWrapper<EntityT, EmbeddedT>> wrapInEntityWrapper(@NonNull Mono<EntityT> entityToWrap,
                                                                            @NonNull String embeddedListName,
@@ -208,6 +225,10 @@ public interface ReactiveEmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extend
      *         provides the context of the current web exchange, such as the base URL
      * @return a Mono of a {@link HalEntityWrapper} that includes the main entity and its derived named list of embedded
      * entities, all enhanced with hypermedia links
+     *
+     * @see #wrapInEntityWrapper(Mono, String, Flux, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Mono, Flux, ServerWebExchange)
+     * @see #wrapInEntityWrapper(Mono, Mono, ServerWebExchange)
      */
     default Mono<HalEntityWrapper<EntityT, EmbeddedT>> wrapInEntityWrapper(@NonNull Mono<EntityT> entityToWrap,
                                                                            @NonNull Class<?> embeddedTypeAsNameOrigin,

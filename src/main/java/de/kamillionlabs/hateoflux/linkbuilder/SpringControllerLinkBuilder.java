@@ -39,6 +39,8 @@ import java.util.*;
  */
 public class SpringControllerLinkBuilder {
 
+    private SpringControllerLinkBuilder() {
+    }
 
     /**
      * Creates a {@link Link} object that represents a link to the entity or entities addressed by calling the API of
@@ -48,8 +50,9 @@ public class SpringControllerLinkBuilder {
      * <p>
      * The method distinguishes between {@link PathVariable} and {@link RequestParam} (i.e., query parameters). When
      * parameters of the latter type are used, collections are allowed. By default, collections are expanded in a
-     * non-composite way (i.e., var=1,2 as opposed to var=1&var=2). If the parameter in the controller class is
-     * annotated with {@link Composite}, then {@code linkTo()} will adhere to it, i.e., render it in the composite way.
+     * non-composite way (i.e., {@code var=1,2} as opposed to {@code var=1&var=2}). If the parameter in the controller
+     * class is annotated with {@link Composite}, then {@code linkTo()} will adhere to it, i.e., render it in the
+     * composite way.
      * <p>
      * <b>Example usage:</b><br>
      * <i>@ signs are prepended with "_" because of a javadocs bug where the @ the beginning of a

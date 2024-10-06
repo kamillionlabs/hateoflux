@@ -31,7 +31,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Map;
 
-import static de.kamillionlabs.hateoflux.utility.MessageTemplates.valueNotAllowedToBeEmpty;
+import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueNotAllowedToBeEmpty;
 
 /**
  * Represents a hypermedia link with various attributes defining aspects of the link such as
@@ -171,6 +171,8 @@ public class Link {
 
     /**
      * Indicates whether the href is a URI template that should be templated with variables.
+     *
+     * @return {@code true} if href of the link is templated; {@code false} otherwise
      */
     @JsonIgnore
     public boolean isTemplated() {
@@ -344,6 +346,10 @@ public class Link {
     /**
      * Utility method that serves as a proxy for {@link UriExpander#expand(String, Object...)}. Please refer to
      * mentioned method for full documentation.
+     *
+     * @param parameters
+     *         parameters to expand in templated href
+     * @return the expanded or original URI if expansion is not applicable
      */
     public Link expand(Object... parameters) {
         String newHref = UriExpander.expand(this.href, parameters);
@@ -353,6 +359,12 @@ public class Link {
     /**
      * Utility method that serves as a proxy for {@link UriExpander#expand(String, Map, boolean)}. Please refer to
      * mentioned method for full documentation.
+     *
+     * @param parameters
+     *         to expand in templated href
+     * @param collectionRenderedAsComposite
+     *         specifies whether the collection should be rendered as composite (true) or non-composite (false)
+     * @return the expanded or original URI if expansion is not applicable
      */
     public Link expand(Map<String, Object> parameters, boolean collectionRenderedAsComposite) {
         String newHref = UriExpander.expand(this.href, parameters, collectionRenderedAsComposite);
@@ -362,6 +374,10 @@ public class Link {
     /**
      * Utility method that serves as a proxy for {@link UriExpander#expand(String, Map)}. Please refer to
      * mentioned method for full documentation.
+     *
+     * @param parameters
+     *         to expand in templated href
+     * @return the expanded or original URI if expansion is not applicable
      */
     public Link expand(Map<String, Object> parameters) {
         return expand(parameters, false);

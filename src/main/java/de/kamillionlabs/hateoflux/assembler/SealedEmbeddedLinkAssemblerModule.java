@@ -27,6 +27,8 @@ import java.util.List;
 /**
  * Assembler module that builds links for an embedded entity.
  *
+ * @param <EmbeddedT>
+ *         the type of the object representing additional embedded resources related to the main data
  * @author Younes El Ouarti
  */
 public sealed interface SealedEmbeddedLinkAssemblerModule<EmbeddedT> permits EmbeddingHalWrapperAssembler {

@@ -57,18 +57,48 @@ import java.util.List;
  *    <li>{@link ReactiveEmbeddingHalWrapperAssembler} - for reactive <b>and</b> imperative handling of standalone
  *    entities <b>with</b> embedded entities.</li>
  * </ul>
- * <p>
- *  @author Younes El Ouarti
+ *
+ * @param <EntityT>
+ *         the type of the object being wrapped, which contains the main data
+ * @author Younes El Ouarti
  */
-
 public interface ReactiveFlatHalWrapperAssembler<EntityT> extends FlatHalWrapperAssembler<EntityT> {
 
-    default Mono<HalListWrapper<EntityT, Void>> WrapInListWrapper(@NonNull Flux<EntityT> entitiesToWrap,
+    /**
+     * Wraps the provided entities in a single {@link HalListWrapper}.
+     *
+     * @param entitiesToWrap
+     *         entities to wrap
+     * @param exchange
+     *         provides the context of the current web exchange, such as the base URL
+     * @return wrapped entities
+     *
+     * @see #wrapInListWrapper(Flux, Mono, int, Long, ServerWebExchange)
+     */
+
+    default Mono<HalListWrapper<EntityT, Void>> wrapInListWrapper(@NonNull Flux<EntityT> entitiesToWrap,
                                                                   ServerWebExchange exchange) {
         return entitiesToWrap.collectList()
                 .map(entitiesToWrapValue -> wrapInListWrapper(entitiesToWrapValue, exchange));
     }
 
+    /**
+     * Wraps the provided entities in a single {@link HalListWrapper} with paging information.
+     *
+     * @param entitiesToWrap
+     *         entities to wrap
+     * @param totalElements
+     *         the total number of elements across all pages
+     * @param pageSize
+     *         the number of items per page
+     * @param offset
+     *         the starting offset of the page, if specified
+     * @param exchange
+     *         provides the context of the current web exchange, such as the base URL
+     * @return wrapped entities
+     *
+     * @see #wrapInListWrapper(Flux, ServerWebExchange)
+     */
     default Mono<HalListWrapper<EntityT, Void>> wrapInListWrapper(@NonNull Flux<EntityT> entitiesToWrap,
                                                                   @NonNull Mono<Long> totalElements,
                                                                   int pageSize,
@@ -80,6 +110,15 @@ public interface ReactiveFlatHalWrapperAssembler<EntityT> extends FlatHalWrapper
                         pageSize, offset, exchange));
     }
 
+    /**
+     * Wraps the provided entity in a {@link HalEntityWrapper}
+     *
+     * @param entityToWrap
+     *         entity to wrap
+     * @param exchange
+     *         provides the context of the current web exchange, such as the base URL
+     * @return wrapped entity
+     */
     default Mono<HalEntityWrapper<EntityT, Void>> wrapInEntityWrapper(@NonNull Mono<EntityT> entityToWrap,
                                                                       ServerWebExchange exchange) {
 

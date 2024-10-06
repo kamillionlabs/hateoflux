@@ -23,6 +23,7 @@ import de.kamillionlabs.hateoflux.utility.PairList;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -32,9 +33,10 @@ import java.util.regex.Pattern;
 import static java.lang.String.format;
 
 /**
+ * Represents a parsed URI template and provides methods to retrieve information from it.
+ *
  * @author Younes El Ouarti
  */
-
 @Data
 public class UriTemplateData {
 
@@ -45,19 +47,35 @@ public class UriTemplateData {
 
     private static final Pattern QUERY_VARIABLE_PATTERN = Pattern.compile(QUERY_PARAMETER_PLACEHOLDER_REGEX);
 
+    @Setter(AccessLevel.PRIVATE)
     private String originalUriTemplate = "";
 
+    @Setter(AccessLevel.PRIVATE)
     private String uriTemplateWithoutQueryParameters = "";
 
+    @Setter(AccessLevel.PRIVATE)
     private List<String> pathParameterNames = new ArrayList<>();
 
     @Getter(AccessLevel.PRIVATE)
+    @Setter(AccessLevel.PRIVATE)
     private PairList<String, Boolean> queryParameterNamesByExplodability = new PairList<>();
 
+    /**
+     * Returns the names of the query parameters in the URI template.
+     *
+     * @return a list of query parameter names
+     */
     public List<String> getQueryParameterNames() {
         return queryParameterNamesByExplodability.getLefts();
     }
 
+    /**
+     * Creates a new {@code UriTemplateData} instance from the given URI template string.
+     *
+     * @param originalUriTemplate
+     *         the URI template string; may be null or empty
+     * @return a new instance with the parsed URI template data
+     */
     public static UriTemplateData of(String originalUriTemplate) {
         return new UriTemplateData(originalUriTemplate);
     }
@@ -71,25 +89,56 @@ public class UriTemplateData {
         }
     }
 
+    /**
+     * Checks if the URI template contains any exploded query parameters.
+     *
+     * @return {@code true} if there are exploded query parameters; {@code false} otherwise
+     */
     public boolean hasExplodedQueryParameters() {
         return queryParameterNamesByExplodability.getRights().stream()
                 .anyMatch(p -> p); // is any boolean in the list true?
     }
 
+    /**
+     * Checks if the specified query parameter is exploded in the URI template.
+     *
+     * @param parameterName
+     *         the name of the query parameter
+     * @return {@code true} if the parameter is exploded; {@code false} otherwise
+     */
     public boolean isExplodedQueryParameter(String parameterName) {
         return queryParameterNamesByExplodability.stream()
                 .filter(Pair::right) // when right==true --> is explodable
                 .anyMatch(p -> p.left().equals(parameterName));
     }
 
+    /**
+     * Checks if the URI template contains only query parameters and no path parameters.
+     *
+     * @return {@code true} if the template has only query parameters; {@code false} otherwise
+     */
     public boolean hasOnlyQueryParameters() {
         return pathParameterNames.isEmpty() && !queryParameterNamesByExplodability.isEmpty();
     }
 
+    /**
+     * Checks if the given set of parameter names does not include all path parameters from the URI template.
+     *
+     * @param parameterNamesToTest
+     *         the set of parameter names to test
+     * @return {@code true} if not all path parameters are included; {@code false} otherwise
+     */
     public boolean doesNotIncludeAllPathParameters(Set<String> parameterNamesToTest) {
         return !parameterNamesToTest.containsAll(pathParameterNames);
     }
 
+    /**
+     * Checks if the given set of parameter names includes any parameters not present in the URI template.
+     *
+     * @param parameterNamesToTest
+     *         the set of parameter names to test
+     * @return {@code true} if unknown parameters are included; {@code false} otherwise
+     */
     public boolean includesUnknownParameters(Set<String> parameterNamesToTest) {
         Set<String> mergedParameters = new HashSet<>();
         mergedParameters.addAll(pathParameterNames);
@@ -98,11 +147,24 @@ public class UriTemplateData {
         return parameterNamesToTest.stream().anyMatch(p -> !mergedParameters.contains(p));
     }
 
+
+    /**
+     * Returns the total number of parameters (path and query) in the URI template.
+     *
+     * @return the total number of parameters
+     */
     public int getTotalNumberOfParameters() {
         return pathParameterNames.size() + queryParameterNamesByExplodability.size();
     }
 
 
+    /**
+     * Extracts query parameters from the URI template along with their explodability.
+     *
+     * @param uriTemplate
+     *         the URI template string
+     * @return a list of pairs containing parameter names and their explodability
+     */
     private PairList<String, Boolean> extractQueryParametersByExplodability(String uriTemplate) {
         Matcher queryParameterMatcher = QUERY_VARIABLE_PATTERN.matcher(uriTemplate);
         if (queryParameterMatcher.find()) {
@@ -129,6 +191,13 @@ public class UriTemplateData {
         return PairList.of();
     }
 
+    /**
+     * Extracts path parameters from the URI template.
+     *
+     * @param uriTemplate
+     *         the URI template string
+     * @return a list of path parameter names
+     */
     private List<String> extractPathParameters(String uriTemplate) {
         Matcher matcher = PATH_VARIABLE_PATTERN.matcher(uriTemplate);
         ArrayList<String> pathVariables = new ArrayList<>();
@@ -139,7 +208,11 @@ public class UriTemplateData {
         return pathVariables;
     }
 
-
+    /**
+     * Checks if the URI template contains any parameters.
+     *
+     * @return {@code true} if the template is parameterized; {@code false} otherwise
+     */
     public boolean isTemplated() {
         return getTotalNumberOfParameters() != 0;
     }

@@ -30,6 +30,10 @@ import java.util.List;
 /**
  * Assembler module that has utility functions and builds links for a list of entities.
  *
+ * @param <EntityT>
+ *         the type of the object being wrapped, which contains the main data
+ * @param <EmbeddedT>
+ *         the type of the object representing additional embedded resources related to the main data, if any
  * @author Younes El Ouarti
  */
 public sealed interface SealedEntityListAssemblerModule<EntityT, EmbeddedT> permits
@@ -45,6 +49,8 @@ public sealed interface SealedEntityListAssemblerModule<EntityT, EmbeddedT> perm
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return an initialized {@link HalListWrapper} with relevant hypermedia links for the entire list
+     *
+     * @see #createEmptyListWrapper(String, ServerWebExchange)
      */
     default HalListWrapper<EntityT, EmbeddedT> createEmptyListWrapper(@NonNull Class<?> listItemTypeAsNameOrigin,
                                                                       ServerWebExchange exchange) {
@@ -60,6 +66,8 @@ public sealed interface SealedEntityListAssemblerModule<EntityT, EmbeddedT> perm
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return an initialized {@link HalListWrapper} with relevant hypermedia links for the entire list
+     *
+     * @see #createEmptyListWrapper(Class, ServerWebExchange)
      */
     default HalListWrapper<EntityT, EmbeddedT> createEmptyListWrapper(@NonNull String listName,
                                                                       ServerWebExchange exchange) {

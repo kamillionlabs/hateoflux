@@ -27,6 +27,8 @@ import java.util.List;
 /**
  * Assembler module that builds links for an entity.
  *
+ * @param <EntityT>
+ *         the type of the object being wrapped, which contains the main data
  * @author Younes El Ouarti
  */
 public sealed interface SealedEntityLinkAssemblerModule<EntityT>

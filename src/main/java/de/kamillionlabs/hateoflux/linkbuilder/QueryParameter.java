@@ -28,7 +28,7 @@ import java.util.List;
  * @author Younes El Ouarti
  */
 @Data
-public class QueryParameter {
+class QueryParameter {
 
     private String name = "";
 

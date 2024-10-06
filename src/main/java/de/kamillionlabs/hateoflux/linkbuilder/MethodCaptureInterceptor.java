@@ -28,7 +28,7 @@ import java.lang.reflect.Method;
  * @author Younes El Ouarti
  */
 @Getter
-public class MethodCaptureInterceptor implements MethodInterceptor {
+class MethodCaptureInterceptor implements MethodInterceptor {
 
     private Method capturedMethod = null;
     private Object[] capturedArguments = null;

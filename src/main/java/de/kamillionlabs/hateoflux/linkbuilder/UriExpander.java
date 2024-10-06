@@ -36,6 +36,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class UriExpander {
 
+    private UriExpander() {
+    }
+
     /**
      * Constructs a URL-encoded query string from a list of query parameters. This method supports both single values
      * and collections of values. Collections are encoded as multiple key-value pairs or as a single key with a
@@ -69,7 +72,7 @@ public class UriExpander {
      *         a list of {@link QueryParameter} objects representing the query parameters to be included in the URI part
      * @return a string representing the URI part constructed from the query parameters
      */
-    public static String constructExpandedQueryParameterUriPart(List<QueryParameter> parameters) {
+    static String constructExpandedQueryParameterUriPart(List<QueryParameter> parameters) {
         if (parameters == null || parameters.isEmpty()) {
             return "";
         }
@@ -136,8 +139,8 @@ public class UriExpander {
      * @return a string representing the URI part constructed from the query parameters
      */
 
-    public static String constructExpandedQueryParameterUriPart(Map<String, ?> parameters,
-                                                                boolean collectionRenderedAsComposite) {
+    static String constructExpandedQueryParameterUriPart(Map<String, ?> parameters,
+                                                         boolean collectionRenderedAsComposite) {
         if (parameters == null || parameters.isEmpty()) {
             return "";
         }
@@ -177,7 +180,7 @@ public class UriExpander {
      * String template = "/users/{userId}/posts{?limit,page}"
      * String expanded = expand(template, 42, 10, 2);
      *
-     * // Outputs: /users/42/posts?limit=10&page=2
+     * // Outputs: /users/42/posts?limit=10&amp;page=2
      * </pre></blockquote>
      *
      * @param uriAsTemplate
@@ -220,7 +223,7 @@ public class UriExpander {
             Map<String, Object> queryParameterMap =
                     createQueryParameterMap(parameters, pathParameterNames, queryParameterNames);
 
-            //collectionRenderedAsComposite is set as false but is not used anyway because in this expand method it is
+            //The flag is set to false but is not used anyway because in this expand method it is
             //not possible to have exploded parameters
             queryParameterUriPart = constructExpandedQueryParameterUriPart(queryParameterMap, false);
         }
@@ -263,7 +266,7 @@ public class UriExpander {
      * var map = Map.of("keyWords", List.of("blue","active"));
      * String expanded = expand("/users{?keyWords*}", map, true);
      *                                                     ^^^^
-     * // Outputs: /users?keyWords=blue&keyWords=active
+     * // Outputs: /users?keyWords=blue&amp;keyWords=active
      * </pre></blockquote>
      *
      * @param uriAsTemplate
@@ -320,7 +323,8 @@ public class UriExpander {
      *     <li>{@code {?var1,var2}} are two optional query parameters.</li>
      *     <li>{@code {?var*}} is an exploded query parameter, i.e., it can represent a list.</li>
      * </ol>
-     * <b>Hints on the explode modifier ('*'):</b><p>
+     * <b>Hints on the explode modifier ('*'):</b>
+     * <br>
      * <ul>
      *     <li>A collection of values is only allowed for query parameters.</li>
      *     <li>To accept a collection as a value, a query parameter must be marked with the
@@ -328,7 +332,7 @@ public class UriExpander {
      *     <li>The expansion of exploded parameters is configurable via {@link #expand(String, Map, boolean)}. It can
      *     be expanded in a composite or non-composite way.</li>
      *     <li>This method expands parameters in a non-composite way by default
-     *     (e.g., ?var=1,2 as opposed to ?var=1&var=2).</li>
+     *     (e.g., ?var=1,2 as opposed to ?var=1&amp;var=2).</li>
      * </ul>
      *
      * <p>
@@ -340,7 +344,7 @@ public class UriExpander {
      *                  "page", 2);
      * String expanded = expand("/users/{id}/activity{?limit,page}", map);
      *
-     * // Outputs: /users/15/activity?limit=50&page=2
+     * // Outputs: /users/15/activity?limit=50&amp;page=2
      * </pre></blockquote>
      *
      * <p>
@@ -359,7 +363,7 @@ public class UriExpander {
      *                                      "page", 3));
      * String expanded = expand("/users{?keyWords*,page}", map);
      *
-     * // Outputs: /users?keyWords=blue,active&page=3
+     * // Outputs: /users?keyWords=blue,active&amp;page=3
      * </pre></blockquote>
      *
      * @param uriAsTemplate

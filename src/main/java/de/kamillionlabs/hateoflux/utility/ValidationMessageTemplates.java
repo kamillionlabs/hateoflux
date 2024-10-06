@@ -19,24 +19,59 @@
 package de.kamillionlabs.hateoflux.utility;
 
 /**
+ * Utility class providing standard message templates for validation errors.
+ *
  * @author Younes El Ouarti
  */
-public class MessageTemplates {
+public class ValidationMessageTemplates {
 
+    private ValidationMessageTemplates() {
+    }
+
+    /**
+     * Returns a message indicating that a value is not allowed to be empty.
+     *
+     * @param valueName
+     *         the name of the value
+     * @return the formatted message
+     */
     public static String valueNotAllowedToBeEmpty(String valueName) {
         return String.format("%s is not allowed to be empty", valueName);
     }
 
+    /**
+     * Returns a message indicating that a value is not allowed to be null.
+     *
+     * @param valueName
+     *         the name of the value
+     * @return the formatted message
+     */
     public static String valueNotAllowedToBeNull(String valueName) {
         return String.format("%s is not allowed to be null", valueName);
     }
 
+    /**
+     * Returns a message indicating that a value is not allowed to be of a certain type.
+     *
+     * @param valueName
+     *         the name of the value
+     * @param type
+     *         the disallowed type
+     * @return the formatted message
+     */
     public static String valueIsNotAllowedToBeOfType(String valueName, String type) {
         return String.format("%s is not allowed to be of type %s", valueName, type);
     }
 
+    /**
+     * Returns a message indicating that a required value was non-existing.
+     *
+     * @param valueName
+     *         the name of the required value
+     * @return the formatted message
+     */
     public static String requiredValueWasNonExisting(String valueName) {
-        return String.format("Attempted to retrieve a required, but non existing %s", valueName);
+        return String.format("Attempted to retrieve a required, but non-existing %s", valueName);
     }
 
 }

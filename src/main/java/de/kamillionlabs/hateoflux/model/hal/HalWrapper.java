@@ -30,8 +30,7 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 
-import static de.kamillionlabs.hateoflux.utility.MessageTemplates.requiredValueWasNonExisting;
-import static de.kamillionlabs.hateoflux.utility.MessageTemplates.valueNotAllowedToBeNull;
+import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.*;
 
 
 /**
@@ -45,13 +44,21 @@ import static de.kamillionlabs.hateoflux.utility.MessageTemplates.valueNotAllowe
  * Subclasses are responsible for specific data implementations (e.g., entities, lists, pagination), using this class's
  * link management capabilities.
  *
+ * @param <HalWrapperT>
+ *         the implementation that is extending {@link HalWrapper}
  * @author Younes El Ouarti
  */
 @Data
 public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWrapperT>> {
 
+    /**
+     * Links of the {@link HalWrapper} as whole.
+     */
     protected final Map<LinkRelation, Link> links = new LinkedHashMap<>();
 
+    /**
+     * Creates empty {@link HalWrapper}
+     */
     protected HalWrapper() {
     }
 
@@ -151,13 +158,46 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
         return (HalWrapperT) this;
     }
 
+    /**
+     * Adds links to the {@link HalWrapper}. The list is not allowed to be null. The links in it must be fully specified
+     * with a href and a relation.
+     *
+     * @param links
+     *         links to add
+     * @throws IllegalArgumentException
+     *         if:
+     *         <ul>
+     *             <li>list is null</li>
+     *             <li>Containing links that </li>
+     *             <li>Containing links that are null or empty</li>
+     *             <li>Containing links that have no href</li>
+     *             <li>Containing links that have no link relation</li>
+     *         </ul>
+     */
     protected void add(@NonNull final Iterable<Link> links) {
         Assert.notNull(links, valueNotAllowedToBeNull("Links"));
         links.forEach(this::add);
     }
 
+    /**
+     * Adds links to the {@link HalWrapper}. The list is not allowed to be null. The links in it must be fully specified
+     * with a href and a relation.
+     *
+     * @param link
+     *         link to add
+     * @throws IllegalArgumentException
+     *         if:
+     *         <ul>
+     *             <li>link is null or empty</li>
+     *             <li>link has no href</li>
+     *             <li>link has no link relation</li>
+     *         </ul>
+     */
     protected void add(@NonNull final Link link) {
         Assert.notNull(link, valueNotAllowedToBeNull("Link"));
+        Assert.notNull(link.getHref(), valueNotAllowedToBeNull("Href of link"));
+        Assert.isTrue(!link.getHref().isBlank(), valueNotAllowedToBeEmpty("Href of link"));
+
         final LinkRelation linkRelation = link.getLinkRelation();
         Assert.notNull(linkRelation, "Link must have a relation");
         Assert.isTrue(!linkRelation.getRelation().isBlank(), "Link must have a non empty relation");

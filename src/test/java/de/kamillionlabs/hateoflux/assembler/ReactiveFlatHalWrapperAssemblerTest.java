@@ -64,7 +64,7 @@ class ReactiveFlatHalWrapperAssemblerTest {
         Book entity = new Book();
 
         //WHEN
-        HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.WrapInListWrapper(
+        HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.wrapInListWrapper(
                 Flux.fromIterable(List.of(entity,
                         entity)),
                 null
