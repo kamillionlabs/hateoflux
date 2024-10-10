@@ -142,8 +142,6 @@ tasks.register('generateChecksums') {
 }
 
 
-// Task to assemble all artifacts into a bundle
-
 tasks.register('assembleBundle', Zip) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 

@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* publishing lib into maven central
+* Bundling lib logic for maven central
+* Added missing javadocs
 
 ### Changed
 
