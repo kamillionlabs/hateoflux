@@ -12,7 +12,6 @@ java {
     sourceCompatibility = '17'
 }
 
-
 repositories {
     mavenCentral()
 }
@@ -35,7 +34,6 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.25.3'
     testImplementation 'org.skyscreamer:jsonassert:1.5.3'
 
-
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 }
@@ -55,7 +53,6 @@ tasks.register('javadocJar', Jar) {
     from javadoc.destinationDir
 }
 
-
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -71,7 +68,6 @@ publishing {
                 name = project.name
                 description = 'Lightweight HATEOAS library designed to work with Spring Webflux.'
                 url = 'https://github.com/kamillionlabs/hateoflux'
-
 
                 licenses {
                     license {
@@ -92,21 +88,8 @@ publishing {
                 scm {
                     connection = 'scm:git:git://github.com/kamillionlabs/hateoflux.git'
                     developerConnection = 'scm:git:ssh://git@github.com/kamillionlabs/hateoflux.git'
-                    url = 'https://github.com/kamillionlabs/hateoflux'
+                    url = 'https://github.com/kamillionlabs/hateoflux/'
                 }
-
-            }
-        }
-    }
-
-    repositories {
-        maven {
-            name = 'OSSRH'
-            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2")
-
-            credentials {
-                username = System.getenv('OSSRH_USERNAME') ?: ''
-                password = System.getenv('OSSRH_PASSWORD') ?: ''
             }
         }
     }
@@ -120,3 +103,104 @@ signing {
 ext['signing.gnupg.keyName'] = System.getenv('SIGNING_KEY_ID') ?: ''
 ext['signing.gnupg.passphrase'] = System.getenv('SIGNING_PASSWORD') ?: ''
 ext['signing.gnupg.options'] = ['--batch', '--yes', '--pinentry-mode', 'loopback']
+
+// Task to generate checksums for artifacts and their signatures
+tasks.register('generateChecksums') {
+    dependsOn 'jar', 'sourcesJar', 'javadocJar', 'signMavenJavaPublication', 'generatePomFileForMavenJavaPublication'
+
+    doLast {
+        def artifacts = []
+
+        def jarFile = tasks.named('jar').get().archiveFile.get().asFile
+        artifacts << jarFile
+
+        def sourcesJarFile = tasks.named('sourcesJar').get().archiveFile.get().asFile
+        artifacts << sourcesJarFile
+
+        def javadocJarFile = tasks.named('javadocJar').get().archiveFile.get().asFile
+        artifacts << javadocJarFile
+
+        // POM file
+        def pomFile = file("$buildDir/publications/mavenJava/pom-default.xml")
+        artifacts << pomFile
+
+        // Collect signature files separately
+        def signatureFiles = artifacts.collect { artifactFile ->
+            def signatureFile = new File("${artifactFile.path}.asc")
+            signatureFile.exists() ? signatureFile : null
+        }.findAll { it != null }
+
+        // Combine artifacts and signature files
+        def allFiles = artifacts + signatureFiles
+
+        // Generate MD5 and SHA1 checksums using 'todir' and 'fileext'
+        allFiles.each { artifactFile ->
+            ant.checksum(file: artifactFile, algorithm: 'MD5', todir: artifactFile.parentFile, fileext: '.md5')
+            ant.checksum(file: artifactFile, algorithm: 'SHA1', todir: artifactFile.parentFile, fileext: '.sha1')
+        }
+    }
+}
+
+
+// Task to assemble all artifacts into a bundle
+
+tasks.register('assembleBundle', Zip) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    dependsOn 'jar', 'sourcesJar', 'javadocJar', 'signMavenJavaPublication', 'generateChecksums', 'generatePomFileForMavenJavaPublication'
+
+    archiveFileName.set("${project.name}-${project.version}-bundle.zip")
+    destinationDirectory.set(file("$buildDir/distributions"))
+
+    def groupPath = project.group.replace('.', '/')
+    def artifactId = project.name
+    def version = project.version
+
+    def baseDir = "${groupPath}/${artifactId}/${version}"
+
+    def jarTask = tasks.named('jar').get()
+    def sourcesJarTask = tasks.named('sourcesJar').get()
+    def javadocJarTask = tasks.named('javadocJar').get()
+
+    // Define artifacts with explicit extensions
+    def artifacts = [
+            [file: jarTask.archiveFile.get().asFile, classifier: null, extension: 'jar'],
+            [file: sourcesJarTask.archiveFile.get().asFile, classifier: 'sources', extension: 'jar'],
+            [file: javadocJarTask.archiveFile.get().asFile, classifier: 'javadoc', extension: 'jar'],
+            [file: file("$buildDir/publications/mavenJava/pom-default.xml"), classifier: null, extension: 'pom']
+    ]
+
+    artifacts.each { artifact ->
+        def artifactFile = artifact.file
+        def classifier = artifact.classifier ? "-${artifact.classifier}" : ''
+        def artifactName = "${artifactId}-${version}${classifier}.${artifact.extension}"
+
+        def filesToInclude = []
+
+        // Original artifact file
+        if (artifactFile.exists()) {
+            filesToInclude << [source: artifactFile, destination: artifactName]
+        }
+
+        // Signature and checksum files
+        ['asc', 'md5', 'sha1'].each { ext ->
+            def additionalFile = new File("${artifactFile.path}.${ext}")
+            if (additionalFile.exists()) {
+                filesToInclude << [source: additionalFile, destination: "${artifactName}.${ext}"]
+            }
+        }
+
+        // Include files into the ZIP
+        filesToInclude.each { fileInfo ->
+            from(fileInfo.source) {
+                into(baseDir)
+                rename { fileInfo.destination }
+            }
+        }
+    }
+}
+
+
+
+
+
