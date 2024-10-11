@@ -9,7 +9,6 @@ build/
 /.run
 /generated/
 /out
-/gradle/wrapper/gradle-wrapper.properties
 
 # Compiled class file
 *.class
