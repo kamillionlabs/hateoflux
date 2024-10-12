@@ -1,5 +1,7 @@
 # hateoflux (WIP!)
 
+![Coverage](.github/badges/jacoco.svg)
+
 Lightweight HATEOAS library designed to work with Spring Webflux. This readme is currently just a todo list and will be
 rewritten accordingly.
 
