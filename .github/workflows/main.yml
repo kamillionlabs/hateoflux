@@ -80,3 +80,6 @@ jobs:
 
       - name: Dry Run Release
         run: ./gradlew clean assembleBundle -info --stacktrace
+        env:
+          SIGNING_KEY: "dummy key for dry run"
+          SIGNING_PASSWORD: "dummy pw for dry run"
