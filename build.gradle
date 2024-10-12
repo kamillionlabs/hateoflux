@@ -96,8 +96,15 @@ publishing {
 }
 
 signing {
-    useInMemoryPgpKeys(System.getenv('SIGNING_KEY'), System.getenv('SIGNING_PASSWORD'))
-    sign publishing.publications.mavenJava
+    def signingKey = System.getenv('SIGNING_KEY')
+    def signingPassword = System.getenv('SIGNING_PASSWORD')
+
+    if (signingKey && signingPassword) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications.mavenJava
+    } else {
+        println 'SIGNING_KEY or SIGNING_PASSWORD not set. Skipping signing tasks.'
+    }
 }
 
 

@@ -78,20 +78,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Decode SIGNING_KEY and Set Environment Variable
+      - name: Decode SIGNING_KEY_BASE64 and Set SIGNING_KEY
         shell: bash
         run: |
-          echo "${{ secrets.SIGNING_KEY_BASE64 }}" | base64 --decode > signingkey.asc
-          echo "SIGNING_KEY<<EOF" >> $GITHUB_ENV
-          cat signingkey.asc >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "${{ secrets.SIGNING_KEY_BASE64 }}" | base64 -d > decoded_signing_key.asc
+          echo "::add-mask::$(cat decoded_signing_key.asc)"
+          echo "SIGNING_KEY=$(cat decoded_signing_key.asc)" >> $GITHUB_ENV
+          rm decoded_signing_key.asc
 
       - name: Dry Run Release
-        run: ./gradlew clean assembleBundle --info --stacktrace
         env:
           SIGNING_KEY: ${{ env.SIGNING_KEY }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-
+        run: ./gradlew clean assembleBundle -info --stacktrace
 
       - name: Publish Release Artifacts
         uses: actions/upload-artifact@v4
