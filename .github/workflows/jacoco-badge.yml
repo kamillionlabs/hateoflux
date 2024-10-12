@@ -27,7 +27,7 @@ jobs:
       - name: Generate Coverage Badge
         uses: cicirello/jacoco-badge-generator@v2
         with:
-          jacoco-report-path: 'build/reports/jacoco/test/jacocoTestReport.xml'
+          jacoco-report-path: 'build/reports/jacoco/test/jacocoTestReport.csv'
           badge-path: 'README.md'
           badge-position: 'TOP'
           coverage-badges: '{"low": "red", "medium": "yellow", "high": "brightgreen"}'
