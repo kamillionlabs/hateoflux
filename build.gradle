@@ -43,7 +43,8 @@ jar.enabled = true
 
 jacocoTestReport {
     reports {
-        csv.required = true
+        xml.required = true
+        csv.required = false
     }
 }
 
