@@ -3,10 +3,10 @@ name: Generate JaCoCo Coverage Badge
 on:
   push:
     branches:
-      - master
-  pull_request:
-    branches:
-      - master
+      - [ '**' ]
+#  pull_request:
+#    branches:
+#      - master
 
 jobs:
   generate-badge:
@@ -29,8 +29,8 @@ jobs:
         uses: cicirello/jacoco-badge-generator@v1
         with:
           jacoco-report-path: 'build/reports/jacoco/test/jacocoTestReport.xml'
-          badge-path: 'README.md'      # Path to your README.md
-          badge-position: 'TOP'        # Position in README (e.g., TOP, BOTTOM)
+          badge-path: 'README.md'
+          badge-position: 'TOP'
           coverage-badges:
             low: 'red'
             medium: 'yellow'
