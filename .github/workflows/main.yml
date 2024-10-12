@@ -1,10 +1,11 @@
-name: hateoflux pipeline
+name: HateOfLux Pipeline
 
 on:
   push:
     branches: [ '**' ]
 
 jobs:
+  # Build Stage
   build:
     name: Build Jar
     runs-on: ubuntu-latest
@@ -20,10 +21,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assemble
 
-  test:
-    name: Run Unit Tests
+  # Verification Stage
+  verification:
+    name: Verification Stage
     runs-on: ubuntu-latest
     needs: build
+    strategy:
+      matrix:
+        task: [ test, javadocs ]
     steps:
       - uses: actions/checkout@v4
 
@@ -33,41 +38,25 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Run Tests with Gradle
-        run: ./gradlew test
+      - name: ${{ matrix.task == 'test' && 'Run Unit Tests' || 'Generate Javadocs' }}
+        run: |
+          if [ "${{ matrix.task }}" == "test" ]; then
+            ./gradlew test
+          elif [ "${{ matrix.task }}" == "javadocs" ]; then
+            ./gradlew javadoc
+          fi
 
-      - name: Publish Test Results
+      - name: Publish ${{ matrix.task == 'test' && 'Test Results' || 'Javadocs' }}
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: build/test-results
+          name: ${{ matrix.task == 'test' && 'test-results' || 'javadocs' }}
+          path: ${{ matrix.task == 'test' && 'build/test-results' || 'build/docs/javadoc' }}
 
-  javadocs:
-    name: Generate Javadocs
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Generate Javadocs
-        run: ./gradlew javadoc
-
-      - name: Publish Javadocs
-        uses: actions/upload-artifact@v4
-        with:
-          name: javadocs
-          path: build/docs/javadoc
-
+  # Release Stage
   dry-run-release:
     name: Dry Run Release
     runs-on: ubuntu-latest
-    needs: build
+    needs: [ verification ]
     if: ${{ github.ref != 'refs/heads/master' }}
     steps:
       - uses: actions/checkout@v4
@@ -83,9 +72,3 @@ jobs:
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-
-      - name: Publish Release Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dry-run-release
-          path: build/distributions/**/*
