@@ -80,10 +80,12 @@ jobs:
 
       - name: Dry Run Release
         run: ./gradlew clean assembleBundle --stacktrace
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
 
       - name: Publish Release Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dry-run-release
           path: build/distributions/**/*
-
