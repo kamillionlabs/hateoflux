@@ -1,11 +1,10 @@
-name: HateOfLux Pipeline
+name: hateoflux pipeline
 
 on:
   push:
     branches: [ '**' ]
 
 jobs:
-  # Build Stage
   build:
     name: Build Jar
     runs-on: ubuntu-latest
@@ -21,14 +20,10 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assemble
 
-  # Verification Stage
-  verification:
-    name: Verification Stage
+  test:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
     needs: build
-    strategy:
-      matrix:
-        task: [ test, javadocs ]
     steps:
       - uses: actions/checkout@v4
 
@@ -38,25 +33,41 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: ${{ matrix.task == 'test' && 'Run Unit Tests' || 'Generate Javadocs' }}
-        run: |
-          if [ "${{ matrix.task }}" == "test" ]; then
-            ./gradlew test
-          elif [ "${{ matrix.task }}" == "javadocs" ]; then
-            ./gradlew javadoc
-          fi
+      - name: Run Tests with Gradle
+        run: ./gradlew test
 
-      - name: Publish ${{ matrix.task == 'test' && 'Test Results' || 'Javadocs' }}
+      - name: Publish Test Results
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.task == 'test' && 'test-results' || 'javadocs' }}
-          path: ${{ matrix.task == 'test' && 'build/test-results' || 'build/docs/javadoc' }}
+          name: test-results
+          path: build/test-results
 
-  # Release Stage
+  javadocs:
+    name: Generate Javadocs
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Generate Javadocs
+        run: ./gradlew javadoc
+
+      - name: Publish Javadocs
+        uses: actions/upload-artifact@v4
+        with:
+          name: javadocs
+          path: build/docs/javadoc
+
   dry-run-release:
     name: Dry Run Release
     runs-on: ubuntu-latest
-    needs: [ verification ]
+    needs: [ test, javadocs ]
     if: ${{ github.ref != 'refs/heads/master' }}
     steps:
       - uses: actions/checkout@v4
@@ -77,4 +88,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dry-run-release
-          path: build/distributions
+          path: build/distributions/**/*
