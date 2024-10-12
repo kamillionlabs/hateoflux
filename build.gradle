@@ -96,16 +96,13 @@ publishing {
 }
 
 signing {
-    def signingKey = System.getenv('SIGNING_KEY')
-    def signingPassword = System.getenv('SIGNING_PASSWORD')
-
-    if (signingKey && signingPassword) {
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign publishing.publications.mavenJava
-    } else {
-        println 'SIGNING_KEY or SIGNING_PASSWORD not set. Skipping signing tasks.'
-    }
+    useGpgCmd()
+    sign publishing.publications.mavenJava
 }
+
+ext['signing.gnupg.keyName'] = System.getenv('SIGNING_KEY_ID') ?: ''
+ext['signing.gnupg.passphrase'] = System.getenv('SIGNING_PASSWORD') ?: ''
+ext['signing.gnupg.options'] = ['--batch', '--yes', '--pinentry-mode', 'loopback']
 
 
 // Task to generate checksums for artifacts and their signatures

@@ -79,4 +79,4 @@ jobs:
           distribution: 'temurin'
 
       - name: Dry Run Release
-        run: ./gradlew clean assembleBundle --stacktrace
+        run: ./gradlew clean assembleBundle -info --stacktrace
