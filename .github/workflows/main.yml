@@ -78,22 +78,5 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Decode SIGNING_KEY_BASE64 and Set SIGNING_KEY
-        shell: bash
-        run: |
-          echo "${{ secrets.SIGNING_KEY_BASE64 }}" | base64 -d > decoded_signing_key.asc
-          echo "::add-mask::$(cat decoded_signing_key.asc)"
-          echo "SIGNING_KEY=$(cat decoded_signing_key.asc)" >> $GITHUB_ENV
-          rm decoded_signing_key.asc
-
       - name: Dry Run Release
-        env:
-          SIGNING_KEY: ${{ env.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-        run: ./gradlew clean assembleBundle -info --stacktrace
-
-      - name: Publish Release Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dry-run-release
-          path: build/distributions/**/*
+        run: ./gradlew clean assembleBundle --stacktrace
