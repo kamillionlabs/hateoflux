@@ -41,6 +41,12 @@ dependencies {
 bootJar.enabled = false
 jar.enabled = true
 
+jacocoTestReport {
+    reports {
+        csv.required = true
+    }
+}
+
 tasks.register('sourcesJar', Jar) {
     dependsOn classes
     archiveClassifier = 'sources'
