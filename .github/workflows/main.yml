@@ -77,4 +77,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dry-run-release
-          path: build/distributions/*.zip
+          path: build/distributions
