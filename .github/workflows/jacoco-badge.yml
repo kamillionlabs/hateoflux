@@ -1,0 +1,62 @@
+name: Generate JaCoCo Coverage Badge
+
+on:
+  push:
+    branches: [ master ]
+
+permissions:
+  contents: write
+
+jobs:
+  generate-badge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build and Test with Gradle
+        run: ./gradlew clean test jacocoTestReport
+
+      - name: Generate Coverage Badge
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          jacoco-csv-file: 'build/reports/jacoco/test/jacocoTestReport.csv'
+          badges-directory: .github/badges
+          generate-coverage-badge: true
+          coverage-badge-filename: jacoco.svg
+          generate-branches-badge: false
+          branches-badge-filename: branches.svg
+          generate-coverage-endpoint: false
+          coverage-endpoint-filename: jacoco.json
+          generate-branches-endpoint: false
+          branches-endpoint-filename: branches.json
+          generate-summary: false
+          summary-filename: coverage-summary.json
+          coverage-label: coverage
+          branches-label: branches
+          colors: '#4c1 #97ca00 #a4a61d #dfb317 #fe7d37 #e05d44'
+          intervals: 100 90 80 70 60 0
+          on-missing-report: fail
+          fail-if-coverage-less-than: 0
+          fail-if-branches-less-than: 0
+          fail-on-coverage-decrease: false
+          fail-on-branches-decrease: false
+          generate-workflow-summary: true
+          workflow-summary-heading: JaCoCo Test Coverage Summary
+
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/badges/*
+          git commit -m "Update JaCoCo coverage badge [ci skip]" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
