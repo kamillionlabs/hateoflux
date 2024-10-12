@@ -1,9 +1,5 @@
 # hateoflux (WIP!)
 
-![Coverage](.github/badges/jacoco.svg)
-
-![Branches](.github/badges/branches.svg)
-
 Lightweight HATEOAS library designed to work with Spring Webflux. This readme is currently just a todo list and will be
 rewritten accordingly.
 
