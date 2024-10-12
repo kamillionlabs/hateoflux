@@ -34,10 +34,7 @@ jobs:
           jacoco-report-path: 'build/reports/jacoco/test/jacocoTestReport.xml'
           badge-path: 'README.md'
           badge-position: 'TOP'
-          coverage-badges:
-            low: 'red'
-            medium: 'yellow'
-            high: 'brightgreen'
+          coverage-badges: '{"low": "red", "medium": "yellow", "high": "brightgreen"}'
 
       - name: Commit and Push Changes
         run: |
