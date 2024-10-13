@@ -1,4 +1,4 @@
-name: Generate JaCoCo Coverage Badge
+name: Generate Badges
 
 on:
   push:
@@ -50,6 +50,10 @@ jobs:
           fail-on-branches-decrease: false
           generate-workflow-summary: true
           workflow-summary-heading: JaCoCo Test Coverage Summary
+
+      - name: Create Version Badge
+        run: .github/scripts/generate_version_badge.sh
+        shell: bash
 
       - name: Commit and Push Changes
         run: |
