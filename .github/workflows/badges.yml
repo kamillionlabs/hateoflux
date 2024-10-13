@@ -1,4 +1,4 @@
-name: Generate Badges
+name: Badges Generation
 
 on:
   pull_request:
