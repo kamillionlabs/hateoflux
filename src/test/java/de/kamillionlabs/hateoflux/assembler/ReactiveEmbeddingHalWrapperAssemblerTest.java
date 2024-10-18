@@ -25,17 +25,17 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
 
         @Override
         public Link buildSelfLinkForEntityList(ServerWebExchange exchange) {
-            return Link.linkAsSelfOf("reactive/entity-list/self/link");
+            return Link.of("reactive/entity-list/self/link");
         }
 
         @Override
         public Link buildSelfLinkForEntity(Book entityToWrap, ServerWebExchange exchange) {
-            return Link.linkAsSelfOf("reactive/entity/self/link");
+            return Link.of("reactive/entity/self/link");
         }
 
         @Override
         public Link buildSelfLinkForEmbedded(Author embedded, ServerWebExchange exchange) {
-            return Link.linkAsSelfOf("reactive/embedded/self/link");
+            return Link.of("reactive/embedded/self/link");
         }
 
         @Override

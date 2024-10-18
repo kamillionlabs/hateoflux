@@ -45,7 +45,7 @@ public sealed interface SealedEmbeddedLinkAssemblerModule<EmbeddedT> permits Emb
      */
     default List<Link> buildLinksForEmbedded(EmbeddedT embedded, ServerWebExchange exchange) {
         List<Link> links = new ArrayList<>();
-        links.add(buildSelfLinkForEmbedded(embedded, exchange));
+        links.add(buildSelfLinkForEmbedded(embedded, exchange).withSelfRel());
         links.addAll(buildOtherLinksForEmbedded(embedded, exchange));
         return links;
     }

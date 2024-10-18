@@ -87,7 +87,7 @@ public sealed interface SealedEntityListAssemblerModule<EntityT, EmbeddedT> perm
      */
     default List<Link> buildLinksForEntityList(ServerWebExchange exchange) {
         List<Link> links = new ArrayList<>();
-        links.add(buildSelfLinkForEntityList(exchange));
+        links.add(buildSelfLinkForEntityList(exchange).withSelfRel());
         links.addAll(buildOtherLinksForEntityList(exchange));
         return links;
     }

@@ -20,12 +20,12 @@ class FlatHalWrapperAssemblerTest {
 
         @Override
         public Link buildSelfLinkForEntityList(ServerWebExchange exchange) {
-            return Link.linkAsSelfOf("entity-list/self/link");
+            return Link.of("entity-list/self/link");
         }
 
         @Override
         public Link buildSelfLinkForEntity(Book entityToWrap, ServerWebExchange exchange) {
-            return Link.linkAsSelfOf("entity/self/link");
+            return Link.of("entity/self/link");
         }
     }
 

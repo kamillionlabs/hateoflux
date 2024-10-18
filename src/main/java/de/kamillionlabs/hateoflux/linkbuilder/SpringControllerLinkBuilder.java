@@ -21,6 +21,9 @@ package de.kamillionlabs.hateoflux.linkbuilder;
 import de.kamillionlabs.hateoflux.model.hal.Composite;
 import de.kamillionlabs.hateoflux.model.link.Link;
 import org.springframework.cglib.proxy.Enhancer;
+import org.springframework.cglib.proxy.Factory;
+import org.springframework.cglib.proxy.MethodInterceptor;
+import org.springframework.objenesis.SpringObjenesis;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
@@ -87,7 +90,7 @@ public class SpringControllerLinkBuilder {
      * @param methodRef
      *         a functional interface implementation that references the controller method
      *         for which the link is to be generated.
-     * @return a {@link Link} object that encapsulates the URI pointing to the entity as exposed by the
+     * @return an expanded {@link Link} object that encapsulates the URI pointing to the entity as exposed by the
      * controller method referenced
      *
      * @throws IllegalArgumentException
@@ -108,8 +111,17 @@ public class SpringControllerLinkBuilder {
 
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(controllerClass);
-        enhancer.setCallback(interceptor);
-        ControllerT proxy = (ControllerT) enhancer.create();
+        // Set the callback types instead of actual callbacks
+        enhancer.setCallbackType(MethodInterceptor.class);
+
+        // Create the proxy class without instantiating it
+        Class<?> proxyClass = enhancer.createClass();
+
+        SpringObjenesis objenesis = new SpringObjenesis();
+        ControllerT proxy = (ControllerT) objenesis.newInstance(proxyClass);
+
+        // Set the callback on the proxy instance
+        ((Factory) proxy).setCallback(0, interceptor);
 
         // Invoke the method reference, which will capture the method details
         methodRef.invoke(proxy);

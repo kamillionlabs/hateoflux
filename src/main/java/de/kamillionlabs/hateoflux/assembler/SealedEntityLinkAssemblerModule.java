@@ -46,7 +46,7 @@ public sealed interface SealedEntityLinkAssemblerModule<EntityT>
      */
     default List<Link> buildLinksForEntity(EntityT entityToWrap, ServerWebExchange exchange) {
         List<Link> links = new ArrayList<>();
-        links.add(buildSelfLinkForEntity(entityToWrap, exchange));
+        links.add(buildSelfLinkForEntity(entityToWrap, exchange).withSelfRel());
         links.addAll(buildOtherLinksForEntity(entityToWrap, exchange));
         return links;
     }

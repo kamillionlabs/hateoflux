@@ -1,6 +1,7 @@
 package de.kamillionlabs.hateoflux.linkbuilder;
 
 import de.kamillionlabs.hateoflux.dummy.controller.DummyController;
+import de.kamillionlabs.hateoflux.dummy.controller.DummyControllerWithMemberVar;
 import de.kamillionlabs.hateoflux.model.link.Link;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,6 +17,16 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 
 class SpringControllerLinkBuilderTest {
+
+    @Test
+    void givenControllerWithNoDefaultConstructor_whenLinkToCalled_thenReturnLinkWithoutException() {
+        //GIVEN
+        Link link = linkTo(DummyControllerWithMemberVar.class, c -> c.convertTheNumber(123));
+
+        //THEN
+        assertThat(link.getHref()).isEqualTo("/dummy-member-var/123");
+
+    }
 
 
     @ParameterizedTest

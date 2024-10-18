@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0]
+
+### Added
+
+* Added utilities for base url
+* Added local publishing to build.gradle
+
+### Changed
+
+* In assemblers all buildSelfLink skeleton methods assign the SELF relation per default
+
+### Fixed
+
+* Fix exception in SpringControllerLinkBuilder when controller had no default constructor
+
 ## [0.10.0]
 
 ### Added
