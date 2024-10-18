@@ -31,6 +31,9 @@ import java.net.URI;
  */
 public class BaseUrlExtractor {
 
+    private BaseUrlExtractor() {
+    }
+
     /**
      * Extracts the base URL from the given {@link ServerWebExchange}.
      *
