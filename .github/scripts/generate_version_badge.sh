@@ -20,9 +20,3 @@ BADGE_URL="https://img.shields.io/badge/${PROPERTY_NAME}-${ENCODED_VALUE}-bright
 # Download the badge
 curl -o ./.github/badges/${PROPERTY_NAME}.svg $BADGE_URL
 
-# Commit the updated badge
-#git config --local user.email "action@github.com"
-#git config --local user.name "GitHub Action"
-#git add badges/${PROPERTY_NAME}.svg
-#git commit -m "Update ${PROPERTY_NAME} badge to ${PROPERTY_VALUE}"
-#git push

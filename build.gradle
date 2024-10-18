@@ -121,8 +121,8 @@ signing {
     } else {
         println 'Using GPG command-line tool for signing.'
         useGpgCmd()
-        ext['signing.gnupg.keyName'] = signingKeyId
-        ext['signing.gnupg.passphrase'] = signingPassword
+        ext['signing.keyId'] = signingKeyId
+        ext['signing.password'] = signingPassword
         ext['signing.gnupg.options'] = ['--batch', '--yes', '--pinentry-mode', 'loopback']
     }
     sign publishing.publications.mavenJava
