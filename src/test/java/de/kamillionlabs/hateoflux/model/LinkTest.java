@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
 
 import java.util.List;
 import java.util.Map;
@@ -12,6 +14,71 @@ import java.util.Map;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class LinkTest {
+
+
+    @ParameterizedTest
+    @CsvSource({
+            "http://localhost:8080, current/href, http://localhost:8080/current/href",
+            "http://example.com, /, http://example.com/",
+            "http://localhost:8080, /slash/beginning-and-end/, http://localhost:8080/slash/beginning-and-end/",
+    })
+    void givenServerHttpRequest_whenPrependBaseUrl_thenBaseUrlPrependedToHref(String baseUrl, String currentLink,
+                                                                              String expectedHref) {
+        //GIVEN
+        Link link = Link.of(currentLink);
+        MockServerHttpRequest request = MockServerHttpRequest
+                .get(baseUrl)
+                .build();
+
+        //WHEN
+        Link result = link.prependBaseUrl(request);
+
+        //THEN
+        assertThat(result).isNotNull();
+        assertThat(result.getHref()).isEqualTo(expectedHref);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "http://localhost:8080, current/href, http://localhost:8080/current/href",
+            "http://example.com, /, http://example.com/",
+            "http://localhost:8080, /slash/beginning-and-end/, http://localhost:8080/slash/beginning-and-end/",
+    })
+    void givenServerWebExchange_whenPrependBaseUrl_thenBaseUrlPrependedToHref(String baseUrl, String currentLink,
+                                                                              String expectedHref) {
+        //GIVEN
+        Link link = Link.of(currentLink);
+        MockServerHttpRequest request = MockServerHttpRequest
+                .get(baseUrl)
+                .build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        //WHEN
+        Link result = link.prependBaseUrl(exchange);
+
+        //THEN
+        assertThat(result).isNotNull();
+        assertThat(result.getHref()).isEqualTo(expectedHref);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "http://localhost:8080, current/href, http://localhost:8080/current/href",
+            "http://example.com, /, http://example.com/",
+            "http://localhost:8080, /slash/beginning-and-end/, http://localhost:8080/slash/beginning-and-end/",
+    })
+    void givenBaseUrl_whenPrependBaseUrl_thenBaseUrlPrependedToHref(String baseUrl, String currentLink,
+                                                                    String expectedHref) {
+        //GIVEN
+        Link link = Link.of(currentLink);
+
+        //WHEN
+        Link result = link.prependBaseUrl(baseUrl);
+
+        //THEN
+        assertThat(result).isNotNull();
+        assertThat(result.getHref()).isEqualTo(expectedHref);
+    }
 
     @ParameterizedTest
     @NullAndEmptySource
@@ -75,9 +142,14 @@ class LinkTest {
     })
     public void givenMapToExpandWithExplodedParameter_whenExpand_thenPlaceholdersCorrectlySet(
             boolean collectionRenderedAsComposite, String expectedUri) {
+        //GIVEN
         Link link = Link.of("http://example.com{?keyWords*}");
         Map<String, Object> parameters = Map.of("keyWords", List.of("blue", "red"));
+
+        //WHEN
         Link actual = link.expand(parameters, collectionRenderedAsComposite);
+
+        //THEN
         assertThat(actual.getHref()).isEqualTo(expectedUri);
     }
 

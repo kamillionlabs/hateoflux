@@ -27,6 +27,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    testImplementation 'org.springframework:spring-test'
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.2'
@@ -39,7 +40,10 @@ dependencies {
 }
 
 bootJar.enabled = false
-jar.enabled = true
+jar {
+    enabled = true
+    archiveClassifier = ''
+}
 
 jacocoTestReport {
     reports {
@@ -100,10 +104,27 @@ publishing {
             }
         }
     }
+
+    repositories {
+        mavenLocal()
+    }
 }
 
 signing {
-    useInMemoryPgpKeys(System.getenv('SIGNING_KEY'), System.getenv('SIGNING_PASSWORD'))
+    def signingKey = System.getenv('SIGNING_KEY')
+    def signingKeyId = System.getenv('SIGNING_KEY_ID')
+    def signingPassword = System.getenv('SIGNING_PASSWORD')
+
+    if (signingKey?.trim()) {
+        println 'Using in-memory PGP keys for signing.'
+        useInMemoryPgpKeys(signingKey, signingPassword)
+    } else {
+        println 'Using GPG command-line tool for signing.'
+        useGpgCmd()
+        ext['signing.keyId'] = signingKeyId
+        ext['signing.password'] = signingPassword
+        ext['signing.gnupg.options'] = ['--batch', '--yes', '--pinentry-mode', 'loopback']
+    }
     sign publishing.publications.mavenJava
 }
 
@@ -201,8 +222,3 @@ tasks.register('assembleBundle', Zip) {
         }
     }
 }
-
-
-
-
-

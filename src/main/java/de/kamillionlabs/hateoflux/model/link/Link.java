@@ -22,12 +22,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.kamillionlabs.hateoflux.linkbuilder.BaseUrlExtractor;
 import de.kamillionlabs.hateoflux.linkbuilder.UriExpander;
 import de.kamillionlabs.hateoflux.linkbuilder.UriTemplateData;
 import lombok.Getter;
 import lombok.Value;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ServerWebExchange;
 
 import java.util.Map;
 
@@ -322,7 +325,7 @@ public class Link {
      *
      * @param uriPart
      *         The URI part to be appended.
-     * @return A new instance of {@link Link} with the appended URI part.
+     * @return A new {@link Link} object with the appended URI part.
      */
     public Link slash(String uriPart) {
         StringBuffer newHref = new StringBuffer(this.href);
@@ -344,12 +347,50 @@ public class Link {
 
 
     /**
+     * Extracts the base URL from the given {@link ServerHttpRequest} and prepends it to the current {@code href}.
+     *
+     * @param httpRequest
+     *         The request that provides the data to extract the base URL from.
+     * @return A new {@link Link} object with the prepended base URL.
+     */
+    public Link prependBaseUrl(ServerHttpRequest httpRequest) {
+        String baseUrl = BaseUrlExtractor.extractBaseUrl(httpRequest);
+        return prependBaseUrl(baseUrl);
+    }
+
+    /**
+     * Extracts the base URL from the given {@link ServerWebExchange} and prepends it to the current {@code href}.
+     *
+     * @param exchangeWithBaseUrl
+     *         The exchange that provides the data to extract the base URL from.
+     * @return A new {@link Link} object with the prepended base URL.
+     */
+    public Link prependBaseUrl(ServerWebExchange exchangeWithBaseUrl) {
+        String baseUrl = BaseUrlExtractor.extractBaseUrl(exchangeWithBaseUrl);
+        return prependBaseUrl(baseUrl);
+    }
+
+    /**
+     * Prepends the provided base URL to the current {@code href}.
+     *
+     * @param baseUrl
+     *         Base URL to prepend to current link
+     * @return A new {@link Link} object with the prepended base URL.
+     */
+    public Link prependBaseUrl(String baseUrl) {
+        String currentHref = this.getHref();
+        Link finalHref = Link.of(baseUrl).slash(currentHref);
+        return this.withHref(finalHref.getHref());
+    }
+
+
+    /**
      * Utility method that serves as a proxy for {@link UriExpander#expand(String, Object...)}. Please refer to
      * mentioned method for full documentation.
      *
      * @param parameters
      *         parameters to expand in templated href
-     * @return the expanded or original URI if expansion is not applicable
+     * @return The expanded or original URI if expansion is not applicable
      */
     public Link expand(Object... parameters) {
         String newHref = UriExpander.expand(this.href, parameters);
