@@ -183,4 +183,15 @@ class SpringControllerLinkBuilderTest {
     }
 
 
+    @Test
+    void givenpostMappingWithVoidAsReturnValue_whenLinkTo_noExceptionIsThrownAndLinkIsCorrect() {
+        // GIVEN & WHEN
+        final Link link = linkTo(DummyController.class,
+                DummyController::postMappingWithVoidAsReturnValue);
+
+        //THEN
+        assertThat(link.getHref()).isEqualTo("/dummy/void-of-nothing");
+    }
+
+
 }

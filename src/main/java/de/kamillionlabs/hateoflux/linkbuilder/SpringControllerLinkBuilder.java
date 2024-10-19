@@ -124,7 +124,8 @@ public class SpringControllerLinkBuilder {
         ((Factory) proxy).setCallback(0, interceptor);
 
         // Invoke the method reference, which will capture the method details
-        methodRef.invoke(proxy);
+        // "unused" var is necessary to mitigate IDE warning of "Value is never used as Publisher"
+        Object unused = methodRef.invoke(proxy);
         final Method capturedMethod = interceptor.getCapturedMethod();
 
         if (capturedMethod == null) {

@@ -39,8 +39,8 @@ public class DummyController {
     }
 
     @PostMapping("/{someUuId}")
-    public Mono<Void> postMappingWithParameter(@PathVariable UUID someUuId) {
-        return Mono.empty();
+    public Mono<String> postMappingWithParameter(@PathVariable UUID someUuId) {
+        return Mono.just("test");
     }
 
     @PostMapping("/{someUuId}")
@@ -89,6 +89,11 @@ public class DummyController {
 
     @PostMapping("/names")
     public Mono<Void> postMappingWithCompositeCollectionAsQueryParameter(@Composite @RequestParam Collection<String> names) {
+        return Mono.empty();
+    }
+
+    @PostMapping("/void-of-nothing")
+    public Mono<Void> postMappingWithVoidAsReturnValue() {
         return Mono.empty();
     }
 

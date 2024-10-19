@@ -18,6 +18,8 @@
 
 package de.kamillionlabs.hateoflux.linkbuilder;
 
+import org.reactivestreams.Publisher;
+
 /**
  * Functional interface for method references to a controller method in the context of URI generation. This interface
  * enables type-safe referencing of specific methods within a controller when constructing links with
@@ -38,7 +40,9 @@ public interface ControllerMethodReference<ControllerT> {
      *
      * @param controller
      *         Controller class of which the method should be invoked
+     * @return the publisher is unused and can be safely ignored
+     *
      * @see SpringControllerLinkBuilder#linkTo(Class, ControllerMethodReference)
      */
-    void invoke(ControllerT controller);
+    Publisher<?> invoke(ControllerT controller);
 }
