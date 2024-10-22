@@ -41,7 +41,7 @@ import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.*;
  * {@link HalWrapper} includes utility functions to manage hypermedia links. These functions allow subclasses to add,
  * and retrieve links, supporting structured implementation of HAL responses.
  * <p>
- * Subclasses are responsible for specific data implementations (e.g., entities, lists, pagination), using this class's
+ * Subclasses are responsible for specific data implementations (e.g., resources, lists, pagination), using this class's
  * link management capabilities.
  *
  * @param <HalWrapperT>
@@ -68,9 +68,9 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
     }
 
     /**
-     * Get the list of links of the wrapped entity/entities.
+     * Get the list of links of the wrapped resource(s).
      *
-     * @return the list of links of the wrapped entity/entities.
+     * @return the list of links of the wrapped resource(s).
      */
     @JsonIgnore
     public List<Link> getLinks() {
@@ -79,7 +79,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
 
 
     /**
-     * Get a specific link of the links of the wrapped entity/entities.
+     * Get a specific link of the links of the wrapped resource(s).
      *
      * @param relation
      *         Relation with which the link to retrieve is identified
@@ -91,7 +91,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
     }
 
     /**
-     * Get a specific link of the links of the wrapped entity/entities.
+     * Get a specific link of the links of the wrapped resource(s).
      *
      * @param relation
      *         Relation with which the link to retrieve is identified
@@ -103,7 +103,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
     }
 
     /**
-     * Get a specific link of the links of the wrapped entity/entities. In contrast to {@link #getLink(IanaRelation)},
+     * Get a specific link of the links of the wrapped resource(s). In contrast to {@link #getLink(IanaRelation)},
      * this method assumes, that the link with the provided relation exists. Otherwise, an exception is thrown.
      *
      * @param relation
@@ -117,7 +117,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
     }
 
     /**
-     * Get a specific link of the links of the wrapped entity/entities. In contrast to {@link #getLink(IanaRelation)},
+     * Get a specific link of the links of the wrapped resource(s). In contrast to {@link #getLink(IanaRelation)},
      * this method assumes, that the link with the provided relation exists. Otherwise, an exception is thrown.
      *
      * @param relation
@@ -131,7 +131,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
     }
 
     /**
-     * Adds {@link Link}s to the currently wrapped entity.
+     * Adds {@link Link}s to the currently wrapped resource.
      *
      * @param links
      *         links to add
@@ -145,7 +145,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
     }
 
     /**
-     * Adds {@link Link}s to the currently wrapped entity.
+     * Adds {@link Link}s to the currently wrapped resource.
      *
      * @param links
      *         links to add
@@ -224,13 +224,13 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
 
 
     /**
-     * Determines the entity name based on {@link Relation}  annotation or using a default naming strategy.
+     * Determines the resource name based on {@link Relation}  annotation or using a default naming strategy.
      *
      * @param clazz
      *         the resource class
-     * @return the name to use for the entity
+     * @return the name to use for the resource
      */
-    protected static String determineEntityRelationName(Class<?> clazz) {
+    protected static String determineResourceRelationName(Class<?> clazz) {
         return Optional.ofNullable(clazz.getAnnotation(Relation.class))
                 .map(Relation::value)
                 .filter(relationName -> !relationName.isEmpty())
@@ -239,8 +239,8 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
 
     /**
      * Determines the appropriate relation name for a given object based on its type. This method classifies the object
-     * as either a collection or a single entity. If the object is an instance of {@link Iterable}, it is treated as a
-     * collection, otherwise, it is treated as a single entity. The relation name is derived based on the
+     * as either a collection or a single resource. If the object is an instance of {@link Iterable}, it is treated as a
+     * collection, otherwise, it is treated as a single resource. The relation name is derived based on the
      * {@link Relation} annotation if present, or through a default naming convention otherwise.
      *
      * <p>The method returns a name that is used to represent the relationship of the object in hypermedia-driven
@@ -248,7 +248,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
      *
      * <ul>
      *     <li>For collections: The pluralized form of the class name in camelCase or name in {@link Relation}.</li>
-     *     <li>For single entities: The class name in camelCase or name in {@link Relation}.</li>
+     *     <li>For single a resource: The class name in camelCase or name in {@link Relation}.</li>
      * </ul>
      *
      * @param object
@@ -266,14 +266,14 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
             Object firstElement = iterator.next();
             Class<?> clazz = firstElement.getClass();
             if (firstElement instanceof HalEmbeddedWrapper<?> wrapper) {
-                clazz = wrapper.getEmbeddedEntity().getClass();
+                clazz = wrapper.getEmbeddedResource().getClass();
             }
-            if (firstElement instanceof HalEntityWrapper<?, ?> wrapper) {
-                clazz = wrapper.getEntity().getClass();
+            if (firstElement instanceof HalResourceWrapper<?, ?> wrapper) {
+                clazz = wrapper.getResource().getClass();
             }
             return determineCollectionRelationName(clazz);
         } else {
-            return determineEntityRelationName(object.getClass());
+            return determineResourceRelationName(object.getClass());
         }
     }
 

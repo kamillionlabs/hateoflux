@@ -18,8 +18,8 @@
 
 package de.kamillionlabs.hateoflux.assembler;
 
-import de.kamillionlabs.hateoflux.model.hal.HalEntityWrapper;
 import de.kamillionlabs.hateoflux.model.hal.HalListWrapper;
+import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
@@ -29,64 +29,66 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 /**
- * Reactive interface for managing the transformation of standalone entities into HAL-compliant representations,
+ * Reactive interface for managing the transformation of standalone resources into HAL-compliant representations,
  * supplemented with hypermedia links in a reactive programming context. This interface is tailored for reactive
- * environments, facilitating the enhancement of entity streams with the necessary fields and structure to comply with
- * HAL standards, enabling reactive streams of entities to become HAL-compliant.
+ * environments, facilitating the enhancement of resource streams with the necessary fields and structure to comply
+ * with
+ * HAL standards, enabling reactive streams of resources to become HAL-compliant.
  * <p>
  * While the interface's main focus is the transformation of reactive streams, it also comes equipped with the means to
  * transform in an imperative manner, i.e., with direct objects and, for example, lists.
  *
  * <p> Core functionalities include:
  * <ul>
- *     <li>Enhancing streams of entities to meet HAL structure requirements reactively.</li>
- *     <li>Appending hypermedia links to entities within the stream to support navigability and resource interaction
+ *     <li>Enhancing streams of resources to meet HAL structure requirements reactively.</li>
+ *     <li>Appending hypermedia links to resources within the stream to support navigability and resource interaction
  *     in a HAL-based API reactively.</li>
- *     <li>Supporting pagination and backpressure in reactive streams when wrapping entities to provide structured
+ *     <li>Supporting pagination and backpressure in reactive streams when wrapping resources to provide structured
  *     navigation across large datasets reactively.</li>
  * </ul>
  * <p>
- * This interface abstracts the reactive tasks associated with modifying entity streams to fit HAL specifications,
- * streamlining the creation of HAL-compliant entity representations in a reactive programming context.
+ * This interface abstracts the reactive tasks associated with modifying resource streams to fit HAL specifications,
+ * streamlining the creation of HAL-compliant resource representations in a reactive programming context.
  *
  * <p>See also:
  * <ul>
- *    <li>{@link FlatHalWrapperAssembler} - for imperative (non-reactive) handling of entities <b>without</b>
- *    embedded entities.</li>
- *    <li>{@link EmbeddingHalWrapperAssembler} - for imperative handling of entities <b>with</b> embedded entities.</li>
+ *    <li>{@link FlatHalWrapperAssembler} - for imperative (non-reactive) handling of resources <b>without</b>
+ *    embedded resources.</li>
+ *    <li>{@link EmbeddingHalWrapperAssembler} - for imperative handling of resources <b>with</b> embedded resources
+ *    .</li>
  *    <li>{@link ReactiveEmbeddingHalWrapperAssembler} - for reactive <b>and</b> imperative handling of standalone
- *    entities <b>with</b> embedded entities.</li>
+ *    resources <b>with</b> embedded resources.</li>
  * </ul>
  *
- * @param <EntityT>
+ * @param <ResourceT>
  *         the type of the object being wrapped, which contains the main data
  * @author Younes El Ouarti
  */
-public interface ReactiveFlatHalWrapperAssembler<EntityT> extends FlatHalWrapperAssembler<EntityT> {
+public interface ReactiveFlatHalWrapperAssembler<ResourceT> extends FlatHalWrapperAssembler<ResourceT> {
 
     /**
-     * Wraps the provided entities in a single {@link HalListWrapper}.
+     * Wraps the provided resources in a single {@link HalListWrapper}.
      *
-     * @param entitiesToWrap
-     *         entities to wrap
+     * @param resourcesToWrap
+     *         resources to wrap
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return wrapped entities
+     * @return wrapped resources
      *
      * @see #wrapInListWrapper(Flux, Mono, int, Long, ServerWebExchange)
      */
 
-    default Mono<HalListWrapper<EntityT, Void>> wrapInListWrapper(@NonNull Flux<EntityT> entitiesToWrap,
-                                                                  ServerWebExchange exchange) {
-        return entitiesToWrap.collectList()
-                .map(entitiesToWrapValue -> wrapInListWrapper(entitiesToWrapValue, exchange));
+    default Mono<HalListWrapper<ResourceT, Void>> wrapInListWrapper(@NonNull Flux<ResourceT> resourcesToWrap,
+                                                                    ServerWebExchange exchange) {
+        return resourcesToWrap.collectList()
+                .map(resourcesToWrapValue -> wrapInListWrapper(resourcesToWrapValue, exchange));
     }
 
     /**
-     * Wraps the provided entities in a single {@link HalListWrapper} with paging information.
+     * Wraps the provided resources in a single {@link HalListWrapper} with paging information.
      *
-     * @param entitiesToWrap
-     *         entities to wrap
+     * @param resourcesToWrap
+     *         resources to wrap
      * @param totalElements
      *         the total number of elements across all pages
      * @param pageSize
@@ -95,34 +97,34 @@ public interface ReactiveFlatHalWrapperAssembler<EntityT> extends FlatHalWrapper
      *         the starting offset of the page, if specified
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return wrapped entities
+     * @return wrapped resources
      *
      * @see #wrapInListWrapper(Flux, ServerWebExchange)
      */
-    default Mono<HalListWrapper<EntityT, Void>> wrapInListWrapper(@NonNull Flux<EntityT> entitiesToWrap,
-                                                                  @NonNull Mono<Long> totalElements,
-                                                                  int pageSize,
-                                                                  @Nullable Long offset,
-                                                                  ServerWebExchange exchange) {
-        Mono<List<EntityT>> entitiesAsListMono = entitiesToWrap.collectList();
-        return Mono.zip(entitiesAsListMono, totalElements,
-                (entitiesValue, totalElementsValue) -> wrapInListWrapper(entitiesValue, totalElementsValue,
+    default Mono<HalListWrapper<ResourceT, Void>> wrapInListWrapper(@NonNull Flux<ResourceT> resourcesToWrap,
+                                                                    @NonNull Mono<Long> totalElements,
+                                                                    int pageSize,
+                                                                    @Nullable Long offset,
+                                                                    ServerWebExchange exchange) {
+        Mono<List<ResourceT>> resourcesAsListMono = resourcesToWrap.collectList();
+        return Mono.zip(resourcesAsListMono, totalElements,
+                (resourcesValue, totalElementsValue) -> wrapInListWrapper(resourcesValue, totalElementsValue,
                         pageSize, offset, exchange));
     }
 
     /**
-     * Wraps the provided entity in a {@link HalEntityWrapper}
+     * Wraps the provided resource in a {@link HalResourceWrapper}
      *
-     * @param entityToWrap
-     *         entity to wrap
+     * @param resourceToWrap
+     *         resource to wrap
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return wrapped entity
+     * @return wrapped resource
      */
-    default Mono<HalEntityWrapper<EntityT, Void>> wrapInEntityWrapper(@NonNull Mono<EntityT> entityToWrap,
-                                                                      ServerWebExchange exchange) {
+    default Mono<HalResourceWrapper<ResourceT, Void>> wrapInResourceWrapper(@NonNull Mono<ResourceT> resourceToWrap,
+                                                                            ServerWebExchange exchange) {
 
-        return entityToWrap.map(e -> wrapInEntityWrapper(e, exchange));
+        return resourceToWrap.map(e -> wrapInResourceWrapper(e, exchange));
     }
 
 }

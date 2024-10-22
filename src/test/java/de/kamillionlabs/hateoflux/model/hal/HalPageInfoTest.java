@@ -22,8 +22,8 @@ class HalPageInfoTest {
 
     @Test
     void givenListAndTotalElements_whenAssembleWithListAndPageSize() {
-        List<?> entities = Collections.nCopies(10, new Object());
-        HalPageInfo pageInfo = HalPageInfo.assemble(entities, 100L, 10);
+        List<?> resources = Collections.nCopies(10, new Object());
+        HalPageInfo pageInfo = HalPageInfo.assemble(resources, 100L, 10);
 
         assertThat(pageInfo).isNotNull();
         assertThat(pageInfo.size()).isEqualTo(10);
@@ -34,8 +34,8 @@ class HalPageInfoTest {
 
     @Test
     void givenListTotalElementsPageSizeAndOffset_whenAssembleWithListOffset() {
-        List<?> entities = Collections.nCopies(10, new Object());
-        HalPageInfo pageInfo = HalPageInfo.assemble(entities, 100L, 10, 10L);
+        List<?> resources = Collections.nCopies(10, new Object());
+        HalPageInfo pageInfo = HalPageInfo.assemble(resources, 100L, 10, 10L);
 
         assertThat(pageInfo).isNotNull();
         assertThat(pageInfo.size()).isEqualTo(10);

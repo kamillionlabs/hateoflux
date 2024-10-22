@@ -16,21 +16,21 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 class HalWrapperTest {
 
     @Test
-    void givenAnnotatedClassEntity_whenDetermineRelationNameForObject_thenAnnotatedEntityName() {
+    void givenAnnotatedClassResource_whenDetermineRelationNameForObject_thenAnnotatedResourceName() {
         Book book = new Book();
         AssertionsForClassTypes.assertThat(HalWrapper.determineRelationNameForObject(book))
                 .isEqualTo("customBook");
     }
 
     @Test
-    void givenUnannotatedClassEntity_whenDetermineRelationNameForObject_thenDefaultEntityName() {
+    void givenUnannotatedClassResource_whenDetermineRelationNameForObject_thenDefaultResourceName() {
         UnannotatedBook unannotatedBook = new UnannotatedBook();
         AssertionsForClassTypes.assertThat(HalWrapper.determineRelationNameForObject(unannotatedBook))
                 .isEqualTo("unannotatedBook");
     }
 
     @Test
-    void givenEmptyAnnotationClassEntity_whenDetermineRelationNameForObject_thenDefaultEntityName() {
+    void givenEmptyAnnotationClassResource_whenDetermineRelationNameForObject_thenDefaultResourceName() {
         EmptyRelationBook emptyRelationBook = new EmptyRelationBook();
         AssertionsForClassTypes.assertThat(HalWrapper.determineRelationNameForObject(emptyRelationBook))
                 .isEqualTo("emptyRelationBook");

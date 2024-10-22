@@ -46,7 +46,7 @@ public class SpringControllerLinkBuilder {
     }
 
     /**
-     * Creates a {@link Link} object that represents a link to the entity or entities addressed by calling the API of
+     * Creates a {@link Link} object that represents a link to the resource(s) addressed by calling the API of
      * the specified controller class. This method uses the {@link ControllerMethodReference} to ensure type-safe
      * referencing of controller methods. The link is expanded using the parameters in the template and the parameters
      * with which the method reference was called.
@@ -90,7 +90,7 @@ public class SpringControllerLinkBuilder {
      * @param methodRef
      *         a functional interface implementation that references the controller method
      *         for which the link is to be generated.
-     * @return an expanded {@link Link} object that encapsulates the URI pointing to the entity as exposed by the
+     * @return an expanded {@link Link} object that encapsulates the URI pointing to the resource as exposed by the
      * controller method referenced
      *
      * @throws IllegalArgumentException
@@ -149,7 +149,7 @@ public class SpringControllerLinkBuilder {
      * @param controllerClass
      *         the class of the controller containing the target method. This class must be
      *         annotated with {@link RestController} or {@link Controller} to be valid.
-     * @return a {@link Link} object that encapsulates the URI pointing to the entity as exposed by the
+     * @return a {@link Link} object that encapsulates the URI pointing to the resource as exposed by the
      * controller method referenced
      */
     public static <ControllerT> Link linkTo(Class<ControllerT> controllerClass) {
