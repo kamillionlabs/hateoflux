@@ -28,15 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Assembler module that has utility functions and builds links for a list of entities.
+ * Assembler module that has utility functions and builds links for a list of resources.
  *
- * @param <EntityT>
+ * @param <ResourceT>
  *         the type of the object being wrapped, which contains the main data
  * @param <EmbeddedT>
  *         the type of the object representing additional embedded resources related to the main data, if any
  * @author Younes El Ouarti
  */
-public sealed interface SealedEntityListAssemblerModule<EntityT, EmbeddedT> permits
+public sealed interface SealedResourceListAssemblerModule<ResourceT, EmbeddedT> permits
         FlatHalWrapperAssembler, EmbeddingHalWrapperAssembler {
 
 
@@ -44,18 +44,18 @@ public sealed interface SealedEntityListAssemblerModule<EntityT, EmbeddedT> perm
      * Creates an empty {@link HalListWrapper} including hypermedia links applicable to the entire list.
      *
      * @param listItemTypeAsNameOrigin
-     *         the class of the entity from which the list name is derived, typically pluralized to represent both
-     *         entity and embedded entity types (also see {@link Relation})
+     *         the class of the resource from which the list name is derived, typically pluralized to represent both
+     *         resource and embedded resource types (also see {@link Relation})
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return an initialized {@link HalListWrapper} with relevant hypermedia links for the entire list
      *
      * @see #createEmptyListWrapper(String, ServerWebExchange)
      */
-    default HalListWrapper<EntityT, EmbeddedT> createEmptyListWrapper(@NonNull Class<?> listItemTypeAsNameOrigin,
-                                                                      ServerWebExchange exchange) {
-        HalListWrapper<EntityT, EmbeddedT> emptyWrapper = HalListWrapper.empty(listItemTypeAsNameOrigin);
-        return emptyWrapper.withLinks(buildLinksForEntityList(exchange));
+    default HalListWrapper<ResourceT, EmbeddedT> createEmptyListWrapper(@NonNull Class<?> listItemTypeAsNameOrigin,
+                                                                        ServerWebExchange exchange) {
+        HalListWrapper<ResourceT, EmbeddedT> emptyWrapper = HalListWrapper.empty(listItemTypeAsNameOrigin);
+        return emptyWrapper.withLinks(buildLinksForResourceList(exchange));
     }
 
     /**
@@ -69,49 +69,51 @@ public sealed interface SealedEntityListAssemblerModule<EntityT, EmbeddedT> perm
      *
      * @see #createEmptyListWrapper(Class, ServerWebExchange)
      */
-    default HalListWrapper<EntityT, EmbeddedT> createEmptyListWrapper(@NonNull String listName,
-                                                                      ServerWebExchange exchange) {
-        HalListWrapper<EntityT, EmbeddedT> emptyWrapper = HalListWrapper.empty(listName);
-        return emptyWrapper.withLinks(buildLinksForEntityList(exchange));
+    default HalListWrapper<ResourceT, EmbeddedT> createEmptyListWrapper(@NonNull String listName,
+                                                                        ServerWebExchange exchange) {
+        HalListWrapper<ResourceT, EmbeddedT> emptyWrapper = HalListWrapper.empty(listName);
+        return emptyWrapper.withLinks(buildLinksForResourceList(exchange));
     }
 
     /**
-     * Main method for building all links for a list of entities and embedded entities, including a self-link and other
-     * contextual links applicable to the entire list. It aggregates results from {@link #buildSelfLinkForEntityList}
-     * and {@link #buildOtherLinksForEntityList}.
+     * Main method for building all links for a list of resources and embedded resources, including a self-link and
+     * other
+     * contextual links applicable to the entire list. It aggregates results from {@link #buildSelfLinkForResourceList}
+     * and {@link #buildOtherLinksForResourceList}.
      *
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a list of {@link Link} objects representing hypermedia links for the entire list of entity and embedded
-     * entity types
+     * @return a list of {@link Link} objects representing hypermedia links for the entire list of resource and embedded
+     * resource types
      */
-    default List<Link> buildLinksForEntityList(ServerWebExchange exchange) {
+    default List<Link> buildLinksForResourceList(ServerWebExchange exchange) {
         List<Link> links = new ArrayList<>();
-        links.add(buildSelfLinkForEntityList(exchange).withSelfRel());
-        links.addAll(buildOtherLinksForEntityList(exchange));
+        links.add(buildSelfLinkForResourceList(exchange).withSelfRel());
+        links.addAll(buildOtherLinksForResourceList(exchange));
         return links;
     }
 
     /**
-     * Provides additional contextual links for a list of entities and embedded entities, beyond the self-link,
+     * Provides additional contextual links for a list of resources and embedded resources, beyond the self-link,
      * applicable to the entire list.
      *
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a list of {@link Link} objects for the entire list of entity and embedded entity types
+     * @return a list of {@link Link} objects for the entire list of resource and embedded resource types
      */
-    default List<Link> buildOtherLinksForEntityList(ServerWebExchange exchange) {
+    default List<Link> buildOtherLinksForResourceList(ServerWebExchange exchange) {
         return List.of();
     }
 
     /**
-     * Creates a self-link for a list of entities and embedded entities, representing a URI that clients can use to
+     * Creates a self-link for a list of resources and embedded resources, representing a URI that clients can use to
      * access the list directly, applicable to the entire list.
      *
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link Link} object representing the self-link for the entire list of entity and embedded entity types
+     * @return a {@link Link} object representing the self-link for the entire list of resource and embedded resource
+     * types
      */
-    Link buildSelfLinkForEntityList(ServerWebExchange exchange);
+    Link buildSelfLinkForResourceList(ServerWebExchange exchange);
 
 }

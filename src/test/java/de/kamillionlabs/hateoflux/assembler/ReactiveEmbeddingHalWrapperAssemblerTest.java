@@ -3,9 +3,9 @@ package de.kamillionlabs.hateoflux.assembler;
 import de.kamillionlabs.hateoflux.dummy.model.Author;
 import de.kamillionlabs.hateoflux.dummy.model.Book;
 import de.kamillionlabs.hateoflux.model.hal.HalEmbeddedWrapper;
-import de.kamillionlabs.hateoflux.model.hal.HalEntityWrapper;
 import de.kamillionlabs.hateoflux.model.hal.HalListWrapper;
 import de.kamillionlabs.hateoflux.model.hal.HalPageInfo;
+import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
 import de.kamillionlabs.hateoflux.model.link.IanaRelation;
 import de.kamillionlabs.hateoflux.model.link.Link;
 import de.kamillionlabs.hateoflux.utility.Pair;
@@ -24,13 +24,13 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
     static class AssemblerUnderTest implements ReactiveEmbeddingHalWrapperAssembler<Book, Author> {
 
         @Override
-        public Link buildSelfLinkForEntityList(ServerWebExchange exchange) {
-            return Link.of("reactive/entity-list/self/link");
+        public Link buildSelfLinkForResourceList(ServerWebExchange exchange) {
+            return Link.of("reactive/resource-list/self/link");
         }
 
         @Override
-        public Link buildSelfLinkForEntity(Book entityToWrap, ServerWebExchange exchange) {
-            return Link.of("reactive/entity/self/link");
+        public Link buildSelfLinkForResource(Book resourceToWrap, ServerWebExchange exchange) {
+            return Link.of("reactive/resource/self/link");
         }
 
         @Override
@@ -49,14 +49,14 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
     private final AssemblerUnderTest assemblerUnderTest = new AssemblerUnderTest();
 
     @Test
-    public void givenEntityWithEmbedded_whenWrapInEntityWrapper_thenAllFieldsAreFilled() {
+    public void givenResourceWithEmbedded_whenWrapInResourceWrapper_thenAllFieldsAreFilled() {
         //GIVEN
-        Book entity = new Book();
+        Book resource = new Book();
         Author embedded = new Author();
 
         //WHEN
-        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInEntityWrapper(
-                Mono.just(entity),
+        HalResourceWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInResourceWrapper(
+                Mono.just(resource),
                 Mono.just(embedded),
                 null
         ).block();
@@ -65,18 +65,18 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
          * THEN
          */
         assertThat(actualWrapper).isNotNull();
-        //Entity
-        Book actualEntity = actualWrapper.getEntity();
-        assertThat(actualEntity).isNotNull();
-        assertThat(actualEntity).isEqualTo(entity);
+        //Resource
+        Book actualResource = actualWrapper.getResource();
+        assertThat(actualResource).isNotNull();
+        assertThat(actualResource).isEqualTo(resource);
         assertThat(actualWrapper.getLinks()).hasSize(1);
-        assertThat(actualWrapper.getRequiredLink(IanaRelation.SELF).getHref()).isEqualTo("reactive/entity/self/link");
+        assertThat(actualWrapper.getRequiredLink(IanaRelation.SELF).getHref()).isEqualTo("reactive/resource/self/link");
 
         //Embedded
         assertThat(actualWrapper.getEmbedded().isPresent()).isTrue();
         assertThat(actualWrapper.getRequiredEmbedded()).hasSize(1);
         HalEmbeddedWrapper<Author> actualEmbedded = actualWrapper.getRequiredEmbedded().get(0);
-        assertThat(actualEmbedded.getEmbeddedEntity()).isEqualTo(embedded);
+        assertThat(actualEmbedded.getEmbeddedResource()).isEqualTo(embedded);
         assertThat(actualEmbedded.getLinks().size()).isEqualTo(2);
         assertThat(actualEmbedded.getRequiredLink(IanaRelation.SELF)
                 .getHref()).isEqualTo("reactive/embedded/self/link");
@@ -84,14 +84,14 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenEntityWithEmbeddedList_whenWrapInEntityWrapper_thenEmbeddedHas2Entities() {
+    public void givenResourceWithEmbeddedList_whenWrapInResourceWrapper_thenEmbeddedHas2Resources() {
         //GIVEN
-        Book entity = new Book();
+        Book resource = new Book();
         Author embedded = new Author();
 
         //WHEN
-        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInEntityWrapper(
-                Mono.just(entity),
+        HalResourceWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInResourceWrapper(
+                Mono.just(resource),
                 Flux.fromIterable(List.of(embedded, embedded)),
                 null
         ).block();
@@ -103,14 +103,14 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenEntityWithEmbeddedEmptyListAndStringName_whenWrapInEntityWrapper_thenEmbeddedHasGivenName() {
+    public void givenResourceWithEmbeddedEmptyListAndStringName_whenWrapInResourceWrapper_thenEmbeddedHasGivenName() {
         //GIVEN
-        Book entity = new Book();
+        Book resource = new Book();
         String embeddedListName = "testEmbeddedListName";
 
         //WHEN
-        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInEntityWrapper(
-                Mono.just(entity),
+        HalResourceWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInResourceWrapper(
+                Mono.just(resource),
                 embeddedListName,
                 Flux.empty(),
                 null
@@ -124,14 +124,14 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenEntityWithEmbeddedEmptyListAndClassAsName_whenWrapInEntityWrapper_thenEmbeddedHasGivenClassName() {
+    public void givenResourceWithEmbeddedEmptyListAndClassAsName_whenWrapInResourceWrapper_thenEmbeddedHasGivenClassName() {
         //GIVEN
-        Book entity = new Book();
+        Book resource = new Book();
         Class<?> clazz = Book.class;
 
         //WHEN
-        HalEntityWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInEntityWrapper(
-                Mono.just(entity),
+        HalResourceWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInResourceWrapper(
+                Mono.just(resource),
                 clazz,
                 Flux.empty(),
                 null
@@ -145,17 +145,17 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenEntitiesEachWithEmbedded_whenWrapInListWrapper_thenAllFieldsAreFilled() {
+    public void givenResourcesEachWithEmbedded_whenWrapInListWrapper_thenAllFieldsAreFilled() {
         //GIVEN
-        Book entity = new Book();
+        Book resource = new Book();
         Author embedded = new Author();
 
         //WHEN
         HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
                 Flux.fromIterable(
                         List.of(
-                                Pair.of(entity, embedded),
-                                Pair.of(entity, embedded)
+                                Pair.of(resource, embedded),
+                                Pair.of(resource, embedded)
                         )
                 ),
                 null
@@ -166,40 +166,40 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
          */
         //HalListWrapper
         assertThat(actualWrapper).isNotNull();
-        assertThat(actualWrapper.getEntityList()).hasSize(2);
+        assertThat(actualWrapper.getResourceList()).hasSize(2);
         assertThat(actualWrapper.getLinks()).hasSize(1);
         assertThat(actualWrapper.getRequiredLink(IanaRelation.SELF)
-                .getHref()).isEqualTo("reactive/entity-list/self/link");
+                .getHref()).isEqualTo("reactive/resource-list/self/link");
 
-        //Entities
-        List<HalEntityWrapper<Book, Author>> actualEntityList = actualWrapper.getEntityList();
-        assertThat(actualEntityList).isNotNull();
-        assertThat(actualEntityList).hasSize(2);
-        assertThat(actualEntityList.get(0).getLinks()).hasSize(1);
-        assertThat(actualEntityList.get(0).getRequiredLink(IanaRelation.SELF)
-                .getHref()).isEqualTo("reactive/entity/self/link");
-        assertThat(actualEntityList.get(1).getLinks()).hasSize(1);
-        assertThat(actualEntityList.get(1).getRequiredLink(IanaRelation.SELF)
-                .getHref()).isEqualTo("reactive/entity/self/link");
+        //Resources
+        List<HalResourceWrapper<Book, Author>> actualResourceList = actualWrapper.getResourceList();
+        assertThat(actualResourceList).isNotNull();
+        assertThat(actualResourceList).hasSize(2);
+        assertThat(actualResourceList.get(0).getLinks()).hasSize(1);
+        assertThat(actualResourceList.get(0).getRequiredLink(IanaRelation.SELF)
+                .getHref()).isEqualTo("reactive/resource/self/link");
+        assertThat(actualResourceList.get(1).getLinks()).hasSize(1);
+        assertThat(actualResourceList.get(1).getRequiredLink(IanaRelation.SELF)
+                .getHref()).isEqualTo("reactive/resource/self/link");
 
         //Embedded
-        HalEmbeddedWrapper<Author> actualEmbedded = actualEntityList.get(0).getRequiredEmbedded().get(0);
+        HalEmbeddedWrapper<Author> actualEmbedded = actualResourceList.get(0).getRequiredEmbedded().get(0);
         assertThat(actualEmbedded).isNotNull();
         assertThat(actualEmbedded.getLinks()).hasSize(2);
     }
 
     @Test
-    public void givenEntitiesAndADataForPageInfo_wrapInListWrapper_thenAllFieldsAreFilled() {
+    public void givenResourcesAndADataForPageInfo_wrapInListWrapper_thenAllFieldsAreFilled() {
         //GIVEN
-        Book entity = new Book();
+        Book resource = new Book();
         Author embedded = new Author();
 
         //WHEN
         HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
                 Flux.fromIterable(
                         List.of(
-                                Pair.of(entity, embedded),
-                                Pair.of(entity, embedded)
+                                Pair.of(resource, embedded),
+                                Pair.of(resource, embedded)
                         )
                 ),
                 Mono.just(100L),
@@ -221,9 +221,9 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
 
         //Rudimentary testing (rest is tested elsewhere)
         assertThat(actualWrapper).isNotNull();
-        List<HalEntityWrapper<Book, Author>> actualEntityList = actualWrapper.getEntityList();
-        assertThat(actualEntityList).isNotNull();
-        HalEmbeddedWrapper<Author> actualEmbedded = actualEntityList.get(0).getRequiredEmbedded().get(0);
+        List<HalResourceWrapper<Book, Author>> actualResourceList = actualWrapper.getResourceList();
+        assertThat(actualResourceList).isNotNull();
+        HalEmbeddedWrapper<Author> actualEmbedded = actualResourceList.get(0).getRequiredEmbedded().get(0);
         assertThat(actualEmbedded).isNotNull();
     }
 

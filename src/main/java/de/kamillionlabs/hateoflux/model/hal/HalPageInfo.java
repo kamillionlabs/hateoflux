@@ -61,27 +61,28 @@ public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, 
     }
 
     /**
-     * Computes pagination information based on a list of entities, total number of elements, and a given page size.
+     * Computes pagination information based on a list of resources, total number of elements, and a given page size.
      * This method assumes the initial page (offset is null).
      *
-     * @param entities
-     *         the list of entities from which to calculate the current page size
+     * @param resources
+     *         the list of resources from which to calculate the current page size
      * @param totalElements
      *         the total number of elements
      * @param pageSize
      *         the size of each page
      * @return a new instance of {@link HalPageInfo}
      */
-    public static HalPageInfo assemble(@NonNull List<?> entities, long totalElements, int pageSize) {
-        return assemble(entities.size(), totalElements, pageSize, null);
+    public static HalPageInfo assemble(@NonNull List<?> resources, long totalElements, int pageSize) {
+        return assemble(resources.size(), totalElements, pageSize, null);
     }
 
     /**
-     * Computes pagination information based on a list of entities, total number of elements, page size, and an optional
+     * Computes pagination information based on a list of resources, total number of elements, page size, and an
+     * optional
      * offset marking the start of pagination.
      *
-     * @param entities
-     *         the list of entities from which to calculate the current page size
+     * @param resources
+     *         the list of resources from which to calculate the current page size
      * @param totalElements
      *         the total number of elements
      * @param pageSize
@@ -90,9 +91,9 @@ public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, 
      *         the offset from which to start pagination, can be null
      * @return a new instance of {@link HalPageInfo}
      */
-    public static HalPageInfo assemble(@NonNull List<?> entities, long totalElements, int pageSize,
+    public static HalPageInfo assemble(@NonNull List<?> resources, long totalElements, int pageSize,
                                        @Nullable Long offset) {
-        return assemble(entities.size(), totalElements, pageSize, offset);
+        return assemble(resources.size(), totalElements, pageSize, offset);
     }
 
 
@@ -100,7 +101,7 @@ public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, 
      * Computes pagination information based on size, total number of elements, page size, and an optional offset.
      *
      * @param size
-     *         the current page size calculated from entities list
+     *         the current page size calculated from resources list
      * @param totalElements
      *         the total number of elements
      * @param pageSize

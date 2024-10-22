@@ -27,52 +27,53 @@ import org.springframework.web.server.ServerWebExchange;
 import java.util.List;
 
 /**
- * Interface for managing the transformation of entities and their associated embedded entities into HAL-compliant
- * representations, supplemented with hypermedia links. This interface facilitates the direct enhancement of entities
- * with the necessary fields and structure to comply with HAL standards, enabling entities to become HAL-compliant.
+ * Interface for managing the transformation of resources and their associated embedded resources into HAL-compliant
+ * representations, supplemented with hypermedia links. This interface facilitates the direct enhancement of resources
+ * with the necessary fields and structure to comply with HAL standards, enabling resources to become HAL-compliant.
  *
  * <p> Core functionalities include:
  * <ul>
- *     <li>Directly enhancing main entities and their embedded entities to meet HAL structure requirements.</li>
- *     <li>Appending hypermedia links to entities to support navigability and resource interaction in a HAL-based
+ *     <li>Directly enhancing main resources and their embedded resources to meet HAL structure requirements.</li>
+ *     <li>Appending hypermedia links to resources to support navigability and resource interaction in a HAL-based
  *     API.</li>
- *     <li>Enabling custom naming and linking definitions for collections of embedded entities through
+ *     <li>Enabling custom naming and linking definitions for collections of embedded resources through
  *     implementation.</li>
- *     <li>Supporting pagination when wrapping lists of entities to provide structured navigation across large
+ *     <li>Supporting pagination when wrapping lists of resources to provide structured navigation across large
  *     datasets.</li>
  * </ul>
  * <p>
- * This interface abstracts the tasks associated with modifying entities to fit HAL specifications, streamlining the
- * creation of HAL-compliant entity representations.
+ * This interface abstracts the tasks associated with modifying resources to fit HAL specifications, streamlining the
+ * creation of HAL-compliant resource representations.
  *
  * <p>See also:
  * <ul>
- *    <li>{@link FlatHalWrapperAssembler} - for imperative (non-reactive) handling of entities <b>without</b>
- *    embedded entities.</li>
- *    <li>{@link ReactiveEmbeddingHalWrapperAssembler} - for reactive <b>and</b> imperative handling of entities
- *    <b>with</b> embedded entities.</li>
+ *    <li>{@link FlatHalWrapperAssembler} - for imperative (non-reactive) handling of resources <b>without</b>
+ *    embedded resources.</li>
+ *    <li>{@link ReactiveEmbeddingHalWrapperAssembler} - for reactive <b>and</b> imperative handling of resources
+ *    <b>with</b> embedded resources.</li>
  *    <li>{@link ReactiveFlatHalWrapperAssembler} - for reactive <b>and</b> imperative handling of standalone
- *    entities <b>without</b> embedded entities.</li>
+ *    resources <b>without</b> embedded resources.</li>
  * </ul>
  *
- * @param <EntityT>
+ * @param <ResourceT>
  *         the type of the object being wrapped, which contains the main data
  * @param <EmbeddedT>
  *         the type of the object representing additional embedded resources related to the main data, if any
  * @author Younes El Ouarti
  */
-public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> extends
-        SealedEntityLinkAssemblerModule<EntityT>,
-        SealedEntityListAssemblerModule<EntityT, EmbeddedT>,
+public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> extends
+        SealedResourceLinkAssemblerModule<ResourceT>,
+        SealedResourceListAssemblerModule<ResourceT, EmbeddedT>,
         SealedEmbeddedLinkAssemblerModule<EmbeddedT> {
 
 
     /**
-     * Wraps a list of main entities with their corresponding embedded entities in a {@link HalListWrapper}, optionally
+     * Wraps a list of main resources with their corresponding embedded resources in a {@link HalListWrapper},
+     * optionally
      * including pagination information, appending hypermedia links as defined by the assembler.
      *
-     * @param entitiesToWrap
-     *         the list of main entities and their corresponding embedded entities to wrap
+     * @param resourcesToWrap
+     *         the list of main resources and their corresponding embedded resources to wrap
      * @param pageInfo
      *         optional pagination information to include in the wrapper
      * @param exchange
@@ -82,19 +83,19 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
      * @see #wrapInListWrapper(PairList, long, int, Long, ServerWebExchange)
      * @see #wrapInListWrapper(PairList, ServerWebExchange)
      */
-    default HalListWrapper<EntityT, EmbeddedT> wrapInListWrapper(@NonNull PairList<EntityT, EmbeddedT> entitiesToWrap,
-                                                                 @Nullable HalPageInfo pageInfo,
-                                                                 ServerWebExchange exchange) {
-        List<HalEntityWrapper<EntityT, EmbeddedT>> listOfWrappedEntitiesWithEmbedded =
-                entitiesToWrap.stream()
+    default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull PairList<ResourceT, EmbeddedT> resourcesToWrap,
+                                                                   @Nullable HalPageInfo pageInfo,
+                                                                   ServerWebExchange exchange) {
+        List<HalResourceWrapper<ResourceT, EmbeddedT>> listOfWrappedResourcesWithEmbedded =
+                resourcesToWrap.stream()
                         .map(pair -> {
-                            EntityT entity = pair.left();
+                            ResourceT resource = pair.left();
                             EmbeddedT embedded = pair.right();
-                            return wrapInEntityWrapper(entity, embedded, exchange);
+                            return wrapInResourceWrapper(resource, embedded, exchange);
                         }).toList();
 
-        HalListWrapper<EntityT, EmbeddedT> result = HalListWrapper.wrap(listOfWrappedEntitiesWithEmbedded)
-                .withLinks(buildLinksForEntityList(exchange));
+        HalListWrapper<ResourceT, EmbeddedT> result = HalListWrapper.wrap(listOfWrappedResourcesWithEmbedded)
+                .withLinks(buildLinksForResourceList(exchange));
 
         if (pageInfo == null) {
             return result;
@@ -104,29 +105,29 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
     }
 
     /**
-     * Wraps a list of main entities with their corresponding embedded entities in a {@link HalListWrapper}, appending
+     * Wraps a list of main resources with their corresponding embedded resources in a {@link HalListWrapper}, appending
      * hypermedia links as defined by the assembler.
      *
-     * @param entitiesToWrap
-     *         the list of main entities and their corresponding embedded entities to wrap
+     * @param resourcesToWrap
+     *         the list of main resources and their corresponding embedded resources to wrap
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalListWrapper} equipped with hypermedia links for each entity and the list as a whole
+     * @return a {@link HalListWrapper} equipped with hypermedia links for each resource and the list as a whole
      *
      * @see #wrapInListWrapper(PairList, long, int, Long, ServerWebExchange)
      * @see #wrapInListWrapper(PairList, HalPageInfo, ServerWebExchange)
      */
-    default HalListWrapper<EntityT, EmbeddedT> wrapInListWrapper(@NonNull PairList<EntityT, EmbeddedT> entitiesToWrap,
-                                                                 ServerWebExchange exchange) {
-        return wrapInListWrapper(entitiesToWrap, null, exchange);
+    default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull PairList<ResourceT, EmbeddedT> resourcesToWrap,
+                                                                   ServerWebExchange exchange) {
+        return wrapInListWrapper(resourcesToWrap, null, exchange);
     }
 
     /**
-     * Wraps a list of main entities with their corresponding embedded entities in a {@link HalListWrapper} with
+     * Wraps a list of main resources with their corresponding embedded resources in a {@link HalListWrapper} with
      * pagination information, appending hypermedia links as defined by the assembler.
      *
-     * @param entitiesToWrap
-     *         the list of main entities and their corresponding embedded entities to wrap
+     * @param resourcesToWrap
+     *         the list of main resources and their corresponding embedded resources to wrap
      * @param totalElements
      *         the total number of elements across all pages
      * @param pageSize
@@ -140,133 +141,139 @@ public non-sealed interface EmbeddingHalWrapperAssembler<EntityT, EmbeddedT> ext
      * @see #wrapInListWrapper(PairList, HalPageInfo, ServerWebExchange)
      * @see #wrapInListWrapper(PairList, ServerWebExchange)
      */
-    default HalListWrapper<EntityT, EmbeddedT> wrapInListWrapper(@NonNull PairList<EntityT, EmbeddedT> entitiesToWrap,
-                                                                 long totalElements,
-                                                                 int pageSize,
-                                                                 @Nullable Long offset,
-                                                                 ServerWebExchange exchange) {
-        HalPageInfo pageInfo = HalPageInfo.assemble(entitiesToWrap, totalElements, pageSize, offset);
-        return wrapInListWrapper(entitiesToWrap, pageInfo, exchange);
+    default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull PairList<ResourceT, EmbeddedT> resourcesToWrap,
+                                                                   long totalElements,
+                                                                   int pageSize,
+                                                                   @Nullable Long offset,
+                                                                   ServerWebExchange exchange) {
+        HalPageInfo pageInfo = HalPageInfo.assemble(resourcesToWrap, totalElements, pageSize, offset);
+        return wrapInListWrapper(resourcesToWrap, pageInfo, exchange);
     }
 
 
     /**
-     * Wraps a single main entity and its corresponding embedded entity in a {@link HalEntityWrapper}, appending
+     * Wraps a single main resource and its corresponding embedded resource in a {@link HalResourceWrapper}, appending
      * hypermedia links as defined by the assembler.
      *
-     * @param entityToWrap
-     *         the main entity to wrap
+     * @param resourceToWrap
+     *         the main resource to wrap
      * @param embedded
-     *         the embedded entity associated with the main entity
+     *         the embedded resource associated with the main resource
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalEntityWrapper} with hypermedia links for the entity and its embedded counterpart
+     * @return a {@link HalResourceWrapper} with hypermedia links for the resource and its embedded counterpart
      *
-     * @see #wrapInEntityWrapper(Object, List, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Object, List, ServerWebExchange)
      */
-    default HalEntityWrapper<EntityT, EmbeddedT> wrapInEntityWrapper(@NonNull EntityT entityToWrap,
-                                                                     @NonNull EmbeddedT embedded,
-                                                                     ServerWebExchange exchange) {
-        return HalEntityWrapper.wrap(entityToWrap)
-                .withLinks(buildLinksForEntity(entityToWrap, exchange))
-                .withEmbeddedEntity(
+    default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
+                                                                           @NonNull EmbeddedT embedded,
+                                                                           ServerWebExchange exchange) {
+        return HalResourceWrapper.wrap(resourceToWrap)
+                .withLinks(buildLinksForResource(resourceToWrap, exchange))
+                .withEmbeddedResource(
                         HalEmbeddedWrapper.wrap(embedded)
                                 .withLinks(buildLinksForEmbedded(embedded, exchange))
                 );
     }
 
     /**
-     * Wraps a single main entity and a non-empty list of its embedded entities in a {@link HalEntityWrapper}, appending
+     * Wraps a single main resource and a non-empty list of its embedded resources in a {@link HalResourceWrapper},
+     * appending
      * hypermedia links as defined by the assembler.
      *
-     * @param entityToWrap
-     *         the main entity to wrap
+     * @param resourceToWrap
+     *         the main resource to wrap
      * @param embeddedList
-     *         the non-empty list of embedded entities associated with the main entity; the list name is derived from
-     *         the embedded entity's class name (see also {@link Relation})
+     *         the non-empty list of embedded resources associated with the main resource; the list name is derived from
+     *         the embedded resource's class name (see also {@link Relation})
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalEntityWrapper} that includes the main entity and its embedded entities, all enhanced with
+     * @return a {@link HalResourceWrapper} that includes the main resource and its embedded resources, all enhanced
+     * with
      * hypermedia links
      *
      * @throws IllegalArgumentException
      *         if the embedded list is null or empty
-     * @see #wrapInEntityWrapper(Object, Object, ServerWebExchange)
-     * @see #wrapInEntityWrapper(Object, String, List, ServerWebExchange)
-     * @see #wrapInEntityWrapper(Object, Class, List, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Object, Object, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Object, String, List, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Object, Class, List, ServerWebExchange)
      */
-    default HalEntityWrapper<EntityT, EmbeddedT> wrapInEntityWrapper(@NonNull EntityT entityToWrap,
-                                                                     @NonNull List<EmbeddedT> embeddedList,
-                                                                     ServerWebExchange exchange) {
+    default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
+                                                                           @NonNull List<EmbeddedT> embeddedList,
+                                                                           ServerWebExchange exchange) {
         var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
-        return HalEntityWrapper.wrap(entityToWrap)
-                .withLinks(buildLinksForEntity(entityToWrap, exchange))
+        return HalResourceWrapper.wrap(resourceToWrap)
+                .withLinks(buildLinksForResource(resourceToWrap, exchange))
                 .withNonEmptyEmbeddedList(wrappedEmbeddedList);
     }
 
     /**
-     * Wraps a single main entity and its list of embedded entities, identified by a directly provided list name, in a
-     * {@link HalEntityWrapper}, appending hypermedia links as defined by the assembler. The list is allowed to be
+     * Wraps a single main resource and its list of embedded resources, identified by a directly provided list name, in
+     * a
+     * {@link HalResourceWrapper}, appending hypermedia links as defined by the assembler. The list is allowed to be
      * empty.
      *
-     * @param entityToWrap
-     *         the main entity to wrap
+     * @param resourceToWrap
+     *         the main resource to wrap
      * @param embeddedListName
-     *         the explicitly provided name for the list of embedded entities
+     *         the explicitly provided name for the list of embedded resources
      * @param embeddedList
-     *         the list of embedded entities associated with the main entity, which may be empty
+     *         the list of embedded resources associated with the main resource, which may be empty
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalEntityWrapper} that includes the main entity and its embedded entities, all enhanced with
+     * @return a {@link HalResourceWrapper} that includes the main resource and its embedded resources, all enhanced
+     * with
      * hypermedia links
      *
-     * @see #wrapInEntityWrapper(Object, Object, ServerWebExchange)
-     * @see #wrapInEntityWrapper(Object, Class, List, ServerWebExchange)
-     * @see #wrapInEntityWrapper(Object, List, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Object, Object, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Object, Class, List, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Object, List, ServerWebExchange)
      */
-    default HalEntityWrapper<EntityT, EmbeddedT> wrapInEntityWrapper(@NonNull EntityT entityToWrap,
-                                                                     @NonNull String embeddedListName,
-                                                                     @NonNull List<EmbeddedT> embeddedList,
-                                                                     ServerWebExchange exchange) {
+    default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
+                                                                           @NonNull String embeddedListName,
+                                                                           @NonNull List<EmbeddedT> embeddedList,
+                                                                           ServerWebExchange exchange) {
         var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
-        return HalEntityWrapper.wrap(entityToWrap)
-                .withLinks(buildLinksForEntity(entityToWrap, exchange))
+        return HalResourceWrapper.wrap(resourceToWrap)
+                .withLinks(buildLinksForResource(resourceToWrap, exchange))
                 .withEmbeddedList(embeddedListName, wrappedEmbeddedList);
     }
 
     /**
-     * Wraps a single main entity and its list of embedded entities, with the list name derived from the specified class
-     * {@code embeddedTypeAsNameOrigin}, in a {@link HalEntityWrapper}, appending hypermedia links as defined by the
+     * Wraps a single main resource and its list of embedded resources, with the list name derived from the specified
+     * class
+     * {@code embeddedTypeAsNameOrigin}, in a {@link HalResourceWrapper}, appending hypermedia links as defined by the
      * assembler. The list may be empty.
      *
-     * @param entityToWrap
-     *         the main entity to wrap
+     * @param resourceToWrap
+     *         the main resource to wrap
      * @param embeddedTypeAsNameOrigin
      *         the class from which the list name is derived (see also {@link Relation})
      * @param embeddedList
-     *         the list of embedded entities associated with the main entity, which may be empty
+     *         the list of embedded resources associated with the main resource, which may be empty
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalEntityWrapper} that includes the main entity and its derived named embedded entities, all
+     * @return a {@link HalResourceWrapper} that includes the main resource and its derived named embedded resources,
+     * all
      * enhanced with hypermedia links
      *
-     * @see #wrapInEntityWrapper(Object, Object, ServerWebExchange)
-     * @see #wrapInEntityWrapper(Object, String, List, ServerWebExchange)
-     * @see #wrapInEntityWrapper(Object, List, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Object, Object, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Object, String, List, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Object, List, ServerWebExchange)
      */
-    default HalEntityWrapper<EntityT, EmbeddedT> wrapInEntityWrapper(@NonNull EntityT entityToWrap,
-                                                                     @NonNull Class<?> embeddedTypeAsNameOrigin,
-                                                                     @NonNull List<EmbeddedT> embeddedList,
-                                                                     ServerWebExchange exchange) {
+    default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
+                                                                           @NonNull Class<?> embeddedTypeAsNameOrigin,
+                                                                           @NonNull List<EmbeddedT> embeddedList,
+                                                                           ServerWebExchange exchange) {
         var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
-        return HalEntityWrapper.wrap(entityToWrap)
-                .withLinks(buildLinksForEntity(entityToWrap, exchange))
+        return HalResourceWrapper.wrap(resourceToWrap)
+                .withLinks(buildLinksForResource(resourceToWrap, exchange))
                 .withEmbeddedList(embeddedTypeAsNameOrigin, wrappedEmbeddedList);
     }
 
-    private List<HalEmbeddedWrapper<EmbeddedT>> wrapEmbeddedElementsInList(@NonNull List<EmbeddedT> embeddedEntities,
+    private List<HalEmbeddedWrapper<EmbeddedT>> wrapEmbeddedElementsInList(@NonNull List<EmbeddedT> embeddedResource,
                                                                            ServerWebExchange exchange) {
-        return embeddedEntities.stream()
+        return embeddedResource.stream()
                 .map(embedded -> HalEmbeddedWrapper.wrap(embedded)
                         .withLinks(buildLinksForEmbedded(embedded, exchange)))
                 .toList();

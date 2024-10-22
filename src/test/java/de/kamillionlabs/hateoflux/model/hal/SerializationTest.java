@@ -61,13 +61,13 @@ public class SerializationTest {
 
 
     @Test
-    public void givenHalEntity_whenSerialized_thenNoErrors() throws Exception {
+    public void givenHalResource_whenSerialized_thenNoErrors() throws Exception {
         //GIVEN
-        HalEntityWrapper<Book, Author> halEntity = HalEntityWrapper.wrap(germanBedtimeStories)
+        HalResourceWrapper<Book, Author> halResource = HalResourceWrapper.wrap(germanBedtimeStories)
                 .withLinks(
                         Link.of("/book/123").withRel(IanaRelation.SELF),
                         Link.of("/author/1").withRel("author"))
-                .withEmbeddedEntity(HalEmbeddedWrapper.wrap(author)
+                .withEmbeddedResource(HalEmbeddedWrapper.wrap(author)
                         .withLinks(
                                 Link.linkAsSelfOf("/author/").slash("1"),
                                 linkTo(AuthorController.class, c -> c.getBooks(1)).withRel("books")
@@ -75,7 +75,7 @@ public class SerializationTest {
                 );
 
         //WHEN
-        String actualJson = mapper.writeValueAsString(halEntity);
+        String actualJson = mapper.writeValueAsString(halResource);
 
         //THEN
         JSONAssert.assertEquals("""
@@ -112,9 +112,9 @@ public class SerializationTest {
     }
 
     @Test
-    public void givenHalEntityWithEmbeddedCollection_whenSerialized_thenNoErrors() throws Exception {
+    public void givenHalResourceWithEmbeddedCollection_whenSerialized_thenNoErrors() throws Exception {
         //GIVEN
-        var halEntity = HalEntityWrapper.wrap(author)
+        var halResource = HalResourceWrapper.wrap(author)
                 .withLinks(Link.linkAsSelfOf("/author/1"))
                 .withNonEmptyEmbeddedList(List.of(
                         HalEmbeddedWrapper.wrap(germanBedtimeStories)
@@ -125,7 +125,7 @@ public class SerializationTest {
 
 
         //WHEN
-        String actualJson = mapper.writeValueAsString(halEntity);
+        String actualJson = mapper.writeValueAsString(halResource);
 
         //THEN
         JSONAssert.assertEquals("""
@@ -172,9 +172,9 @@ public class SerializationTest {
     public void givenHalCollectionWrapperWithNoPaging_whenSerialized_thenNoErrors() throws Exception {
         //GIVEN
         var halCollection = HalListWrapper.wrap(List.of(
-                        HalEntityWrapper.wrap(germanBedtimeStories)
+                        HalResourceWrapper.wrap(germanBedtimeStories)
                                 .withLinks(Link.linkAsSelfOf("/book/123")),
-                        HalEntityWrapper.wrap(cookBookForManlyMen)
+                        HalResourceWrapper.wrap(cookBookForManlyMen)
                                 .withLinks(Link.linkAsSelfOf("/book/234"))))
                 .withLinks(Link.linkAsSelfOf("/author/1/books"));
 
@@ -223,7 +223,7 @@ public class SerializationTest {
     public void givenHalCollectionWrapperWithPaging_whenSerialized_thenNoErrors() throws Exception {
         //GIVEN
         HalListWrapper<Book, Void> halCollection = HalListWrapper.wrap(
-                        List.of(HalEntityWrapper.wrap(germanBedtimeStories)
+                        List.of(HalResourceWrapper.wrap(germanBedtimeStories)
                                 .withLinks(Link.linkAsSelfOf("/book/123"))))
                 .withLinks(Link.linkAsSelfOf("/author/1/books"))
                 .withPageInfo(HalPageInfo.of(1, 1L, 1, 1));

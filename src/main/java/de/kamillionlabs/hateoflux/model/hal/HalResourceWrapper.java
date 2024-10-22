@@ -34,19 +34,19 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.*;
 
 /**
- * Represents an immutable wrapper class for adding hypermedia links to any arbitrary entity object and, optionally,
- * incorporating embedded entities, adhering to HAL standards.
+ * Represents an immutable wrapper class for adding hypermedia links to any arbitrary resource object and, optionally,
+ * incorporating embedded resources, adhering to HAL standards.
  * <p>
- * The {@link HalEntityWrapper} is a final class and not intended for extension. It encapsulates an instance of
- * {@code EntityT}, representing the primary or main entity, and can optionally include an instance of
- * {@code EmbeddedT} for additional embedded entities related to said main entity. This wrapper ensures that when
- * serialized, the fields of the entity object are presented at the top level.
+ * The {@link HalResourceWrapper} is a final class and not intended for extension. It encapsulates an instance of
+ * {@code ResourceT}, representing the primary or main resource, and can optionally include an instance of
+ * {@code EmbeddedT} for additional embedded resources related to said main resource. This wrapper ensures that when
+ * serialized, the fields of the resource object are presented at the top level.
  * <p>
- * Usage of this class involves creating an instance with the entity and, if necessary, embedded entities. Links can
- * then be added to enrich the entity model with HAL's hypermedia-driven format. During serialization, this wrapper
- * directly integrates the entity and any embedded entities into the enclosing structure.
+ * Usage of this class involves creating an instance with the resource and, if necessary, embedded resources. Links can
+ * then be added to enrich the resource model with HAL's hypermedia-driven format. During serialization, this wrapper
+ * directly integrates the resource and any embedded resources into the enclosing structure.
  *
- * @param <EntityT>
+ * @param <ResourceT>
  *         the type of the object being wrapped, which contains the main data
  * @param <EmbeddedT>
  *         the type of the object representing additional embedded resources related to the main data, if any
@@ -55,11 +55,11 @@ import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.*;
 @Getter
 @EqualsAndHashCode(callSuper = true)
 @JsonInclude(NON_NULL)
-public final class HalEntityWrapper<EntityT, EmbeddedT>
-        extends HalWrapper<HalEntityWrapper<EntityT, EmbeddedT>> {
+public final class HalResourceWrapper<ResourceT, EmbeddedT>
+        extends HalWrapper<HalResourceWrapper<ResourceT, EmbeddedT>> {
 
     @JsonUnwrapped
-    private final EntityT entity;
+    private final ResourceT resource;
 
     @JsonIgnore
     private Map.Entry<String, List<HalEmbeddedWrapper<EmbeddedT>>> embedded;
@@ -79,77 +79,78 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
         }
     }
 
-    private HalEntityWrapper(EntityT entity) {
+    private HalResourceWrapper(ResourceT resource) {
         super();
-        this.entity = entity;
+        this.resource = resource;
     }
 
-    private HalEntityWrapper(EntityT entity, String embeddedName,
-                             List<HalEmbeddedWrapper<EmbeddedT>> embedded, Iterable<Link> links) {
+    private HalResourceWrapper(ResourceT resource, String embeddedName,
+                               List<HalEmbeddedWrapper<EmbeddedT>> embedded, Iterable<Link> links) {
         super();
-        this.entity = entity;
+        this.resource = resource;
         this.embedded = new AbstractMap.SimpleImmutableEntry<>(embeddedName, embedded);
         this.withLinks(links);
     }
 
-    private HalEntityWrapper(EntityT entity, String embeddedName, HalEmbeddedWrapper<EmbeddedT> embedded,
-                             Iterable<Link> links) {
-        this(entity, embeddedName, List.of(embedded), links);
+    private HalResourceWrapper(ResourceT resource, String embeddedName, HalEmbeddedWrapper<EmbeddedT> embedded,
+                               Iterable<Link> links) {
+        this(resource, embeddedName, List.of(embedded), links);
     }
 
     /**
-     * Wraps any given entity into a {@link HalEntityWrapper} to make it conform to HAL standards.
+     * Wraps any given resource into a {@link HalResourceWrapper} to make it conform to HAL standards.
      *
-     * <p>For wrapping a list of entities, use {@link HalListWrapper} instead.</p>
+     * <p>For wrapping a list of resources, use {@link HalListWrapper} instead.</p>
      *
-     * <p>The embedded entity is optional. Initially the type of the embedded is set to {@link Void} as "being
+     * <p>The embedded resource is optional. Initially the type of the embedded is set to {@link Void} as "being
      * non-existing". The embedded is then not accessible. If embedding is desirable, methods such as
-     * {@link #withEmbeddedEntity(HalEmbeddedWrapper)} or other appropriate {@code withEmbeddedXYZ()} methods
+     * {@link #withEmbeddedResource(HalEmbeddedWrapper)} or other appropriate {@code withEmbeddedXYZ()} methods
      * can be utilized.</p>
      *
-     * @param <EntityT>
-     *         the type of the entity to be wrapped
-     * @param entity
+     * @param <ResourceT>
+     *         the type of the resource to be wrapped
+     * @param resource
      *         the object to wrap
-     * @return a new instance containing the wrapped entity
+     * @return a new instance containing the wrapped resource
      */
-    public static <EntityT> HalEntityWrapper<EntityT, Void> wrap(@NonNull EntityT entity) {
-        Assert.notNull(entity, valueNotAllowedToBeNull("Entity"));
-        Assert.isTrue(!(entity instanceof Iterable<?>), valueIsNotAllowedToBeOfType("Entity", "collection/iterable. " +
+    public static <ResourceT> HalResourceWrapper<ResourceT, Void> wrap(@NonNull ResourceT resource) {
+        Assert.notNull(resource, valueNotAllowedToBeNull("Resource"));
+        Assert.isTrue(!(resource instanceof Iterable<?>), valueIsNotAllowedToBeOfType("Resource", "collection" +
+                "/iterable. " +
                 "Use HalListWrapper instead"));
-        return new HalEntityWrapper<>(entity);
+        return new HalResourceWrapper<>(resource);
     }
 
 
     /**
-     * Adds an embedded entity i.e. object to the {@link HalEntityWrapper}. The relation name for the embedded
-     * entity is determined by the {@link Relation} annotation on the entity's class, if present, or by their class
+     * Adds an embedded resource i.e. object to the {@link HalResourceWrapper}. The relation name for the embedded
+     * resource is determined by the {@link Relation} annotation on the resource's class, if present, or by their class
      * name otherwise.
      *
      * <p>Only one embedded element can be held at a time. If multiple objects need to be embedded, use
      * {@link #withNonEmptyEmbeddedList(List)} or {@link #withEmbeddedList(String, List)}.</p>
      *
      * <p>Calling any {@code withEmbeddedXYZ()} method multiple times results in <b>overriding</b> the previously
-     * embedded entity each time.</p>
+     * embedded resource each time.</p>
      *
      * @param <NewEmbeddedT>
-     *         the type of the entity to embed
+     *         the type of the resource to embed
      * @param embedded
-     *         the entity to embed
-     * @return new instance with the embedded entity
+     *         the resource to embed
+     * @return new instance with the embedded resource
      *
      * @throws IllegalArgumentException
-     *         if the entity is null
+     *         if the resource is null
      */
-    public <NewEmbeddedT> HalEntityWrapper<EntityT, NewEmbeddedT> withEmbeddedEntity(
+    public <NewEmbeddedT> HalResourceWrapper<ResourceT, NewEmbeddedT> withEmbeddedResource(
             @NonNull HalEmbeddedWrapper<NewEmbeddedT> embedded) {
         Assert.notNull(embedded, valueNotAllowedToBeNull("Embedded"));
-        String name = determineRelationNameForObject(embedded.getEmbeddedEntity());
-        return new HalEntityWrapper<>(this.entity, name, embedded, this.getLinks());
+        String name = determineRelationNameForObject(embedded.getEmbeddedResource());
+        return new HalResourceWrapper<>(this.resource, name, embedded, this.getLinks());
     }
 
     /**
-     * Adds an embedded list of type {@code NewEmbeddedT} to the {@link HalEntityWrapper}. The relation name for the
+     * Adds an embedded list of type {@code NewEmbeddedT} to the {@link HalResourceWrapper}. The relation name for the
      * embedded list is determined by the {@link Relation} annotation on the list's items, if present, or by their class
      * name otherwise.
      *
@@ -158,85 +159,85 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
      * <b>initialized and not empty</b>.</p>
      *
      * <p>Calling any {@code withEmbeddedXYZ()} method multiple times results in <b>overriding</b> the previously
-     * embedded entity each time.</p>
+     * embedded resource each time.</p>
      *
      * @param <NewEmbeddedT>
      *         the type of the items in the list to embed
-     * @param entitiesToEmbed
+     * @param resourcesToEmbed
      *         the list to be embedded
      * @return new instance with the embedded list
      *
      * @throws IllegalArgumentException
      *         if the list is null or empty
      */
-    public <NewEmbeddedT> HalEntityWrapper<EntityT, NewEmbeddedT> withNonEmptyEmbeddedList(
-            @NonNull List<HalEmbeddedWrapper<NewEmbeddedT>> entitiesToEmbed) {
-        Assert.notNull(entitiesToEmbed, valueNotAllowedToBeNull("List to embed"));
-        Assert.notEmpty(entitiesToEmbed, valueNotAllowedToBeEmpty("List to embed"));
-        String name = determineRelationNameForObject(entitiesToEmbed);
-        return new HalEntityWrapper<>(this.entity, name, entitiesToEmbed, this.getLinks());
+    public <NewEmbeddedT> HalResourceWrapper<ResourceT, NewEmbeddedT> withNonEmptyEmbeddedList(
+            @NonNull List<HalEmbeddedWrapper<NewEmbeddedT>> resourcesToEmbed) {
+        Assert.notNull(resourcesToEmbed, valueNotAllowedToBeNull("List to embed"));
+        Assert.notEmpty(resourcesToEmbed, valueNotAllowedToBeEmpty("List to embed"));
+        String name = determineRelationNameForObject(resourcesToEmbed);
+        return new HalResourceWrapper<>(this.resource, name, resourcesToEmbed, this.getLinks());
     }
 
     /**
-     * Adds an embedded list to the {@link HalEntityWrapper}. The list is allowed to be empty. The relation
+     * Adds an embedded list to the {@link HalResourceWrapper}. The list is allowed to be empty. The relation
      * name for the list is specified by {@code embeddedListName}.
      *
      * <p>Calling any {@code withEmbeddedXYZ()} method multiple times results in <b>overriding</b> the previously
-     * embedded entity each time.</p>
+     * embedded resource each time.</p>
      *
      * @param <NewEmbeddedT>
      *         the type of the items in the list to embed
      * @param embeddedListName
      *         Non-null and non-empty name or relation for the embedded list
-     * @param entitiesToEmbed
+     * @param resourcesToEmbed
      *         Non-null list to be embedded
      * @return new instance with the embedded list
      *
      * @throws IllegalArgumentException
-     *         if {@code entitiesToEmbed} is null or if the {@code embeddedListName} is null or empty
+     *         if {@code resourcesToEmbed} is null or if the {@code embeddedListName} is null or empty
      */
-    public <NewEmbeddedT> HalEntityWrapper<EntityT, NewEmbeddedT> withEmbeddedList(
-            @NonNull String embeddedListName, List<HalEmbeddedWrapper<NewEmbeddedT>> entitiesToEmbed) {
+    public <NewEmbeddedT> HalResourceWrapper<ResourceT, NewEmbeddedT> withEmbeddedList(
+            @NonNull String embeddedListName, List<HalEmbeddedWrapper<NewEmbeddedT>> resourcesToEmbed) {
         Assert.notNull(embeddedListName, valueNotAllowedToBeNull("Name for embedded"));
         Assert.hasText(embeddedListName, valueNotAllowedToBeEmpty("Name for embedded"));
-        Assert.notNull(entitiesToEmbed, valueNotAllowedToBeNull("List to embed"));
-        return new HalEntityWrapper<>(this.entity, embeddedListName, entitiesToEmbed, this.getLinks());
+        Assert.notNull(resourcesToEmbed, valueNotAllowedToBeNull("List to embed"));
+        return new HalResourceWrapper<>(this.resource, embeddedListName, resourcesToEmbed, this.getLinks());
     }
 
     /**
-     * Adds an embedded list to the {@link HalEntityWrapper}. The list is allowed to be empty. The relation
+     * Adds an embedded list to the {@link HalResourceWrapper}. The list is allowed to be empty. The relation
      * name for the list is determined by {@code embeddedTypeAsNameOrigin}. If the passed class is annotated with
      * {@link Relation}, the name is taken from the annotation; otherwise, it is derived from the class name.
      *
      * <p>Calling any {@code withEmbeddedXYZ()} method multiple times results in <b>overriding</b> the previously
-     * embedded entity each time.</p>
+     * embedded resource each time.</p>
      *
      * @param <NewEmbeddedT>
      *         the type of the items in the list to embed
      * @param embeddedTypeAsNameOrigin
      *         the class type used to derive the name or relation for the embedded list. This parameter must be
      *         non-null.
-     * @param entitiesToEmbed
+     * @param resourcesToEmbed
      *         the list to be embedded
      * @return a new instance with the embedded list
      *
      * @throws IllegalArgumentException
-     *         if {@code entitiesToEmbed} is null or if {@code embeddedTypeAsNameOrigin} is null
+     *         if {@code resourcesToEmbed} is null or if {@code embeddedTypeAsNameOrigin} is null
      */
-    public <NewEmbeddedT> HalEntityWrapper<EntityT, NewEmbeddedT> withEmbeddedList(
-            @NonNull Class<?> embeddedTypeAsNameOrigin, List<HalEmbeddedWrapper<NewEmbeddedT>> entitiesToEmbed) {
+    public <NewEmbeddedT> HalResourceWrapper<ResourceT, NewEmbeddedT> withEmbeddedList(
+            @NonNull Class<?> embeddedTypeAsNameOrigin, List<HalEmbeddedWrapper<NewEmbeddedT>> resourcesToEmbed) {
         Assert.notNull(embeddedTypeAsNameOrigin, valueNotAllowedToBeNull("Embedded type name"));
-        Assert.notNull(entitiesToEmbed, valueNotAllowedToBeNull("List to embed"));
+        Assert.notNull(resourcesToEmbed, valueNotAllowedToBeNull("List to embed"));
         String name = determineCollectionRelationName(embeddedTypeAsNameOrigin);
-        return new HalEntityWrapper<>(this.entity, name, entitiesToEmbed, this.getLinks());
+        return new HalResourceWrapper<>(this.resource, name, resourcesToEmbed, this.getLinks());
     }
 
 
     /**
-     * Returns the embedded entity/entities. The embedded entity is stored in form of a list and thus will return a list
-     * even if a single entity was embedded.
+     * Returns the embedded resource(s). The embedded resource is stored in form of a list and thus will return a list
+     * even if a single resource was embedded.
      *
-     * @return List with embedded entities
+     * @return List with embedded resources
      */
     @JsonIgnore
     public Optional<List<HalEmbeddedWrapper<EmbeddedT>>> getEmbedded() {
@@ -244,9 +245,9 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
     }
 
     /**
-     * Returns the name of the embedded entity or list of entities.
+     * Returns the name of the embedded resource or list of resources.
      *
-     * @return Name of the embedded entity
+     * @return Name of the embedded resource
      */
     @JsonIgnore
     public Optional<String> getNameOfEmbedded() {
@@ -254,9 +255,9 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
     }
 
     /**
-     * Indicates whether the {@link HalEntityWrapper} has an embedded entity
+     * Indicates whether the {@link HalResourceWrapper} has an embedded resource
      *
-     * @return true if an embedded entity exists, else false
+     * @return true if an embedded resource exists, else false
      */
     @JsonIgnore
     public boolean hasEmbedded() {
@@ -265,17 +266,17 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
 
 
     /**
-     * Returns the embedded entity/entities. The embedded entity is stored in form of a list and thus will return a
-     * list even if a single entity was embedded.
+     * Returns the embedded resource(s). The embedded resource is stored in form of a list and thus will return a
+     * list even if a single resource was embedded.
      *
      * <p>
-     * In contrast to {@link #getEmbedded()}, it is assumed, that the embedded entity/entities exist, otherwise an
+     * In contrast to {@link #getEmbedded()}, it is assumed, that the embedded resource(s) exist, otherwise an
      * exception is thrown.
      *
-     * @return List with embedded entities
+     * @return List with embedded resources
      *
      * @throws IllegalArgumentException
-     *         if no embedded entity i.e. entities exist
+     *         if no embedded resource(s) exist
      */
     @JsonIgnore
     public List<HalEmbeddedWrapper<EmbeddedT>> getRequiredEmbedded() {
@@ -284,16 +285,16 @@ public final class HalEntityWrapper<EntityT, EmbeddedT>
     }
 
     /**
-     * Returns the name of the embedded entity or list of entities.
+     * Returns the name of the embedded resource or list of resources.
      *
      * <p>
-     * In contrast to {@link #getNameOfEmbedded()}, it is assumed, that the embedded entity/entities exist, otherwise an
+     * In contrast to {@link #getNameOfEmbedded()}, it is assumed, that the embedded resource(s) exist, otherwise an
      * exception is thrown.
      *
-     * @return Name of the embedded entity
+     * @return Name of the embedded resource
      *
      * @throws IllegalArgumentException
-     *         if no embedded entity i.e. entities exist
+     *         if no embedded resource(s) exist
      */
     @JsonIgnore
     public String getRequiredNameOfEmbedded() {
