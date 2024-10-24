@@ -185,12 +185,12 @@ public class Link {
     // SETTER ----------------------------------------------------------------------------------------------------------
 
     /**
-     * Returns a new {@link Link} that is a copy of the current link. The new link
-     * includes the specified relation to describe the type of relationship to the linked resource.
+     * The relationship between the current resource and the linked resource. Common
+     * values include "self", "next", "previous", etc. Custom relations can also be used.
      *
      * @param relation
      *         A string specifying the IANA relation of the link.
-     * @return A new {@link Link} object with the specified relation added.
+     * @return Returns a new {@link Link} that is a copy of the current link with the specified relation added.
      */
     public Link withRel(String relation) {
         Assert.hasText(relation, valueNotAllowedToBeEmpty("relation"));
@@ -198,14 +198,13 @@ public class Link {
                 this.deprecation, this.profile, this.hreflang);
     }
 
-
     /**
-     * Returns a new {@link Link} that is a copy of the current link. The new link
-     * includes the specified IANA relation to describe the type of relationship to the linked resource.
+     * The relationship between the current resource and the linked resource. Common
+     * values include "self", "next", "previous", etc. Custom relations can also be used.
      *
      * @param relation
      *         The IANA relation of the link.
-     * @return A new {@link Link} object with the specified IANA relation added.
+     * @return Returns a new {@link Link} that is a copy of the current link with the specified IANA relation added.
      */
     public Link withRel(IanaRelation relation) {
         Assert.notNull(relation, "relation must not be null");
@@ -214,22 +213,22 @@ public class Link {
     }
 
     /**
-     * Returns a new {@link Link} that is a copy of the current link, with the relation
-     * set to "self". This indicates that the link's URI is a reference to the resource itself.
+     * The relationship between the current resource and the linked resource. Common
+     * values include "self", "next", "previous", etc. Custom relations can also be used.
      *
-     * @return A new {@link Link} object with the "self" relation.
+     * @return Returns a new {@link Link} that is a copy of the current link with the "self" relation.
      */
     public Link withSelfRel() {
         return withRel(IanaRelation.SELF);
     }
 
     /**
-     * Returns a new {@link Link} that is a copy of the current link, with the href
-     * attribute updated to the specified href.
+     * The URI of the linked resource. This is a required attribute and is the
+     * actual URL where the resource can be accessed.
      *
      * @param href
      *         The new href for the link.
-     * @return A new {@link Link} object with the updated href.
+     * @return Returns a new {@link Link} that is a copy of the current link with the updated href.
      */
     public Link withHref(String href) {
         return new Link(this.linkRelation, href, this.title, this.name, this.media, this.type,
@@ -237,12 +236,12 @@ public class Link {
     }
 
     /**
-     * Returns a new {@link Link} that is a copy of the current link, with the title
-     * attribute updated to the specified title.
+     * A human-readable title for the link, which can be used for labeling the
+     * link in user interfaces.
      *
      * @param title
      *         The new title for the link.
-     * @return A new {@link Link} object with the updated title.
+     * @return Returns a new {@link Link} that is a copy of the current link with the updated title.
      */
     public Link withTitle(String title) {
         return new Link(this.linkRelation, this.href, title, this.name, this.media, this.type,
@@ -250,12 +249,12 @@ public class Link {
     }
 
     /**
-     * Returns a new {@link Link} that is a copy of the current link, with the name
-     * attribute updated to the specified name.
+     * An identifier or label for the link, used for documentation or as additional
+     * metadata in client applications.
      *
      * @param name
      *         The new name for the link.
-     * @return A new {@link Link} object with the updated name.
+     * @return Returns a new {@link Link} that is a copy of the current link with the updated name.
      */
     public Link withName(String name) {
         return new Link(this.linkRelation, this.href, this.title, name, this.media, this.type,
@@ -263,12 +262,13 @@ public class Link {
     }
 
     /**
-     * Returns a new {@link Link} that is a copy of the current link, with the media
-     * attribute updated to the specified media type.
+     * Describes the media type of the linked resource, often used to specify the
+     * type of content that the client can expect at the URL, such as "application/json"
+     * or "text/html".
      *
      * @param media
      *         The new media type for the link.
-     * @return A new {@link Link} object with the updated media type.
+     * @return Returns a new {@link Link} that is a copy of the current link with the updated media type.
      */
     public Link withMedia(String media) {
         return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type,
@@ -276,46 +276,58 @@ public class Link {
     }
 
     /**
-     * Returns a new {@link Link} that is a copy of the current link, with the deprecation
-     * URL updated to the specified deprecation URL. This URL indicates that the linked
-     * resource is deprecated.
+     * Further specifies the MIME type of the linked resource's expected content.
+     * This can be used to indicate more specific formats when multiple representations
+     * are available.
+     *
+     * @param type
+     *         The new MIME type for the link.
+     * @return Returns a new {@link Link} that is a copy of the current link with the updated type.
+     */
+    public Link withType(String type) {
+        return new Link(this.linkRelation, this.href, this.title, this.name, this.media, type,
+                this.deprecation, this.profile, this.hreflang);
+    }
+
+    /**
+     * A URL that provides information about the deprecation of the link, useful
+     * for alerting API consumers that a resource is outdated or scheduled for removal.
      *
      * @param deprecation
      *         The new deprecation URL for the link.
-     * @return A new {@link Link} object with the updated deprecation URL.
+     * @return Returns a new {@link Link} that is a copy of the current link with the updated deprecation URL.
      */
     public Link withDeprecation(String deprecation) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type,
+        return new Link(this.linkRelation, this.href, this.title, this.name, this.media, this.type,
                 deprecation, this.profile, this.hreflang);
     }
 
     /**
-     * Returns a new {@link Link} that is a copy of the current link, with the profile
-     * attribute updated to the specified profile URL. This URL indicates the schema
-     * or profile that the linked resource conforms to.
+     * A hint about the profile (or schema) that the linked resource conforms to,
+     * providing additional semantics about the linked resource.
      *
      * @param profile
      *         The new profile URL for the link.
-     * @return A new {@link Link} object with the updated profile.
+     * @return Returns a new {@link Link} that is a copy of the current link with the updated profile.
      */
     public Link withProfile(String profile) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type,
+        return new Link(this.linkRelation, this.href, this.title, this.name, this.media, this.type,
                 this.deprecation, profile, this.hreflang);
     }
 
     /**
-     * Returns a new {@link Link} that is a copy of the current link, with the hreflang
-     * attribute updated to the specified language code. This code indicates the language
-     * of the linked resource.
+     * Specifies the language of the linked resource, useful for applications supporting
+     * multiple languages.
      *
      * @param hreflang
      *         The new language code for the link.
-     * @return A new {@link Link} object with the updated language code.
+     * @return Returns a new {@link Link} that is a copy of the current link with the updated language code.
      */
     public Link withHreflang(String hreflang) {
-        return new Link(this.linkRelation, this.href, this.title, this.name, media, this.type,
+        return new Link(this.linkRelation, this.href, this.title, this.name, this.media, this.type,
                 this.deprecation, this.profile, hreflang);
     }
+
 
     // UTILITY ---------------------------------------------------------------------------------------------------------
 
