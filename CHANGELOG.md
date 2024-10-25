@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Better javadoc for Link attribute setters.
 
+### Fixed
+
+* Added fallback for relation resolving for when spring context isn't loaded
+
 ## [0.13.0]
 
 ### Changed
