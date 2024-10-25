@@ -1,6 +1,7 @@
 package de.kamillionlabs.hateoflux.model.hal;
 
 import de.kamillionlabs.hateoflux.dummy.model.Book;
+import de.kamillionlabs.hateoflux.dummy.model.BookWithItemRelationValue;
 import de.kamillionlabs.hateoflux.dummy.model.EmptyRelationBook;
 import de.kamillionlabs.hateoflux.dummy.model.UnannotatedBook;
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -14,6 +15,13 @@ import java.util.Vector;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 class HalWrapperTest {
+
+    @Test
+    void givenAnnotatedClassResourceWithItemRelation_whenDetermineRelationNameForObject_thenAnnotatedResourceName() {
+        BookWithItemRelationValue book = new BookWithItemRelationValue();
+        AssertionsForClassTypes.assertThat(HalWrapper.determineRelationNameForObject(book))
+                .isEqualTo("itemRBook");
+    }
 
     @Test
     void givenAnnotatedClassResource_whenDetermineRelationNameForObject_thenAnnotatedResourceName() {

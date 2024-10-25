@@ -234,6 +234,10 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
         return Optional.ofNullable(clazz.getAnnotation(Relation.class))
                 .map(Relation::value)
                 .filter(relationName -> !relationName.isEmpty())
+                // add fallback for cases where the Spring context isn't loaded and alias doesn't work
+                .or(() -> Optional.ofNullable(clazz.getAnnotation(Relation.class))
+                        .map(Relation::itemRelation)
+                        .filter(relationName -> !relationName.isEmpty()))
                 .orElseGet(() -> lowercaseFirstCharacter(clazz.getSimpleName()));
     }
 
