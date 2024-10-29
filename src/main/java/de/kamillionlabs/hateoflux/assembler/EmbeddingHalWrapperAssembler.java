@@ -20,6 +20,7 @@ package de.kamillionlabs.hateoflux.assembler;
 
 import de.kamillionlabs.hateoflux.model.hal.*;
 import de.kamillionlabs.hateoflux.utility.PairList;
+import de.kamillionlabs.hateoflux.utility.SortCriteria;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
@@ -85,6 +86,7 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      */
     default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull PairList<ResourceT, EmbeddedT> resourcesToWrap,
                                                                    @Nullable HalPageInfo pageInfo,
+                                                                   @Nullable List<SortCriteria> sortCriteria,
                                                                    ServerWebExchange exchange) {
         List<HalResourceWrapper<ResourceT, EmbeddedT>> listOfWrappedResourcesWithEmbedded =
                 resourcesToWrap.stream()
@@ -95,7 +97,7 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
                         }).toList();
 
         HalListWrapper<ResourceT, EmbeddedT> result = HalListWrapper.wrap(listOfWrappedResourcesWithEmbedded)
-                .withLinks(buildLinksForResourceList(exchange));
+                .withLinks(buildLinksForResourceList(pageInfo, sortCriteria, exchange));
 
         if (pageInfo == null) {
             return result;
@@ -119,7 +121,7 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      */
     default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull PairList<ResourceT, EmbeddedT> resourcesToWrap,
                                                                    ServerWebExchange exchange) {
-        return wrapInListWrapper(resourcesToWrap, null, exchange);
+        return wrapInListWrapper(resourcesToWrap, null, null, exchange);
     }
 
     /**

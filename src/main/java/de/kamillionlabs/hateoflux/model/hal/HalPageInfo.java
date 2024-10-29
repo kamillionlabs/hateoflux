@@ -64,7 +64,7 @@ public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, 
      * Computes pagination information based on a list of resources, total number of elements, and a given page size.
      * This method assumes the initial page (offset is null).
      *
-     * @param resources
+     * @param resourcesForCurrentPageSizeCalculation
      *         the list of resources from which to calculate the current page size
      * @param totalElements
      *         the total number of elements
@@ -72,8 +72,9 @@ public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, 
      *         the size of each page
      * @return a new instance of {@link HalPageInfo}
      */
-    public static HalPageInfo assemble(@NonNull List<?> resources, long totalElements, int pageSize) {
-        return assemble(resources.size(), totalElements, pageSize, null);
+    public static HalPageInfo assemble(@NonNull List<?> resourcesForCurrentPageSizeCalculation, long totalElements,
+                                       int pageSize) {
+        return assemble(resourcesForCurrentPageSizeCalculation.size(), totalElements, pageSize, null);
     }
 
     /**
@@ -81,7 +82,7 @@ public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, 
      * optional
      * offset marking the start of pagination.
      *
-     * @param resources
+     * @param resourcesForCurrentPageSizeCalculation
      *         the list of resources from which to calculate the current page size
      * @param totalElements
      *         the total number of elements
@@ -91,9 +92,10 @@ public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, 
      *         the offset from which to start pagination, can be null
      * @return a new instance of {@link HalPageInfo}
      */
-    public static HalPageInfo assemble(@NonNull List<?> resources, long totalElements, int pageSize,
+    public static HalPageInfo assemble(@NonNull List<?> resourcesForCurrentPageSizeCalculation, long totalElements,
+                                       int pageSize,
                                        @Nullable Long offset) {
-        return assemble(resources.size(), totalElements, pageSize, offset);
+        return assemble(resourcesForCurrentPageSizeCalculation.size(), totalElements, pageSize, offset);
     }
 
 

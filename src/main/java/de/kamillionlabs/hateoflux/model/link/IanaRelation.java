@@ -24,6 +24,7 @@ import lombok.Getter;
  * A subset of IANA relations. The enum focuses on the most important links for REST.
  *
  * @author Younes El Ouarti
+ * @see <a href="https://tools.ietf.org/html/rfc5988">Web Linking (RFC 5988)</a>
  * @see <a href="https://www.iana.org/assignments/link-relations/link-relations.xhtml">Official IANA documentation</a>
  */
 @Getter
