@@ -101,7 +101,10 @@ class ReactiveFlatHalWrapperAssemblerTest {
         HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.wrapInListWrapper(
                 Flux.fromIterable(List.of(resource,
                         resource)),
-                Mono.just(25L), 5, 10L,
+                Mono.just(25L),
+                5,
+                10L,
+                null,
                 null
         ).block();
 
@@ -113,7 +116,7 @@ class ReactiveFlatHalWrapperAssemblerTest {
         assertThat(page).isNotNull();
         assertThat(page.totalPages()).isEqualTo(5);
         assertThat(page.totalElements()).isEqualTo(25);
-        assertThat(page.size()).isEqualTo(2);
+        assertThat(page.size()).isEqualTo(5);
         assertThat(page.number()).isEqualTo(2);
 
         //Rudimentary testing (rest is tested elsewhere)

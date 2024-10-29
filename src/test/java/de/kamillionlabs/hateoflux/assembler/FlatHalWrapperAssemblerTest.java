@@ -6,6 +6,8 @@ import de.kamillionlabs.hateoflux.model.hal.HalPageInfo;
 import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
 import de.kamillionlabs.hateoflux.model.link.IanaRelation;
 import de.kamillionlabs.hateoflux.model.link.Link;
+import de.kamillionlabs.hateoflux.utility.SortCriteria;
+import de.kamillionlabs.hateoflux.utility.SortDirection;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -98,7 +100,10 @@ class FlatHalWrapperAssemblerTest {
         HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.wrapInListWrapper(
                 List.of(resource,
                         resource),
-                25L, 5, 10L,
+                25L,
+                5,
+                10L,
+                List.of(SortCriteria.by("author", SortDirection.ASCENDING)),
                 null
         );
 
@@ -110,14 +115,28 @@ class FlatHalWrapperAssemblerTest {
         assertThat(page).isNotNull();
         assertThat(page.totalPages()).isEqualTo(5);
         assertThat(page.totalElements()).isEqualTo(25);
-        assertThat(page.size()).isEqualTo(2);
+        assertThat(page.size()).isEqualTo(5);
         assertThat(page.number()).isEqualTo(2);
+
+        //Links of ListWrapper
+        List<Link> links = actualWrapper.getLinks();
+        assertThat(links).hasSize(5);
+        assertThat(links.get(0).getHref()).isEqualTo("resource-list/self/link?page=2&size=5&sort=author,asc");
+        assertThat(links.get(0).getLinkRelation().getRelation()).isEqualTo("self");
+        assertThat(links.get(1).getHref()).isEqualTo("resource-list/self/link?page=0&size=5&sort=author,asc");
+        assertThat(links.get(1).getLinkRelation().getRelation()).isEqualTo("first");
+        assertThat(links.get(2).getHref()).isEqualTo("resource-list/self/link?page=1&size=5&sort=author,asc");
+        assertThat(links.get(2).getLinkRelation().getRelation()).isEqualTo("prev");
+        assertThat(links.get(3).getHref()).isEqualTo("resource-list/self/link?page=3&size=5&sort=author,asc");
+        assertThat(links.get(3).getLinkRelation().getRelation()).isEqualTo("next");
+        assertThat(links.get(4).getHref()).isEqualTo("resource-list/self/link?page=4&size=5&sort=author,asc");
+        assertThat(links.get(4).getLinkRelation().getRelation()).isEqualTo("last");
+
 
         //Rudimentary testing (rest is tested elsewhere)
         assertThat(actualWrapper).isNotNull();
         List<HalResourceWrapper<Book, Void>> actualResourceList = actualWrapper.getResourceList();
         assertThat(actualResourceList).isNotNull();
-
     }
 
     @Test

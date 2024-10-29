@@ -9,11 +9,13 @@ import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
 import de.kamillionlabs.hateoflux.model.link.IanaRelation;
 import de.kamillionlabs.hateoflux.model.link.Link;
 import de.kamillionlabs.hateoflux.utility.PairList;
+import de.kamillionlabs.hateoflux.utility.SortCriteria;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.util.List;
 
+import static de.kamillionlabs.hateoflux.utility.SortDirection.ASCENDING;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class EmbeddingHalWrapperAssemblerTest {
@@ -193,6 +195,7 @@ class EmbeddingHalWrapperAssemblerTest {
                 100L,
                 2,
                 null,
+                List.of(SortCriteria.by("title", ASCENDING)),
                 null
         );
 
@@ -225,7 +228,8 @@ class EmbeddingHalWrapperAssemblerTest {
         HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
                 PairList.of(resource, embedded,
                         resource, embedded),
-                HalPageInfo.assemble(30, 1000L, 10, 20L),
+                HalPageInfo.assembleWithOffset(10, 1000L, 20L),
+                null,
                 null
         );
 
@@ -237,7 +241,7 @@ class EmbeddingHalWrapperAssemblerTest {
         assertThat(page).isNotNull();
         assertThat(page.totalPages()).isEqualTo(100);
         assertThat(page.totalElements()).isEqualTo(1000);
-        assertThat(page.size()).isEqualTo(30);
+        assertThat(page.size()).isEqualTo(10);
         assertThat(page.number()).isEqualTo(2);
 
         //Rudimentary testing (rest is tested elsewhere)

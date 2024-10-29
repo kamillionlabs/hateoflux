@@ -20,18 +20,14 @@ package de.kamillionlabs.hateoflux.model.hal;
 
 import lombok.Builder;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
-
-import java.util.List;
 
 /**
  * Represents pagination details in a hypermedia-driven format. This record provides necessary information to handle
- * paging of large datasets, including the size of the current page, the total number of elements across all pages, the
- * total number of pages, and the current page number.
+ * paging of large datasets.
  *
  * @param size
- *         the number of elements in the current page
+ *         the requested/max number of elements in a single page
  * @param totalElements
  *         the total number of elements across all pages
  * @param totalPages
@@ -47,9 +43,9 @@ public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, 
      * Creates a {@link HalPageInfo} instance using provided individual parameters.
      *
      * @param size
-     *         the size of the page
+     *         the requested/max number of elements in a single page
      * @param totalElements
-     *         the total number of elements
+     *         the total number of elements across all pages
      * @param totalPages
      *         the total number of pages calculated from total elements and page size
      * @param number
@@ -61,62 +57,37 @@ public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, 
     }
 
     /**
-     * Computes pagination information based on a list of resources, total number of elements, and a given page size.
-     * This method assumes the initial page (offset is null).
-     *
-     * @param resourcesForCurrentPageSizeCalculation
-     *         the list of resources from which to calculate the current page size
-     * @param totalElements
-     *         the total number of elements
-     * @param pageSize
-     *         the size of each page
-     * @return a new instance of {@link HalPageInfo}
-     */
-    public static HalPageInfo assemble(@NonNull List<?> resourcesForCurrentPageSizeCalculation, long totalElements,
-                                       int pageSize) {
-        return assemble(resourcesForCurrentPageSizeCalculation.size(), totalElements, pageSize, null);
-    }
-
-    /**
-     * Computes pagination information based on a list of resources, total number of elements, page size, and an
-     * optional
-     * offset marking the start of pagination.
-     *
-     * @param resourcesForCurrentPageSizeCalculation
-     *         the list of resources from which to calculate the current page size
-     * @param totalElements
-     *         the total number of elements
-     * @param pageSize
-     *         the size of each page
-     * @param offset
-     *         the offset from which to start pagination, can be null
-     * @return a new instance of {@link HalPageInfo}
-     */
-    public static HalPageInfo assemble(@NonNull List<?> resourcesForCurrentPageSizeCalculation, long totalElements,
-                                       int pageSize,
-                                       @Nullable Long offset) {
-        return assemble(resourcesForCurrentPageSizeCalculation.size(), totalElements, pageSize, offset);
-    }
-
-
-    /**
-     * Computes pagination information based on size, total number of elements, page size, and an optional offset.
+     * Computes pagination information based on page size, total number of elements, and an optional offset.
      *
      * @param size
-     *         the current page size calculated from resources list
+     *         the requested/max number of elements in a single page
      * @param totalElements
-     *         the total number of elements
-     * @param pageSize
-     *         the size of each page
+     *         the total number of elements across all pages
+     * @param number
+     *         current page number
+     * @return a new instance of {@code HalPageInfo}
+     */
+    public static HalPageInfo assembleWithPageNumber(int size, long totalElements, int number) {
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        return new HalPageInfo(size, totalElements, totalPages, number);
+    }
+
+    /**
+     * Computes pagination information based on page size, total number of elements, and an optional offset.
+     *
+     * @param size
+     *         the requested/max number of elements in a single page
+     * @param totalElements
+     *         the total number of elements across all pages
      * @param offset
      *         the offset from which to start pagination, can be null
      * @return a new instance of {@code HalPageInfo}
      */
-    public static HalPageInfo assemble(int size, long totalElements, int pageSize, @Nullable Long offset) {
+    public static HalPageInfo assembleWithOffset(int size, long totalElements, @Nullable Long offset) {
         long offsetEffective = offset == null ? 0L : offset;
 
-        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
-        int number = (int) (offsetEffective / pageSize);
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int number = (int) (offsetEffective / size);
 
         return new HalPageInfo(size, totalElements, totalPages, number);
     }

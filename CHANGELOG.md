@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * Upgraded default Spring Boot version
+* Assembler now also build navigation links when a paged list wrapper is build
 
 ### Fixed
 

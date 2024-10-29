@@ -74,12 +74,12 @@ public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} that includes the wrapped resources enhanced with hypermedia links
      *
-     * @see #wrapInListWrapper(List, long, int, Long, ServerWebExchange)
-     * @see #wrapInListWrapper(List, HalPageInfo, ServerWebExchange)
+     * @see #wrapInListWrapper(List, long, int, Long, List, ServerWebExchange)
+     * @see #wrapInListWrapper(List, HalPageInfo, List, ServerWebExchange)
      */
     default HalListWrapper<ResourceT, Void> wrapInListWrapper(@NonNull List<ResourceT> resourcesToWrap,
                                                               ServerWebExchange exchange) {
-        return wrapInListWrapper(resourcesToWrap, null, exchange);
+        return wrapInListWrapper(resourcesToWrap, null, null, exchange);
     }
 
     /**
@@ -91,7 +91,7 @@ public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends
      * @param totalElements
      *         the total number of elements across all pages
      * @param pageSize
-     *         the number of items per page
+     *         the requested/max number of elements in a single page
      * @param offset
      *         the starting offset of the page, if specified
      * @param sortCriteria
@@ -110,7 +110,7 @@ public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends
                                                               @Nullable Long offset,
                                                               @Nullable List<SortCriteria> sortCriteria,
                                                               ServerWebExchange exchange) {
-        HalPageInfo pageInfo = HalPageInfo.assemble(resourcesToWrap, totalElements, pageSize, offset);
+        HalPageInfo pageInfo = HalPageInfo.assembleWithOffset(pageSize, totalElements, offset);
         return wrapInListWrapper(resourcesToWrap, pageInfo, sortCriteria, exchange);
     }
 
@@ -143,7 +143,7 @@ public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends
                         .toList();
 
         HalListWrapper<ResourceT, Void> result = HalListWrapper.wrap(listOfWrappedResources)
-                .withLinks(buildLinksForResourceList(exchange));
+                .withLinks(buildLinksForResourceList(pageInfo, sortCriteria, exchange));
 
         if (pageInfo == null) {
             return result;

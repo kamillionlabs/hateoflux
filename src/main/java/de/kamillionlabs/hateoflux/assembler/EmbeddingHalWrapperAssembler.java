@@ -77,11 +77,13 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      *         the list of main resources and their corresponding embedded resources to wrap
      * @param pageInfo
      *         optional pagination information to include in the wrapper
+     * @param sortCriteria
+     *         sort criteria (property and direction) of the page
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} enriched with hypermedia links and optional pagination details
      *
-     * @see #wrapInListWrapper(PairList, long, int, Long, ServerWebExchange)
+     * @see #wrapInListWrapper(PairList, long, int, Long, List, ServerWebExchange)
      * @see #wrapInListWrapper(PairList, ServerWebExchange)
      */
     default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull PairList<ResourceT, EmbeddedT> resourcesToWrap,
@@ -116,8 +118,8 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} equipped with hypermedia links for each resource and the list as a whole
      *
-     * @see #wrapInListWrapper(PairList, long, int, Long, ServerWebExchange)
-     * @see #wrapInListWrapper(PairList, HalPageInfo, ServerWebExchange)
+     * @see #wrapInListWrapper(PairList, long, int, Long, List, ServerWebExchange)
+     * @see #wrapInListWrapper(PairList, HalPageInfo, List, ServerWebExchange)
      */
     default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull PairList<ResourceT, EmbeddedT> resourcesToWrap,
                                                                    ServerWebExchange exchange) {
@@ -133,23 +135,26 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      * @param totalElements
      *         the total number of elements across all pages
      * @param pageSize
-     *         the number of items per page
+     *         the requested/max number of elements in a single page
      * @param offset
      *         the starting offset of the page, if specified
+     * @param sortCriteria
+     *         sort criteria (property and direction) of the page
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} with hypermedia links and pagination information
      *
-     * @see #wrapInListWrapper(PairList, HalPageInfo, ServerWebExchange)
+     * @see #wrapInListWrapper(PairList, HalPageInfo, List, ServerWebExchange)
      * @see #wrapInListWrapper(PairList, ServerWebExchange)
      */
     default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull PairList<ResourceT, EmbeddedT> resourcesToWrap,
                                                                    long totalElements,
                                                                    int pageSize,
                                                                    @Nullable Long offset,
+                                                                   List<SortCriteria> sortCriteria,
                                                                    ServerWebExchange exchange) {
-        HalPageInfo pageInfo = HalPageInfo.assemble(resourcesToWrap, totalElements, pageSize, offset);
-        return wrapInListWrapper(resourcesToWrap, pageInfo, exchange);
+        HalPageInfo pageInfo = HalPageInfo.assembleWithOffset(pageSize, totalElements, offset);
+        return wrapInListWrapper(resourcesToWrap, pageInfo, sortCriteria, exchange);
     }
 
 

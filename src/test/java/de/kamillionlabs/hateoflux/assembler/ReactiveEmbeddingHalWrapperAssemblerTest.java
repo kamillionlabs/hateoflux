@@ -205,6 +205,7 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
                 Mono.just(100L),
                 2,
                 null,
+                null,
                 null
         ).block();
 

@@ -20,6 +20,7 @@ package de.kamillionlabs.hateoflux.assembler;
 
 import de.kamillionlabs.hateoflux.model.hal.HalListWrapper;
 import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
+import de.kamillionlabs.hateoflux.utility.SortCriteria;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
@@ -75,7 +76,7 @@ public interface ReactiveFlatHalWrapperAssembler<ResourceT> extends FlatHalWrapp
      *         provides the context of the current web exchange, such as the base URL
      * @return wrapped resources
      *
-     * @see #wrapInListWrapper(Flux, Mono, int, Long, ServerWebExchange)
+     * @see #wrapInListWrapper(Flux, Mono, int, Long, List, ServerWebExchange)
      */
 
     default Mono<HalListWrapper<ResourceT, Void>> wrapInListWrapper(@NonNull Flux<ResourceT> resourcesToWrap,
@@ -95,6 +96,8 @@ public interface ReactiveFlatHalWrapperAssembler<ResourceT> extends FlatHalWrapp
      *         the number of items per page
      * @param offset
      *         the starting offset of the page, if specified
+     * @param sortCriteria
+     *         sort criteria (property and direction) of the page
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return wrapped resources
@@ -105,11 +108,12 @@ public interface ReactiveFlatHalWrapperAssembler<ResourceT> extends FlatHalWrapp
                                                                     @NonNull Mono<Long> totalElements,
                                                                     int pageSize,
                                                                     @Nullable Long offset,
+                                                                    List<SortCriteria> sortCriteria,
                                                                     ServerWebExchange exchange) {
         Mono<List<ResourceT>> resourcesAsListMono = resourcesToWrap.collectList();
         return Mono.zip(resourcesAsListMono, totalElements,
                 (resourcesValue, totalElementsValue) -> wrapInListWrapper(resourcesValue, totalElementsValue,
-                        pageSize, offset, exchange));
+                        pageSize, offset, sortCriteria, exchange));
     }
 
     /**
