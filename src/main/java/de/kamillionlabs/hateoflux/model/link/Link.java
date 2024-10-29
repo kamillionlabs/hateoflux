@@ -25,6 +25,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.kamillionlabs.hateoflux.linkbuilder.BaseUrlExtractor;
 import de.kamillionlabs.hateoflux.linkbuilder.UriExpander;
 import de.kamillionlabs.hateoflux.linkbuilder.UriTemplateData;
+import de.kamillionlabs.hateoflux.model.hal.HalPageInfo;
+import de.kamillionlabs.hateoflux.utility.SortCriteria;
+import de.kamillionlabs.hateoflux.utility.SortDirection;
 import lombok.Getter;
 import lombok.Value;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -32,6 +35,9 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueNotAllowedToBeEmpty;
@@ -120,6 +126,19 @@ public class Link {
         this.hreflang = hreflang;
     }
 
+    private Link(final Link other) {
+        this.linkRelation = other.linkRelation;
+        this.href = other.href;
+        this.title = other.title;
+        this.name = other.name;
+        this.media = other.media;
+        this.type = other.type;
+        this.deprecation = other.deprecation;
+        this.profile = other.profile;
+        this.hreflang = other.hreflang;
+    }
+
+
     private Link(String href) {
         this(null, href, null, null, null, null, null, null, null);
     }
@@ -200,7 +219,7 @@ public class Link {
 
     /**
      * The relationship between the current resource and the linked resource. Common
-     * values include "self", "next", "previous", etc. Custom relations can also be used.
+     * values include "self", "next", "prev", etc. Custom relations can also be used.
      *
      * @param relation
      *         The IANA relation of the link.
@@ -214,7 +233,7 @@ public class Link {
 
     /**
      * The relationship between the current resource and the linked resource. Common
-     * values include "self", "next", "previous", etc. Custom relations can also be used.
+     * values include "self", "next", "prev", etc. Custom relations can also be used.
      *
      * @return Returns a new {@link Link} that is a copy of the current link with the "self" relation.
      */
@@ -330,6 +349,157 @@ public class Link {
 
 
     // UTILITY ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * Derives a list of navigational links (i.e., self, first, prev, next, last) based on the provided
+     * pagination and sorting information. This method generates appropriate links to navigate through
+     * paginated resources while preserving sorting parameters.
+     *
+     * <p>The method considers the current page specified in the {@code pagingInformation} and creates
+     * the necessary navigation links accordingly. It includes the {@code page}, {@code size}, and
+     * {@code SortCriteria} query parameters in the generated links.
+     *
+     * <p><strong>Edge Cases Handling:</strong>
+     * <ul>
+     *   <li><strong>Single Page Result:</strong> Only the self link is generated.</li>
+     *   <li><strong>First Page of Multiple:</strong> Generates self, next, and last links.</li>
+     *   <li><strong>Last Page of Multiple:</strong> Generates self, first, and prev links.</li>
+     *   <li><strong>Middle Page:</strong> Generates self, first, prev, next, and last links.</li>
+     *   <li><strong>Empty Page:</strong> Only the self link is generated.</li>
+     * </ul>
+     *
+     * <p><strong>Usage Example:</strong></p>
+     * <pre>{@code
+     * //HalPageInfo:  size, totalElements, totalPages, number
+     * HalPageInfo pageInfo = new HalPageInfo(10, 50L, 5, 2);
+     * Sort sort1 = Sort.by("name", SortDirection.ASCENDING);
+     * Sort sort2 = Sort.by("age", SortDirection.DESCENDING);
+     * Link link = Link.of("http://example.com/resource");
+     *
+     * List<Link> navigationLinks = link.deriveNavigationLinks(pageInfo, sort1, sort2);
+     * }</pre>
+     *
+     * <p>This will generate links with hrefs including the appropriate page, size, and sort parameters,
+     * such as:
+     * <ul>
+     *   <li><code>http://example.com/resource?page=2&amp;size=10&amp;sort=name,asc&amp;sort=age,desc</code> (self
+     *   link)</li>
+     *   <li><code>http://example.com/resource?page=0&amp;size=10&amp;sort=name,asc&amp;sort=age,desc</code> (first
+     *   link)</li>
+     *   <li><code>http://example.com/resource?page=1&amp;size=10&amp;sort=name,asc&amp;sort=age,desc</code> (prev
+     *   link)</li>
+     *   <li><code>http://example.com/resource?page=3&amp;size=10&amp;sort=name,asc&amp;sort=age,desc</code> (next
+     *   link)</li>
+     *   <li><code>http://example.com/resource?page=4&amp;size=10&amp;sort=name,asc&amp;sort=age,desc</code> (last
+     *   link)</li>
+     * </ul>
+     *
+     * @param pagingInformation
+     *         the pagination information of the self link on which all other links will be based on
+     * @param sortCriteria
+     *         optional sorting parameters of self link on which all other links will be based on; each
+     *         {@link SortCriteria}
+     * @return a list of {@link Link} objects representing the navigational links appropriate for the current
+     * page and sorting context
+     *
+     * @throws IllegalArgumentException
+     *         if the link's href is templated (contains unexpanded variables)
+     * @see HalPageInfo
+     * @see SortCriteria
+     * @see SortDirection
+     * @see <a href="https://tools.ietf.org/html/rfc5988">Web Linking (RFC 5988)</a>
+     * @see <a href="https://www.iana.org/assignments/link-relations/link-relations.xhtml">IANA Link Relations</a>
+     */
+    public List<Link> deriveNavigationLinks(HalPageInfo pagingInformation, SortCriteria... sortCriteria) {
+        if (pagingInformation == null) {
+            return List.of(this.withSelfRel());
+        }
+        Assert.isTrue(!isTemplated(), "Navigation links can only be derived if the href is not a template. " +
+                "Please expand the URI first.");
+
+        int size = pagingInformation.size();
+        int totalPages = pagingInformation.totalPages();
+        int number = pagingInformation.number();
+
+
+        List<Link> result = new ArrayList<>();
+        result.add(createLinkForPage(IanaRelation.SELF, number, size, sortCriteria));
+
+        if (totalPages > 0) {
+            if (number > 0) {
+                result.add(createLinkForPage(IanaRelation.FIRST, 0, size, sortCriteria));
+                result.add(createLinkForPage(IanaRelation.PREV, number - 1, size, sortCriteria));
+            }
+
+            if (number < totalPages - 1) {
+                result.add(createLinkForPage(IanaRelation.NEXT, number + 1, size, sortCriteria));
+                result.add(createLinkForPage(IanaRelation.LAST, totalPages - 1, size, sortCriteria));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Variation of the {@link #deriveNavigationLinks(HalPageInfo, SortCriteria...)} method. Please refer to the
+     * mentioned method for full documentation and usage examples. This method calls the aforementioned method with the
+     * conversion of {@code sortCriteria} into an array.
+     *
+     * @param pagingInformation
+     *         the pagination information of the self link on which all other links will be based on
+     * @param sortCriteria
+     *         optional sorting parameters of self link on which all other links will be based on; each
+     *         {@link SortCriteria}
+     * @return a list of {@link Link} objects representing the navigational links appropriate for the current
+     * page and sorting context
+     *
+     * @throws IllegalArgumentException
+     *         if the link's href is templated (contains unexpanded variables)
+     */
+    public List<Link> deriveNavigationLinks(HalPageInfo pagingInformation, List<SortCriteria> sortCriteria) {
+        SortCriteria[] sortCriteriaAsArray = null;
+        if (sortCriteria != null && !sortCriteria.isEmpty()) {
+            sortCriteriaAsArray = sortCriteria.toArray(new SortCriteria[0]);
+        }
+        return deriveNavigationLinks(pagingInformation, sortCriteriaAsArray);
+    }
+
+    private Link createLinkForPage(IanaRelation relType, int pageNumber, int size, SortCriteria... sortingCriteria) {
+        Map<String, Object> parameters = new LinkedHashMap<>();
+        parameters.put("page", pageNumber);
+        parameters.put("size", size);
+
+        String uriTemplate = href.contains("?") ? href + "&{?page,size}" : href + "{?page,size}";
+        String uriWithPageAndSize = UriExpander.expand(uriTemplate, parameters);
+        String sortUriPart = createSortQueryParameterPart(sortingCriteria);
+
+        return new Link(this)
+                .withHref(uriWithPageAndSize + sortUriPart)
+                .withRel(relType);
+    }
+
+    /**
+     * Sort criteria are a special case, where the query parameters always have to be sent in pairs. It is neither
+     * composite nor non-composite. For example:
+     * <p>
+     * {@code sort=name,asc&sort=age,desc}
+     * <p>
+     * Should be in composite format {@code sort=name&sort=asc&sort=age&sort=desc} and in non-composite
+     * format{@code sort=name,asc,age,desc}. However, Spring awaits neither as sort is actually a tuple.
+     *
+     * @param sortCriteria
+     *         tuples to create uri parts from
+     * @return URI part with sort criteria as query parameter
+     */
+    private String createSortQueryParameterPart(SortCriteria... sortCriteria) {
+        StringBuilder result = new StringBuilder();
+        if (sortCriteria != null) {
+            for (SortCriteria sort : sortCriteria) {
+                result.append("&sort=").append(sort.property()).append(",").append(sort.direction().getAbbreviation());
+            }
+        }
+        return result.toString();
+    }
+
 
     /**
      * Appends a specified URI part to the current {@link Link}'s href. The method ensures proper formatting with

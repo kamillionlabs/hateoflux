@@ -10,15 +10,15 @@ README is still WIP!
 
 ### Spring HATEOAS vs hateoflux
 
-| Functionalities                                      | Spring HATEOAS                                                                | hateoflux                                          |
-|------------------------------------------------------|-------------------------------------------------------------------------------|----------------------------------------------------|
-| Representation Model                                 | ✅ `EntityModel`, `CollectionModel`, `PagedModel`                              | ✅ `HalResourceWrapper`, `HalListWrapper`           |
-| `linkTo()` on controller method                      | ✅  With `WebMvcLinkBuilder` for MVC <br/>and `WebFluxLinkBuilder` for WebFlux | ✅  With `SpringControllerLinkBuilder`              |
-| URI templates as links (query and path parameters)   | ✅                                                                             | ✅                                                  |
-| Manual expansion of URIs (query and path parameters) | ✅                                                                             | ✅                                                  |
-| Assemblers                                           | ✅                                                                             | ✅                                                  |
-| Serialization                                        | ✅                                                                             | ✅                                                  |
-| Deserialization                                      | ✅                                                                             | ❌ only designed for server to client communication |
-| Media Types                                          | ✅ various                                                                     | ❌ only `application/hal+json`                      |
-| Affordance                                           | ✅                                                                             | ❌                                                  |
-| Curie                                                | ✅                                                                             | ❌                                                  |
+| Functionalities                                      | Spring HATEOAS                                                                | hateoflux                                                  |
+|------------------------------------------------------|-------------------------------------------------------------------------------|------------------------------------------------------------|
+| Representation Model                                 | ✅ `EntityModel`, `CollectionModel`, `PagedModel`                              | ✅ `HalResourceWrapper`, `HalListWrapper` (includes paging) |
+| `linkTo()` on controller method                      | ✅  With `WebMvcLinkBuilder` for MVC <br/>and `WebFluxLinkBuilder` for WebFlux | ✅  With `SpringControllerLinkBuilder`                      |
+| URI templates as links (query and path parameters)   | ✅                                                                             | ✅                                                          |
+| Manual expansion of URIs (query and path parameters) | ✅                                                                             | ✅                                                          |
+| Assemblers                                           | ✅                                                                             | ✅                                                          |
+| Serialization                                        | ✅                                                                             | ✅                                                          |
+| Deserialization                                      | ✅                                                                             | ❌ only designed for server to client communication         |
+| Media Types                                          | ✅ various                                                                     | ❌ only `application/hal+json`                              |
+| Affordance                                           | ✅                                                                             | ❌                                                          |
+| Curie                                                | ✅                                                                             | ❌                                                          |

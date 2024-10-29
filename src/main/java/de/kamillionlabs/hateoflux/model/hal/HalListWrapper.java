@@ -147,7 +147,7 @@ public final class HalListWrapper<ResourceT, EmbeddedT>
     }
 
     /**
-     * Adds pagination details to the {@link HalListWrapper}
+     * Adds pagination details to the {@link HalListWrapper}.
      *
      * @param pageInfo
      *         paging information for the list

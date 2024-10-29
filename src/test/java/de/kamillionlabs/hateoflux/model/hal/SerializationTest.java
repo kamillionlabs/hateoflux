@@ -24,12 +24,14 @@ import de.kamillionlabs.hateoflux.dummy.model.Author;
 import de.kamillionlabs.hateoflux.dummy.model.Book;
 import de.kamillionlabs.hateoflux.model.link.IanaRelation;
 import de.kamillionlabs.hateoflux.model.link.Link;
+import de.kamillionlabs.hateoflux.utility.SortCriteria;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.util.List;
 
 import static de.kamillionlabs.hateoflux.linkbuilder.SpringControllerLinkBuilder.linkTo;
+import static de.kamillionlabs.hateoflux.utility.SortDirection.ASCENDING;
 import static org.skyscreamer.jsonassert.JSONCompareMode.NON_EXTENSIBLE;
 
 /**
@@ -222,11 +224,13 @@ public class SerializationTest {
     @Test
     public void givenHalCollectionWrapperWithPaging_whenSerialized_thenNoErrors() throws Exception {
         //GIVEN
+        HalPageInfo halPageInfo = HalPageInfo.of(1, 3L, 3, 0);
         HalListWrapper<Book, Void> halCollection = HalListWrapper.wrap(
                         List.of(HalResourceWrapper.wrap(germanBedtimeStories)
                                 .withLinks(Link.linkAsSelfOf("/book/123"))))
-                .withLinks(Link.linkAsSelfOf("/author/1/books"))
-                .withPageInfo(HalPageInfo.of(1, 1L, 1, 1));
+                .withLinks(Link.of("/author/1/books")
+                        .deriveNavigationLinks(halPageInfo, SortCriteria.by("author", ASCENDING)))
+                .withPageInfo(halPageInfo);
 
         //WHEN
         String actualJson = mapper.writeValueAsString(halCollection);
@@ -234,33 +238,39 @@ public class SerializationTest {
         //THEN
         JSONAssert.assertEquals("""
                 {
-                  "_embedded": {
-                    "customBooks": [
-                      {
-                        "title": "The German Bedtime Stories",
-                        "author": "Herbert Almann",
-                        "isbn": "123-4567890123",
-                        "publishedDate": "1889-05-17",
-                        "_links": {
-                          "self": {
-                            "href": "/book/123"
+                    "page": {
+                      "size": 1,
+                      "totalElements": 3,
+                      "totalPages": 3,
+                      "number": 0
+                    },
+                    "_embedded": {
+                      "customBooks": [
+                        {
+                          "title": "The German Bedtime Stories",
+                          "author": "Herbert Almann",
+                          "isbn": "123-4567890123",
+                          "publishedDate": "1889-05-17",
+                          "_links": {
+                            "self": {
+                              "href": "/book/123"
+                            }
                           }
                         }
+                      ]
+                    },
+                    "_links": {
+                      "next": {
+                        "href": "/author/1/books?page=1&size=1&sort=author,asc"
+                      },
+                      "self": {
+                        "href": "/author/1/books?page=0&size=1&sort=author,asc"
+                      },
+                      "last": {
+                        "href": "/author/1/books?page=2&size=1&sort=author,asc"
                       }
-                    ]
-                  },
-                  "page": {
-                    "size": 1,
-                    "totalElements": 1,
-                    "totalPages": 1,
-                    "number": 1
-                  },
-                  "_links": {
-                    "self": {
-                      "href": "/author/1/books"
                     }
                   }
-                }
                 """, actualJson, NON_EXTENSIBLE);
     }
 }

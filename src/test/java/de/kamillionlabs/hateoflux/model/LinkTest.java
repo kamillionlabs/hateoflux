@@ -1,6 +1,9 @@
 package de.kamillionlabs.hateoflux.model;
 
+import de.kamillionlabs.hateoflux.model.hal.HalPageInfo;
 import de.kamillionlabs.hateoflux.model.link.Link;
+import de.kamillionlabs.hateoflux.utility.SortCriteria;
+import de.kamillionlabs.hateoflux.utility.SortDirection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -11,9 +14,101 @@ import org.springframework.mock.web.server.MockServerWebExchange;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class LinkTest {
+
+    @Test
+    void givenMiddlePageWithSorting_whenDeriveNavigationLinks_thenHrefValuesIncludeSorting() {
+        // GIVEN
+        HalPageInfo pageInfo = new HalPageInfo(10, 50L, 5, 2); // Middle page (number = 2)
+        Link link = Link.of("http://example.com/resource");
+        SortCriteria sortCriteria1 = new SortCriteria("name", SortDirection.ASCENDING);
+        SortCriteria sortCriteria2 = new SortCriteria("age", SortDirection.DESCENDING);
+
+        // WHEN
+        List<Link> navigationLinks = link.deriveNavigationLinks(pageInfo, sortCriteria1, sortCriteria2);
+
+        // THEN
+        Link selfLink = findLinkByRel(navigationLinks, "self");
+        Link firstLink = findLinkByRel(navigationLinks, "first");
+        Link prevLink = findLinkByRel(navigationLinks, "prev");
+        Link nextLink = findLinkByRel(navigationLinks, "next");
+        Link lastLink = findLinkByRel(navigationLinks, "last");
+
+        // Expected base URL
+        String baseUrl = "http://example.com/resource";
+
+        // Expected sorting parameters
+        String sortParam1 = "sort=name,asc";
+        String sortParam2 = "sort=age,desc";
+
+        // Assertions
+        assertThat(selfLink.getHref())
+                .isEqualTo(baseUrl + "?page=2&size=10&" + sortParam1 + "&" + sortParam2);
+        assertThat(firstLink.getHref())
+                .isEqualTo(baseUrl + "?page=0&size=10&" + sortParam1 + "&" + sortParam2);
+        assertThat(prevLink.getHref())
+                .isEqualTo(baseUrl + "?page=1&size=10&" + sortParam1 + "&" + sortParam2);
+        assertThat(nextLink.getHref())
+                .isEqualTo(baseUrl + "?page=3&size=10&" + sortParam1 + "&" + sortParam2);
+        assertThat(lastLink.getHref())
+                .isEqualTo(baseUrl + "?page=4&size=10&" + sortParam1 + "&" + sortParam2);
+    }
+
+    @Test
+    void givenMiddlePageWithSorting_whenDeriveNavigationLinksWithList_thenAllLinksAreCreated() {
+        // GIVEN
+        HalPageInfo pageInfo = new HalPageInfo(10, 50L, 5, 2); // Middle page (number = 2)
+        Link link = Link.of("http://example.com/resource");
+        SortCriteria sortCriteria1 = new SortCriteria("name", SortDirection.ASCENDING);
+        SortCriteria sortCriteria2 = new SortCriteria("age", SortDirection.DESCENDING);
+
+        // WHEN
+        List<Link> navigationLinks = link.deriveNavigationLinks(pageInfo, sortCriteria1, sortCriteria2);
+
+        // THEN
+        assertThat(findLinkByRel(navigationLinks, "self")).isNotNull();
+        assertThat(findLinkByRel(navigationLinks, "self")).isNotNull();
+        assertThat(findLinkByRel(navigationLinks, "first")).isNotNull();
+        assertThat(findLinkByRel(navigationLinks, "prev")).isNotNull();
+        assertThat(findLinkByRel(navigationLinks, "next")).isNotNull();
+        assertThat(findLinkByRel(navigationLinks, "last")).isNotNull();
+    }
+
+    // Helper method to find a link by its rel
+    private Link findLinkByRel(List<Link> links, String rel) {
+        return links.stream()
+                .filter(l -> rel.equals(l.getLinkRelation().getRelation()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Expected link with rel '" + rel + "' not found"));
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = ';', value = {
+            // size, totalElements, totalPages, number, expectedRels
+            "10;  0; 0; 0; self",                        // empty page
+            "10;  5; 1; 0; self",                        // single page
+            "10; 50; 5; 0; self,next,last",              // first page of several
+            "10; 50; 5; 4; self,first,prev",             // last page of several
+            "10; 50; 5; 2; self,first,prev,next,last"    // middle page of several
+    })
+    void givenVariousPageInfo_whenDeriveNavigationLinks_thenCorrectLinksAreReturned(
+            int size, long totalElements, int totalPages, int number, String expectedRels) {
+
+        // GIVEN
+        HalPageInfo pageInfo = new HalPageInfo(size, totalElements, totalPages, number);
+        Link link = Link.of("http://example.com/resource");
+        String[] expectedRelArray = expectedRels.split(",");
+
+        // WHEN
+        List<Link> navigationLinks = link.deriveNavigationLinks(pageInfo);
+
+        // THEN
+        assertThat(navigationLinks)
+                .extracting(l -> l.getLinkRelation().getRelation())
+                .containsExactlyInAnyOrder(expectedRelArray);
+    }
 
 
     @ParameterizedTest

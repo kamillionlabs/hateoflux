@@ -21,6 +21,7 @@ package de.kamillionlabs.hateoflux.assembler;
 import de.kamillionlabs.hateoflux.model.hal.HalListWrapper;
 import de.kamillionlabs.hateoflux.model.hal.HalPageInfo;
 import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
+import de.kamillionlabs.hateoflux.utility.SortCriteria;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
@@ -73,12 +74,12 @@ public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} that includes the wrapped resources enhanced with hypermedia links
      *
-     * @see #wrapInListWrapper(List, long, int, Long, ServerWebExchange)
-     * @see #wrapInListWrapper(List, HalPageInfo, ServerWebExchange)
+     * @see #wrapInListWrapper(List, long, int, Long, List, ServerWebExchange)
+     * @see #wrapInListWrapper(List, HalPageInfo, List, ServerWebExchange)
      */
     default HalListWrapper<ResourceT, Void> wrapInListWrapper(@NonNull List<ResourceT> resourcesToWrap,
                                                               ServerWebExchange exchange) {
-        return wrapInListWrapper(resourcesToWrap, null, exchange);
+        return wrapInListWrapper(resourcesToWrap, null, null, exchange);
     }
 
     /**
@@ -90,24 +91,27 @@ public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends
      * @param totalElements
      *         the total number of elements across all pages
      * @param pageSize
-     *         the number of items per page
+     *         the requested/max number of elements in a single page
      * @param offset
      *         the starting offset of the page, if specified
+     * @param sortCriteria
+     *         sort criteria (property and direction) of the page, if specified
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} that includes the wrapped resources enhanced with hypermedia links, along with
      * pagination information
      *
-     * @see #wrapInListWrapper(List, HalPageInfo, ServerWebExchange)
+     * @see #wrapInListWrapper(List, HalPageInfo, List, ServerWebExchange)
      * @see #wrapInListWrapper(List, ServerWebExchange)
      */
     default HalListWrapper<ResourceT, Void> wrapInListWrapper(@NonNull List<ResourceT> resourcesToWrap,
                                                               long totalElements,
                                                               int pageSize,
                                                               @Nullable Long offset,
+                                                              @Nullable List<SortCriteria> sortCriteria,
                                                               ServerWebExchange exchange) {
-        HalPageInfo pageInfo = HalPageInfo.assemble(resourcesToWrap, totalElements, pageSize, offset);
-        return wrapInListWrapper(resourcesToWrap, pageInfo, exchange);
+        HalPageInfo pageInfo = HalPageInfo.assembleWithOffset(pageSize, totalElements, offset);
+        return wrapInListWrapper(resourcesToWrap, pageInfo, sortCriteria, exchange);
     }
 
     /**
@@ -119,16 +123,19 @@ public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends
      *         the list of resources to be wrapped
      * @param pageInfo
      *         optional pagination information to include in the wrapper
+     * @param sortCriteria
+     *         sort criteria (property and direction) of the page, if specified
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalListWrapper} that includes the wrapped resources enhanced with hypermedia links, and
      * optionally pagination details
      *
-     * @see #wrapInListWrapper(List, long, int, Long, ServerWebExchange)
+     * @see #wrapInListWrapper(List, long, int, Long, List, ServerWebExchange)
      * @see #wrapInListWrapper(List, ServerWebExchange)
      */
     default HalListWrapper<ResourceT, Void> wrapInListWrapper(@NonNull List<ResourceT> resourcesToWrap,
                                                               @Nullable HalPageInfo pageInfo,
+                                                              @Nullable List<SortCriteria> sortCriteria,
                                                               ServerWebExchange exchange) {
         List<HalResourceWrapper<ResourceT, Void>> listOfWrappedResources =
                 resourcesToWrap.stream()
@@ -136,7 +143,7 @@ public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends
                         .toList();
 
         HalListWrapper<ResourceT, Void> result = HalListWrapper.wrap(listOfWrappedResources)
-                .withLinks(buildLinksForResourceList(exchange));
+                .withLinks(buildLinksForResourceList(pageInfo, sortCriteria, exchange));
 
         if (pageInfo == null) {
             return result;

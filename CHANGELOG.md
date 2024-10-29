@@ -5,11 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0]
+
+### Added
+
+* Link contains now a method to automatically generate navigation links from HalPageInfo
+
+### Changed
+
+* Upgraded default Spring Boot version
+* Assembler now also build navigation links when a paged list wrapper is build
+
+### Fixed
+
+* Fixed interpretation of HalPageInfo field "size"
+
 ## [0.14.0]
 
 ### Added
 
-* Removed the TODO list in readme and added an actual one
+* Removed the TODO list in readme and added a comparison table
 
 ### Changed
 

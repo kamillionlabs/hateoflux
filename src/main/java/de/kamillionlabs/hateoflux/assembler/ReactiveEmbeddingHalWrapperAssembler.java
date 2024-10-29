@@ -23,6 +23,7 @@ import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
 import de.kamillionlabs.hateoflux.model.hal.Relation;
 import de.kamillionlabs.hateoflux.utility.Pair;
 import de.kamillionlabs.hateoflux.utility.PairList;
+import de.kamillionlabs.hateoflux.utility.SortCriteria;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
@@ -86,7 +87,7 @@ public interface ReactiveEmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> exte
      *         provides the context of the current web exchange, such as the base URL
      * @return a Mono of a {@link HalListWrapper} containing the resources enhanced with hypermedia links
      *
-     * @see #wrapInListWrapper(Flux, Mono, int, Long, ServerWebExchange)
+     * @see #wrapInListWrapper(Flux, Mono, int, Long, List, ServerWebExchange)
      */
     default Mono<HalListWrapper<ResourceT, EmbeddedT>> wrapInListWrapper(@NonNull Flux<Pair<ResourceT, EmbeddedT>> resourcesToWrap,
                                                                          ServerWebExchange exchange) {
@@ -106,6 +107,8 @@ public interface ReactiveEmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> exte
      *         the number of items per page
      * @param offset
      *         the starting offset of the page, if specified
+     * @param sortCriteria
+     *         sort criteria (property and direction) of the page
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a Mono of a {@link HalListWrapper} containing the paginated list of resources enhanced with hypermedia
@@ -117,10 +120,11 @@ public interface ReactiveEmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> exte
                                                                          @NonNull Mono<Long> totalElements,
                                                                          int pageSize,
                                                                          @Nullable Long offset,
+                                                                         List<SortCriteria> sortCriteria,
                                                                          ServerWebExchange exchange) {
         Mono<PairList<ResourceT, EmbeddedT>> resourcesAsPairs = convertToPairs(resourcesToWrap);
         return Mono.zip(resourcesAsPairs, totalElements,
-                (resources, total) -> wrapInListWrapper(resources, total, pageSize, offset, exchange));
+                (resources, total) -> wrapInListWrapper(resources, total, pageSize, offset, sortCriteria, exchange));
     }
 
 
