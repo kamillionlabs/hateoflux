@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0]
+
+### Changed
+
+* Minor Readme changes
+
 ## [0.15.0]
 
 ### Added
@@ -14,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * Upgraded default Spring Boot version
-* Assembler now also build navigation links when a paged list wrapper is build
+* Assemblers now also build navigation links when a paged list wrapper are created
 
 ### Fixed
 
