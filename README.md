@@ -1,7 +1,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./readme_resources/hateoflux_white.svg">
   <source media="(prefers-color-scheme: light)" srcset="./readme_resources/hateoflux_black.svg">
-  <img alt="hateoflux logo" src="./readme_resources/hateoflux_black.svg" height="25">
+  <img alt="hateoflux logo" src="./readme_resources/hateoflux_black.svg">
 </picture>
 
 ![Version](.github/badges/version.svg)
