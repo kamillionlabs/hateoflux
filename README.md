@@ -4,11 +4,11 @@
   <img alt="hateoflux logo" src="./readme_resources/hateoflux_black.svg">
 </picture>
 
+Lightweight HATEOAS library designed for Spring Webflux.
+
 ![Version](.github/badges/version.svg)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/kamillionlabs/hateoflux/main.yml?branch=master)
 ![Coverage](.github/badges/jacoco.svg)
-
-Lightweight HATEOAS library designed to work with Spring Webflux.
 
 README is still WIP!
 
