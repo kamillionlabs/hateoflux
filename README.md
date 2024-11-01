@@ -9,6 +9,7 @@ Lightweight HATEOAS library designed for Spring Webflux.
 ![Version](.github/badges/version.svg)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/kamillionlabs/hateoflux/main.yml?branch=master)
 ![Coverage](.github/badges/jacoco.svg)
+___
 
 README is still WIP!
 
