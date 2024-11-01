@@ -1,4 +1,8 @@
-![logo](hateoflux_logo.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./readme_resources/hateoflux_white.svg">
+  <source media="(prefers-color-scheme: light)" srcset="./readme_resources/hateoflux_black.svg">
+  <img alt="hateoflux logo" src="./readme_resources/hateoflux_black.svg" height="25">
+</picture>
 
 ![Version](.github/badges/version.svg)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/kamillionlabs/hateoflux/main.yml?branch=master)
