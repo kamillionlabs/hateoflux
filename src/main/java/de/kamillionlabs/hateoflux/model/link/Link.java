@@ -589,7 +589,7 @@ public class Link {
      *         specifies whether the collection should be rendered as composite (true) or non-composite (false)
      * @return the expanded or original URI if expansion is not applicable
      */
-    public Link expand(Map<String, Object> parameters, boolean collectionRenderedAsComposite) {
+    public Link expand(Map<String, ?> parameters, boolean collectionRenderedAsComposite) {
         String newHref = UriExpander.expand(this.href, parameters, collectionRenderedAsComposite);
         return this.withHref(newHref);
     }
@@ -602,7 +602,7 @@ public class Link {
      *         to expand in templated href
      * @return the expanded or original URI if expansion is not applicable
      */
-    public Link expand(Map<String, Object> parameters) {
+    public Link expand(Map<String, ?> parameters) {
         return expand(parameters, false);
     }
 }

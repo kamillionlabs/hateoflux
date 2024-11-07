@@ -426,10 +426,10 @@ public class UriExpander {
 
         for (var parameterName : parameterNamesToTest) {
             Object parameterValue = parameters.get(parameterName);
-            if (parameterValue instanceof Collection<?>) {
-                if (!uriTemplateData.isExplodedQueryParameter(parameterName)) {
+            if (parameterValue instanceof Collection<?> parameterValueAsCollection) {
+                if (!uriTemplateData.isExplodedQueryParameter(parameterName) && parameterValueAsCollection.size() > 1) {
                     throw new IllegalArgumentException(format(
-                            "Detected a collection as value for a parameter, but parameter was not exploded in " +
+                            "Detected a collection of values for a parameter, but parameter was not exploded in " +
                                     "template (asterisk after parameter name e.g. {?var*}). " +
                                     "Template was '%s', parameters were %s", originalUriTemplate, parameters
                     ));

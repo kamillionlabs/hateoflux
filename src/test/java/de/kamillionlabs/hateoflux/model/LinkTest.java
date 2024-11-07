@@ -10,6 +10,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.util.List;
 import java.util.Map;
@@ -228,6 +230,20 @@ class LinkTest {
         Link link = Link.of("http://example.com/{someId}");
         Link actual = link.expand(Map.of("someId", 54));
         assertThat(actual.getHref()).isEqualTo("http://example.com/54");
+    }
+
+    @Test
+    public void givenMultiValueMap_whenExpand_thenPlaceholdersCorrectlySet() {
+        // GIVEN
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+        queryParams.add("someId", "54");
+
+        // WHEN
+        Link link = Link.of("http://example.com{?someId}")
+                .expand(queryParams);
+
+        //THEN
+        assertThat(link.getHref()).isEqualTo("http://example.com?someId=54");
     }
 
     @ParameterizedTest

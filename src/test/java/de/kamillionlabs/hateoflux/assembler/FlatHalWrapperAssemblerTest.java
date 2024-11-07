@@ -21,6 +21,11 @@ class FlatHalWrapperAssemblerTest {
     static class AssemblerUnderTest implements FlatHalWrapperAssembler<Book> {
 
         @Override
+        public Class<Book> getResourceTClass() {
+            return Book.class;
+        }
+
+        @Override
         public Link buildSelfLinkForResourceList(ServerWebExchange exchange) {
             return Link.of("resource-list/self/link");
         }
@@ -33,6 +38,7 @@ class FlatHalWrapperAssemblerTest {
 
     // -----------------------------------------------------------------------------------------------------------------
     private final AssemblerUnderTest assemblerUnderTest = new AssemblerUnderTest();
+
 
     @Test
     public void givenResourceWithEmbedded_wrapInResourceWrapper_thenAllFieldsAreFilled() {
@@ -165,6 +171,19 @@ class FlatHalWrapperAssemblerTest {
 
         //THEN
         assertThat(actualWrapper.getNameOfResourceList()).isEqualTo("customBooks");
+    }
+
+    @Test
+    public void givenEmptyPairs_whenWrapInListWrapper_thenNoException() {
+        //GIVEN & WHEN
+        HalListWrapper<Book, Void> emptyWrapper = assemblerUnderTest.wrapInListWrapper(List.of(), null);
+
+        //THEN
+        assertThat(emptyWrapper).isNotNull();
+        assertThat(emptyWrapper.isEmpty()).isEqualTo(true);
+        assertThat(emptyWrapper.getNameOfResourceList()).isEqualTo("customBooks");
+        assertThat(emptyWrapper.getLinks()).hasSize(1);
+        assertThat(emptyWrapper.getLinks().get(0).getHref()).isEqualTo("resource-list/self/link");
     }
 
 }

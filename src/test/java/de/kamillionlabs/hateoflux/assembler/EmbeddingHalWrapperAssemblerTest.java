@@ -24,6 +24,11 @@ class EmbeddingHalWrapperAssemblerTest {
     static class AssemblerUnderTest implements EmbeddingHalWrapperAssembler<Book, Author> {
 
         @Override
+        public Class<Book> getResourceTClass() {
+            return Book.class;
+        }
+
+        @Override
         public Link buildSelfLinkForResourceList(ServerWebExchange exchange) {
             return Link.of("resource-list/self/link");
         }
@@ -47,6 +52,7 @@ class EmbeddingHalWrapperAssemblerTest {
     // -----------------------------------------------------------------------------------------------------------------
 
     private final AssemblerUnderTest assemblerUnderTest = new AssemblerUnderTest();
+
 
     @Test
     public void givenResourceWithEmbedded_whenWrapInResourceWrapper_thenAllFieldsAreFilled() {
@@ -246,6 +252,7 @@ class EmbeddingHalWrapperAssemblerTest {
 
         //Rudimentary testing (rest is tested elsewhere)
         assertThat(actualWrapper).isNotNull();
+        assertThat(actualWrapper.isEmpty()).isEqualTo(false);
         List<HalResourceWrapper<Book, Author>> actualResourceList = actualWrapper.getResourceList();
         assertThat(actualResourceList).isNotNull();
         HalEmbeddedWrapper<Author> actualEmbedded = actualResourceList.get(0).getRequiredEmbedded().get(0);
@@ -278,5 +285,18 @@ class EmbeddingHalWrapperAssemblerTest {
 
         //THEN
         assertThat(actualWrapper.getNameOfResourceList()).isEqualTo("customBooks");
+    }
+
+    @Test
+    public void givenEmptyPairs_whenWrapInListWrapper_thenNoException() {
+        //GIVEN
+        HalListWrapper<Book, Author> emptyWrapper = assemblerUnderTest.wrapInListWrapper(new PairList<>(), null);
+
+        //THEN
+        assertThat(emptyWrapper).isNotNull();
+        assertThat(emptyWrapper.isEmpty()).isEqualTo(true);
+        assertThat(emptyWrapper.getNameOfResourceList()).isEqualTo("customBooks");
+        assertThat(emptyWrapper.getLinks()).hasSize(1);
+        assertThat(emptyWrapper.getLinks().get(0).getHref()).isEqualTo("resource-list/self/link");
     }
 }

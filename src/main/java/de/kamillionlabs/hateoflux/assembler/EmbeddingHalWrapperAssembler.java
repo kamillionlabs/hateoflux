@@ -67,7 +67,6 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
         SealedResourceListAssemblerModule<ResourceT, EmbeddedT>,
         SealedEmbeddedLinkAssemblerModule<EmbeddedT> {
 
-
     /**
      * Wraps a list of main resources with their corresponding embedded resources in a {@link HalListWrapper},
      * optionally
@@ -98,8 +97,14 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
                             return wrapInResourceWrapper(resource, embedded, exchange);
                         }).toList();
 
-        HalListWrapper<ResourceT, EmbeddedT> result = HalListWrapper.wrap(listOfWrappedResourcesWithEmbedded)
-                .withLinks(buildLinksForResourceList(pageInfo, sortCriteria, exchange));
+        HalListWrapper<ResourceT, EmbeddedT> result;
+
+        if (listOfWrappedResourcesWithEmbedded.isEmpty()) {
+            result = HalListWrapper.empty(getResourceTClass());
+        } else {
+            result = HalListWrapper.wrap(listOfWrappedResourcesWithEmbedded);
+        }
+        result.withLinks(buildLinksForResourceList(pageInfo, sortCriteria, exchange));
 
         if (pageInfo == null) {
             return result;
