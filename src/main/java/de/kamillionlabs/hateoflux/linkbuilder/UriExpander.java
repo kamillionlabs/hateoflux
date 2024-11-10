@@ -36,6 +36,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class UriExpander {
 
+    private static final Set<String> PAGING_QUERY_PARAMETER = Set.of("page", "sort", "size");
+
     private UriExpander() {
     }
 
@@ -417,7 +419,13 @@ public class UriExpander {
                             "Template was '%s', parameters were %s", originalUriTemplate, parameters));
         }
 
-        if (!parameterNamesToTest.isEmpty() && uriTemplateData.includesUnknownParameters(parameterNamesToTest)) {
+        // paging parameters are allowed to be "unknown" because they can be generated and are generally handled
+        // automatically
+        Set<String> parameterNamesExcludingPagingParameters = new HashSet<>(parameterNamesToTest);
+        parameterNamesExcludingPagingParameters.removeAll(PAGING_QUERY_PARAMETER);
+
+        if (!parameterNamesToTest.isEmpty()
+                && uriTemplateData.includesUnknownParameters(parameterNamesExcludingPagingParameters)) {
             throw new IllegalArgumentException(format(
                     "Unknown parameters provided for URI template expansion. " +
                             "Template was '%s', parameters were %s", originalUriTemplate, parameters));
@@ -426,10 +434,10 @@ public class UriExpander {
 
         for (var parameterName : parameterNamesToTest) {
             Object parameterValue = parameters.get(parameterName);
-            if (parameterValue instanceof Collection<?>) {
-                if (!uriTemplateData.isExplodedQueryParameter(parameterName)) {
+            if (parameterValue instanceof Collection<?> parameterValueAsCollection) {
+                if (!uriTemplateData.isExplodedQueryParameter(parameterName) && parameterValueAsCollection.size() > 1) {
                     throw new IllegalArgumentException(format(
-                            "Detected a collection as value for a parameter, but parameter was not exploded in " +
+                            "Detected a collection of values for a parameter, but parameter was not exploded in " +
                                     "template (asterisk after parameter name e.g. {?var*}). " +
                                     "Template was '%s', parameters were %s", originalUriTemplate, parameters
                     ));
@@ -457,6 +465,43 @@ public class UriExpander {
             }
         }
         return result;
+    }
+
+    /**
+     * Removes existing paging query parameters {@code page}, {@code size}, and {@code sort}. Any other query parameter
+     * is ignored. If as a result the URI has no query paramters anymore, the '?' is removed.
+     *
+     * @param inputUrl
+     *         input URL to remove paging parameters from
+     * @return sanitized URL
+     */
+    public static String removePagingParameters(String inputUrl) {
+        // Split the inputUrl into base URL and query string
+        if (inputUrl == null || inputUrl.isEmpty()) {
+            return inputUrl;
+        }
+
+        int idx = inputUrl.indexOf('?');
+        if (idx == -1) {
+            // No query parameters
+            return inputUrl;
+        }
+        String baseUrl = inputUrl.substring(0, idx);
+        String query = inputUrl.substring(idx + 1);
+
+        // Regex pattern to match 'page', 'size', and 'sort' parameters
+        String pattern = "(^|&)(page|size|sort)(=[^&]*)?(?=&|$)";
+        query = query.replaceAll(pattern, "");
+
+        // Remove any leading or trailing '&' characters
+        query = query.replaceAll("^&+", "").replaceAll("&+$", "");
+
+        // Build the output URL
+        if (query.isEmpty()) {
+            return baseUrl;
+        } else {
+            return baseUrl + "?" + query;
+        }
     }
 
 }

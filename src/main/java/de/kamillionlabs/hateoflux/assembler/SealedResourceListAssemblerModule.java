@@ -41,6 +41,20 @@ import java.util.List;
 public sealed interface SealedResourceListAssemblerModule<ResourceT, EmbeddedT> permits
         FlatHalWrapperAssembler, EmbeddingHalWrapperAssembler {
 
+    /**
+     * Specifies the class type of {@code ResourceT} that the assembler builds. This method is required because
+     * type erasure removes generic type information at runtime. By implementing this method, the class type
+     * of {@code ResourceT} becomes accessible. An implementation is as simple as:
+     * <blockquote><pre>
+     * public Class&lt;Book&gt; getResourceTClass() {
+     *     return Book.class;
+     * }
+     * </pre></blockquote>
+     *
+     * @return the class type of {@code ResourceT}
+     */
+    Class<ResourceT> getResourceTClass();
+
 
     /**
      * Creates an empty {@link HalListWrapper} including hypermedia links applicable to the entire list.

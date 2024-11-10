@@ -21,6 +21,11 @@ class ReactiveFlatHalWrapperAssemblerTest {
     static class AssemblerUnderTest implements ReactiveFlatHalWrapperAssembler<Book> {
 
         @Override
+        public Class<Book> getResourceTClass() {
+            return Book.class;
+        }
+
+        @Override
         public Link buildSelfLinkForResourceList(ServerWebExchange exchange) {
             return Link.of("reactive/resource-list/self/link");
         }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 public class PairListTest {
 
@@ -292,5 +293,29 @@ public class PairListTest {
         assertThat(pairList.getRight(8)).isEqualTo(9);
         assertThat(pairList.getLeft(9)).isEqualTo("ten");
         assertThat(pairList.getRight(9)).isEqualTo(10);
+    }
+
+
+    @Test
+    void givenInputListOfDifferentSizes_WhenOfMethodCalled_thenThrowException() {
+        assertThatThrownBy(() -> PairList.of(List.of(1, 2), List.of("1")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Different sizes in lefts and rights are not allowed");
+
+    }
+
+    @Test
+    void givenInputListRightIsNull_WhenOfMethodCalled_thenThrowException() {
+        assertThatThrownBy(() -> PairList.of(List.of(1, 2), null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("rights is not allowed to be null");
+    }
+
+    @Test
+    void givenInputListLeftIsNull_WhenOfMethodCalled_thenThrowException() {
+        assertThatThrownBy(() -> PairList.of(null, List.of("1")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("lefts is not allowed to be null");
+
     }
 }

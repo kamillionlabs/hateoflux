@@ -116,8 +116,7 @@ public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends
 
     /**
      * Wraps a list of resources into a {@link HalListWrapper}, optionally including pagination information, and
-     * enhances
-     * them with hypermedia links as defined by the assembler.
+     * enhances them with hypermedia links as defined by the assembler.
      *
      * @param resourcesToWrap
      *         the list of resources to be wrapped
@@ -142,8 +141,15 @@ public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends
                         .map(resource -> wrapInResourceWrapper(resource, exchange))
                         .toList();
 
-        HalListWrapper<ResourceT, Void> result = HalListWrapper.wrap(listOfWrappedResources)
-                .withLinks(buildLinksForResourceList(pageInfo, sortCriteria, exchange));
+        HalListWrapper<ResourceT, Void> result;
+
+        if (listOfWrappedResources.isEmpty()) {
+            result = HalListWrapper.empty(getResourceTClass());
+        } else {
+            result = HalListWrapper.wrap(listOfWrappedResources);
+        }
+
+        result.withLinks(buildLinksForResourceList(pageInfo, sortCriteria, exchange));
 
         if (pageInfo == null) {
             return result;

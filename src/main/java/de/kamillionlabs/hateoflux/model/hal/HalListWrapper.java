@@ -177,4 +177,15 @@ public final class HalListWrapper<ResourceT, EmbeddedT>
     public String getNameOfResourceList() {
         return resourceList.getKey();
     }
+
+
+    /**
+     * Indicates whether the wrapper hold a non-empty list.
+     *
+     * @return {@code true} if list is non-empty; {@code false} otherwise
+     */
+    @JsonIgnore
+    public boolean isEmpty() {
+        return resourceList.getValue().isEmpty();
+    }
 }

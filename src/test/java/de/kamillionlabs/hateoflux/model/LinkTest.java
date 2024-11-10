@@ -10,6 +10,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.util.List;
 import java.util.Map;
@@ -76,12 +78,32 @@ class LinkTest {
         assertThat(findLinkByRel(navigationLinks, "last")).isNotNull();
     }
 
+
     // Helper method to find a link by its rel
     private Link findLinkByRel(List<Link> links, String rel) {
         return links.stream()
                 .filter(l -> rel.equals(l.getLinkRelation().getRelation()))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Expected link with rel '" + rel + "' not found"));
+    }
+
+    @Test
+    void givenUrlWithPagingInfoAlready_whenDeriveNavigationLinks_thenHrefDoNotIncludeDoubleQueryParams() {
+        // GIVEN
+        HalPageInfo pageInfo = new HalPageInfo(2, 2L, 1, 0); // Single page
+        // already contains paging though it is different
+        Link link = Link.of("https://example.com/resource?page=1&size=10&sort=age,desc");
+        SortCriteria sortCriteria1 = new SortCriteria("name", SortDirection.ASCENDING);
+
+        // WHEN
+        List<Link> navigationLinks = link.deriveNavigationLinks(pageInfo, sortCriteria1);
+
+        // THEN
+        Link selfLink = findLinkByRel(navigationLinks, "self");
+
+        // Assertions
+        assertThat(selfLink.getHref())
+                .isEqualTo("https://example.com/resource?page=0&size=2&sort=name,asc");
     }
 
     @ParameterizedTest
@@ -228,6 +250,20 @@ class LinkTest {
         Link link = Link.of("http://example.com/{someId}");
         Link actual = link.expand(Map.of("someId", 54));
         assertThat(actual.getHref()).isEqualTo("http://example.com/54");
+    }
+
+    @Test
+    public void givenMultiValueMap_whenExpand_thenPlaceholdersCorrectlySet() {
+        // GIVEN
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+        queryParams.add("someId", "54");
+
+        // WHEN
+        Link link = Link.of("http://example.com{?someId}")
+                .expand(queryParams);
+
+        //THEN
+        assertThat(link.getHref()).isEqualTo("http://example.com?someId=54");
     }
 
     @ParameterizedTest

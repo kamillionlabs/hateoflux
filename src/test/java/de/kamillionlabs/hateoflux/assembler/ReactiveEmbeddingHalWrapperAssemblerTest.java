@@ -24,6 +24,11 @@ class ReactiveEmbeddingHalWrapperAssemblerTest {
     static class AssemblerUnderTest implements ReactiveEmbeddingHalWrapperAssembler<Book, Author> {
 
         @Override
+        public Class<Book> getResourceTClass() {
+            return Book.class;
+        }
+
+        @Override
         public Link buildSelfLinkForResourceList(ServerWebExchange exchange) {
             return Link.of("reactive/resource-list/self/link");
         }
