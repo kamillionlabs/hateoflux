@@ -13,46 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @since 13.07.2024
+ * @since 21.07.2024
  */
 
 package de.kamillionlabs.hateoflux.assembler;
 
-import de.kamillionlabs.hateoflux.model.hal.*;
+import de.kamillionlabs.hateoflux.model.hal.HalListWrapper;
+import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
+import de.kamillionlabs.hateoflux.model.hal.Relation;
+import de.kamillionlabs.hateoflux.utility.Pair;
 import de.kamillionlabs.hateoflux.utility.PairList;
 import de.kamillionlabs.hateoflux.utility.SortCriteria;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 /**
- * Interface for managing the transformation of resources and their associated embedded resources into HAL-compliant
- * representations, supplemented with hypermedia links. This interface facilitates the direct enhancement of resources
- * with the necessary fields and structure to comply with HAL standards, enabling resources to become HAL-compliant.
+ * Reactive interface for managing the transformation of resources and their associated embedded resources into
+ * HAL-compliant representations, supplemented with hypermedia links. This interface is designed for use in reactive
+ * programming environments where resources are emitted as a stream. It facilitates the enhancement of resource streams
+ * with the necessary fields and structure to comply with HAL standards, enabling reactive streams of resources to
+ * become
+ * HAL-compliant.
+ * <p>
+ * While the interface's main focus is the transformation of reactive streams, it also comes equipped with the means to
+ * transform in an imperative manner, i.e., with direct objects and, for example, lists.
  *
  * <p> Core functionalities include:
  * <ul>
- *     <li>Directly enhancing main resources and their embedded resources to meet HAL structure requirements.</li>
- *     <li>Appending hypermedia links to resources to support navigability and resource interaction in a HAL-based
- *     API.</li>
- *     <li>Enabling custom naming and linking definitions for collections of embedded resources through
+ *     <li>Enhancing streams of main resources and their embedded resources to meet HAL structure requirements
+ *     reactively.</li>
+ *     <li>Appending hypermedia links to resources within the stream to support navigability and resource interaction
+ *     in a HAL-based API reactively.</li>
+ *     <li>Enabling custom naming and linking definitions for collections of embedded resources through reactive
  *     implementation.</li>
- *     <li>Supporting pagination when wrapping lists of resources to provide structured navigation across large
- *     datasets.</li>
+ *     <li>Supporting pagination and backpressure in reactive streams when wrapping resources to provide structured
+ *     navigation across large datasets.</li>
  * </ul>
  * <p>
- * This interface abstracts the tasks associated with modifying resources to fit HAL specifications, streamlining the
- * creation of HAL-compliant resource representations.
+ * This interface abstracts the reactive tasks associated with modifying resource streams to fit HAL specifications,
+ * streamlining the  creation of HAL-compliant resource representations in a reactive programming context.
  *
  * <p>See also:
  * <ul>
- *    <li>{@link FlatHalWrapperAssembler} - for imperative (non-reactive) handling of resources <b>without</b>
+ *    <li>{@link SealedNonReactiveFlatHalWrapperAssembler} - for imperative (non-reactive) handling of resources
+ *    <b>without</b>
  *    embedded resources.</li>
- *    <li>{@link ReactiveEmbeddingHalWrapperAssembler} - for reactive <b>and</b> imperative handling of resources
- *    <b>with</b> embedded resources.</li>
- *    <li>{@link ReactiveFlatHalWrapperAssembler} - for reactive <b>and</b> imperative handling of standalone
+ *    <li>{@link SealedNonReactiveEmbeddingHalWrapperAssembler} - for imperative handling of resources <b>with</b>
+ *    embedded resources
+ *    .</li>
+ *    <li>{@link FlatHalWrapperAssembler} - for reactive <b>and</b> imperative handling of standalone
  *    resources <b>without</b> embedded resources.</li>
  * </ul>
  *
@@ -63,232 +77,179 @@ import java.util.List;
  * @author Younes El Ouarti
  */
 public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> extends
-        SealedResourceLinkAssemblerModule<ResourceT>,
-        SealedResourceListAssemblerModule<ResourceT, EmbeddedT>,
-        SealedEmbeddedLinkAssemblerModule<EmbeddedT> {
+        SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> {
 
     /**
-     * Wraps a list of main resources with their corresponding embedded resources in a {@link HalListWrapper},
-     * optionally
-     * including pagination information, appending hypermedia links as defined by the assembler.
+     * Wraps a reactive stream of resource pairs into a Mono of a {@link HalListWrapper}, enhancing them with hypermedia
+     * links as defined by the assembler.
      *
      * @param resourcesToWrap
-     *         the list of main resources and their corresponding embedded resources to wrap
-     * @param pageInfo
-     *         optional pagination information to include in the wrapper
-     * @param sortCriteria
-     *         sort criteria (property and direction) of the page
+     *         the reactive stream of resources and their associated embedded resources to be wrapped
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalListWrapper} enriched with hypermedia links and optional pagination details
+     * @return a Mono of a {@link HalListWrapper} containing the resources enhanced with hypermedia links
      *
-     * @see #wrapInListWrapper(PairList, long, int, Long, List, ServerWebExchange)
-     * @see #wrapInListWrapper(PairList, ServerWebExchange)
+     * @see #wrapInListWrapper(Flux, Mono, int, Long, List, ServerWebExchange)
      */
-    default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull PairList<ResourceT, EmbeddedT> resourcesToWrap,
-                                                                   @Nullable HalPageInfo pageInfo,
-                                                                   @Nullable List<SortCriteria> sortCriteria,
-                                                                   ServerWebExchange exchange) {
-        List<HalResourceWrapper<ResourceT, EmbeddedT>> listOfWrappedResourcesWithEmbedded =
-                resourcesToWrap.stream()
-                        .map(pair -> {
-                            ResourceT resource = pair.left();
-                            EmbeddedT embedded = pair.right();
-                            return wrapInResourceWrapper(resource, embedded, exchange);
-                        }).toList();
-
-        HalListWrapper<ResourceT, EmbeddedT> result;
-
-        if (listOfWrappedResourcesWithEmbedded.isEmpty()) {
-            result = HalListWrapper.empty(getResourceTClass());
-        } else {
-            result = HalListWrapper.wrap(listOfWrappedResourcesWithEmbedded);
-        }
-        result.withLinks(buildLinksForResourceList(pageInfo, sortCriteria, exchange));
-
-        if (pageInfo == null) {
-            return result;
-        } else {
-            return result.withPageInfo(pageInfo);
-        }
+    default Mono<HalListWrapper<ResourceT, EmbeddedT>> wrapInListWrapper(@NonNull Flux<Pair<ResourceT, EmbeddedT>> resourcesToWrap,
+                                                                         ServerWebExchange exchange) {
+        return convertToPairs(resourcesToWrap)
+                .map(pairList -> wrapInListWrapper(pairList, exchange));
     }
 
     /**
-     * Wraps a list of main resources with their corresponding embedded resources in a {@link HalListWrapper}, appending
-     * hypermedia links as defined by the assembler.
+     * Wraps a reactive stream of resource pairs into a Mono of a {@link HalListWrapper} with pagination details. This
+     * includes hypermedia links as defined by the assembler, along with pagination parameters.
      *
      * @param resourcesToWrap
-     *         the list of main resources and their corresponding embedded resources to wrap
-     * @param exchange
-     *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalListWrapper} equipped with hypermedia links for each resource and the list as a whole
-     *
-     * @see #wrapInListWrapper(PairList, long, int, Long, List, ServerWebExchange)
-     * @see #wrapInListWrapper(PairList, HalPageInfo, List, ServerWebExchange)
-     */
-    default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull PairList<ResourceT, EmbeddedT> resourcesToWrap,
-                                                                   ServerWebExchange exchange) {
-        return wrapInListWrapper(resourcesToWrap, null, null, exchange);
-    }
-
-    /**
-     * Wraps a list of main resources with their corresponding embedded resources in a {@link HalListWrapper} with
-     * pagination information, appending hypermedia links as defined by the assembler.
-     *
-     * @param resourcesToWrap
-     *         the list of main resources and their corresponding embedded resources to wrap
+     *         the reactive stream of resources and their associated embedded resources to be wrapped
      * @param totalElements
-     *         the total number of elements across all pages
+     *         a {@link Mono<Long>} providing the total number of elements across all pages
      * @param pageSize
-     *         the requested/max number of elements in a single page
+     *         the number of items per page
      * @param offset
      *         the starting offset of the page, if specified
      * @param sortCriteria
      *         sort criteria (property and direction) of the page
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalListWrapper} with hypermedia links and pagination information
+     * @return a Mono of a {@link HalListWrapper} containing the paginated list of resources enhanced with hypermedia
+     * links
      *
-     * @see #wrapInListWrapper(PairList, HalPageInfo, List, ServerWebExchange)
-     * @see #wrapInListWrapper(PairList, ServerWebExchange)
+     * @see #wrapInListWrapper(Flux, ServerWebExchange)
      */
-    default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull PairList<ResourceT, EmbeddedT> resourcesToWrap,
-                                                                   long totalElements,
-                                                                   int pageSize,
-                                                                   @Nullable Long offset,
-                                                                   List<SortCriteria> sortCriteria,
-                                                                   ServerWebExchange exchange) {
-        HalPageInfo pageInfo = HalPageInfo.assembleWithOffset(pageSize, totalElements, offset);
-        return wrapInListWrapper(resourcesToWrap, pageInfo, sortCriteria, exchange);
+    default Mono<HalListWrapper<ResourceT, EmbeddedT>> wrapInListWrapper(@NonNull Flux<Pair<ResourceT, EmbeddedT>> resourcesToWrap,
+                                                                         @NonNull Mono<Long> totalElements,
+                                                                         int pageSize,
+                                                                         @Nullable Long offset,
+                                                                         List<SortCriteria> sortCriteria,
+                                                                         ServerWebExchange exchange) {
+        Mono<PairList<ResourceT, EmbeddedT>> resourcesAsPairs = convertToPairs(resourcesToWrap);
+        return Mono.zip(resourcesAsPairs, totalElements,
+                (resources, total) -> wrapInListWrapper(resources, total, pageSize, offset, sortCriteria, exchange));
+    }
+
+
+    private Mono<PairList<ResourceT, EmbeddedT>> convertToPairs(@NonNull Flux<Pair<ResourceT, EmbeddedT>> resourcesToWrap) {
+        return resourcesToWrap.collect(PairList::new, PairList::add);
     }
 
 
     /**
-     * Wraps a single main resource and its corresponding embedded resource in a {@link HalResourceWrapper}, appending
-     * hypermedia links as defined by the assembler.
+     * Wraps a reactive Mono of an resource and its associated embedded resource into a {@link HalResourceWrapper},
+     * enhancing
+     * both with hypermedia links as defined by the assembler.
      *
      * @param resourceToWrap
-     *         the main resource to wrap
+     *         the Mono of the resource to be wrapped
      * @param embedded
-     *         the embedded resource associated with the main resource
+     *         the Mono of the associated embedded resource
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalResourceWrapper} with hypermedia links for the resource and its embedded counterpart
-     *
-     * @see #wrapInResourceWrapper(Object, List, ServerWebExchange)
-     */
-    default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
-                                                                           @NonNull EmbeddedT embedded,
-                                                                           ServerWebExchange exchange) {
-        return HalResourceWrapper.wrap(resourceToWrap)
-                .withLinks(buildLinksForResource(resourceToWrap, exchange))
-                .withEmbeddedResource(
-                        HalEmbeddedWrapper.wrap(embedded)
-                                .withLinks(buildLinksForEmbedded(embedded, exchange))
-                );
-    }
-
-    /**
-     * Wraps a single main resource and a non-empty list of its embedded resources in a {@link HalResourceWrapper},
-     * appending
-     * hypermedia links as defined by the assembler.
-     *
-     * @param resourceToWrap
-     *         the main resource to wrap
-     * @param embeddedList
-     *         the non-empty list of embedded resources associated with the main resource; the list name is derived from
-     *         the embedded resource's class name (see also {@link Relation})
-     * @param exchange
-     *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalResourceWrapper} that includes the main resource and its embedded resources, all enhanced
+     * @return a Mono of a {@link HalResourceWrapper} containing the wrapped resource and embedded resource, enhanced
      * with
      * hypermedia links
+     *
+     * @see #wrapInResourceWrapper(Mono, Flux, ServerWebExchange)
+     */
+    default Mono<HalResourceWrapper<ResourceT, EmbeddedT>> wrapInResourceWrapper(@NonNull Mono<ResourceT> resourceToWrap,
+                                                                                 @NonNull Mono<EmbeddedT> embedded,
+                                                                                 ServerWebExchange exchange) {
+        return Mono.zip(resourceToWrap, embedded,
+                (resourceValue, embeddedValue) -> wrapInResourceWrapper(resourceValue, embeddedValue, exchange));
+    }
+
+
+    /**
+     * Wraps a reactive Mono of an resource and a non-empty Flux of its embedded resources into a
+     * {@link HalResourceWrapper},
+     * appending hypermedia links as defined by the assembler.
+     *
+     * @param resourceWrap
+     *         the Mono of the main resource to wrap
+     * @param embeddedList
+     *         the Flux of embedded resources associated with the main resource; this list must not be empty. The list
+     *         name is derived from the embedded resource's class name (see also {@link Relation})
+     * @param exchange
+     *         provides the context of the current web exchange, such as the base URL
+     * @return a Mono of a {@link HalResourceWrapper} that includes the main resource and its embedded resources, all
+     * enhanced with hypermedia links
      *
      * @throws IllegalArgumentException
      *         if the embedded list is null or empty
-     * @see #wrapInResourceWrapper(Object, Object, ServerWebExchange)
-     * @see #wrapInResourceWrapper(Object, String, List, ServerWebExchange)
-     * @see #wrapInResourceWrapper(Object, Class, List, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Mono, String, Flux, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Mono, Class, Flux, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Mono, Mono, ServerWebExchange)
      */
-    default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
-                                                                           @NonNull List<EmbeddedT> embeddedList,
-                                                                           ServerWebExchange exchange) {
-        var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
-        return HalResourceWrapper.wrap(resourceToWrap)
-                .withLinks(buildLinksForResource(resourceToWrap, exchange))
-                .withNonEmptyEmbeddedList(wrappedEmbeddedList);
+    default Mono<HalResourceWrapper<ResourceT, EmbeddedT>> wrapInResourceWrapper(@NonNull Mono<ResourceT> resourceWrap,
+                                                                                 @NonNull Flux<EmbeddedT> embeddedList,
+                                                                                 ServerWebExchange exchange) {
+        Mono<List<EmbeddedT>> embeddedListAsMono = embeddedList.collectList();
+        return Mono.zip(resourceWrap, embeddedListAsMono,
+                (resourceValue, embeddedListValue) -> wrapInResourceWrapper(resourceValue, embeddedListValue,
+                        exchange));
     }
 
+
     /**
-     * Wraps a single main resource and its list of embedded resources, identified by a directly provided list name, in
-     * a
-     * {@link HalResourceWrapper}, appending hypermedia links as defined by the assembler. The list is allowed to be
-     * empty.
+     * Wraps a reactive Mono of an resource and a Flux of its associated embedded resources into a
+     * {@link HalResourceWrapper}, appending hypermedia links as defined by the assembler. The list is identified by a
+     * directly provided list name. The flux may be empty.
      *
      * @param resourceToWrap
-     *         the main resource to wrap
+     *         the Mono of the main resource to wrap
      * @param embeddedListName
      *         the explicitly provided name for the list of embedded resources
      * @param embeddedList
-     *         the list of embedded resources associated with the main resource, which may be empty
+     *         the Flux of embedded resources associated with the main resource, which may be empty
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalResourceWrapper} that includes the main resource and its embedded resources, all enhanced
-     * with
-     * hypermedia links
+     * @return a Mono of a {@link HalResourceWrapper} that includes the main resource and its named list of embedded
+     * resources, all enhanced with hypermedia links
      *
-     * @see #wrapInResourceWrapper(Object, Object, ServerWebExchange)
-     * @see #wrapInResourceWrapper(Object, Class, List, ServerWebExchange)
-     * @see #wrapInResourceWrapper(Object, List, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Mono, Class, Flux, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Mono, Flux, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Mono, Mono, ServerWebExchange)
      */
-    default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
-                                                                           @NonNull String embeddedListName,
-                                                                           @NonNull List<EmbeddedT> embeddedList,
-                                                                           ServerWebExchange exchange) {
-        var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
-        return HalResourceWrapper.wrap(resourceToWrap)
-                .withLinks(buildLinksForResource(resourceToWrap, exchange))
-                .withEmbeddedList(embeddedListName, wrappedEmbeddedList);
+    default Mono<HalResourceWrapper<ResourceT, EmbeddedT>> wrapInResourceWrapper(@NonNull Mono<ResourceT> resourceToWrap,
+                                                                                 @NonNull String embeddedListName,
+                                                                                 @NonNull Flux<EmbeddedT> embeddedList,
+                                                                                 ServerWebExchange exchange) {
+        Mono<List<EmbeddedT>> embeddedListAsMono = embeddedList.collectList();
+        return Mono.zip(resourceToWrap, embeddedListAsMono,
+                (resourceValue, embeddedListValue) -> wrapInResourceWrapper(resourceValue, embeddedListName,
+                        embeddedListValue,
+                        exchange));
     }
 
     /**
-     * Wraps a single main resource and its list of embedded resources, with the list name derived from the specified
-     * class
-     * {@code embeddedTypeAsNameOrigin}, in a {@link HalResourceWrapper}, appending hypermedia links as defined by the
-     * assembler. The list may be empty.
+     * Wraps a reactive Mono of an resource and a Flux of its associated embedded resources into a
+     * {@link HalResourceWrapper}, appending hypermedia links as defined by the assembler. The list name is derived from
+     * the specified class {@code embeddedTypeAsNameOrigin}. The list may be empty.
      *
      * @param resourceToWrap
-     *         the main resource to wrap
+     *         the Mono of the main resource to wrap
      * @param embeddedTypeAsNameOrigin
      *         the class from which the list name is derived (see also {@link Relation})
      * @param embeddedList
-     *         the list of embedded resources associated with the main resource, which may be empty
+     *         the Flux of embedded resources associated with the main resource, which may be empty
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalResourceWrapper} that includes the main resource and its derived named embedded resources,
-     * all
-     * enhanced with hypermedia links
+     * @return a Mono of a {@link HalResourceWrapper} that includes the main resource and its derived named list of
+     * embedded
+     * resources, all enhanced with hypermedia links
      *
-     * @see #wrapInResourceWrapper(Object, Object, ServerWebExchange)
-     * @see #wrapInResourceWrapper(Object, String, List, ServerWebExchange)
-     * @see #wrapInResourceWrapper(Object, List, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Mono, String, Flux, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Mono, Flux, ServerWebExchange)
+     * @see #wrapInResourceWrapper(Mono, Mono, ServerWebExchange)
      */
-    default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
-                                                                           @NonNull Class<?> embeddedTypeAsNameOrigin,
-                                                                           @NonNull List<EmbeddedT> embeddedList,
-                                                                           ServerWebExchange exchange) {
-        var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
-        return HalResourceWrapper.wrap(resourceToWrap)
-                .withLinks(buildLinksForResource(resourceToWrap, exchange))
-                .withEmbeddedList(embeddedTypeAsNameOrigin, wrappedEmbeddedList);
+    default Mono<HalResourceWrapper<ResourceT, EmbeddedT>> wrapInResourceWrapper(@NonNull Mono<ResourceT> resourceToWrap,
+                                                                                 @NonNull Class<?> embeddedTypeAsNameOrigin,
+                                                                                 @NonNull Flux<EmbeddedT> embeddedList,
+                                                                                 ServerWebExchange exchange) {
+        Mono<List<EmbeddedT>> embeddedListAsMono = embeddedList.collectList();
+        return Mono.zip(resourceToWrap, embeddedListAsMono,
+                (resourceValue, embeddedListValue) -> wrapInResourceWrapper(resourceValue, embeddedTypeAsNameOrigin,
+                        embeddedListValue, exchange));
     }
-
-    private List<HalEmbeddedWrapper<EmbeddedT>> wrapEmbeddedElementsInList(@NonNull List<EmbeddedT> embeddedResource,
-                                                                           ServerWebExchange exchange) {
-        return embeddedResource.stream()
-                .map(embedded -> HalEmbeddedWrapper.wrap(embedded)
-                        .withLinks(buildLinksForEmbedded(embedded, exchange)))
-                .toList();
-    }
-
 }

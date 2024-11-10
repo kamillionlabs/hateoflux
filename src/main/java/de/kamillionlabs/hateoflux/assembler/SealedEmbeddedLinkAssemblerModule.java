@@ -31,7 +31,7 @@ import java.util.List;
  *         the type of the object representing additional embedded resources related to the main data
  * @author Younes El Ouarti
  */
-public sealed interface SealedEmbeddedLinkAssemblerModule<EmbeddedT> permits EmbeddingHalWrapperAssembler {
+public sealed interface SealedEmbeddedLinkAssemblerModule<EmbeddedT> permits SealedNonReactiveEmbeddingHalWrapperAssembler {
 
     /**
      * Main method for building all links for a given embedded resource, including a self-link and other contextual
