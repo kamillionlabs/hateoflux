@@ -63,7 +63,7 @@ public class SpringControllerLinkBuilder {
      * <p>
      * Given the following class:
      * <blockquote><pre>
-     * _@Controller
+     * _@Controller;
      * _@RequestMapping("/user")
      * public class UserController {
      *

@@ -9,6 +9,9 @@ import de.kamillionlabs.hateoflux.model.link.Link;
 import de.kamillionlabs.hateoflux.utility.SortCriteria;
 import de.kamillionlabs.hateoflux.utility.SortDirection;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 
 import java.util.List;
@@ -18,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FlatHalWrapperAssemblerTest {
 
     // Implementation for testing purposes -----------------------------------------------------------------------------
-    static class AssemblerUnderTest implements FlatHalWrapperAssembler<Book> {
+    static class DefaultAssemblerUnderTest implements FlatHalWrapperAssembler<Book> {
 
         @Override
         public Class<Book> getResourceTClass() {
@@ -36,8 +39,32 @@ class FlatHalWrapperAssemblerTest {
         }
     }
 
+    static class AssemblerUsingExchangeUnderTest implements FlatHalWrapperAssembler<Book> {
+
+        @Override
+        public Class<Book> getResourceTClass() {
+            return Book.class;
+        }
+
+        @Override
+        public Link buildSelfLinkForResourceList(ServerWebExchange exchange) {
+            MultiValueMap<String, String> queryParams = exchange.getRequest().getQueryParams();
+            return Link.of("resource-list")
+                    .expand(queryParams);
+        }
+
+        @Override
+        public Link buildSelfLinkForResource(Book resourceToWrap, ServerWebExchange exchange) {
+            return Link.of("resource/self/link")
+                    .prependBaseUrl(exchange);
+        }
+    }
+
     // -----------------------------------------------------------------------------------------------------------------
-    private final AssemblerUnderTest assemblerUnderTest = new AssemblerUnderTest();
+    private final DefaultAssemblerUnderTest defaultAssemblerUnderTest = new DefaultAssemblerUnderTest();
+
+    private final AssemblerUsingExchangeUnderTest assemblerUsingExchangeUnderTest =
+            new AssemblerUsingExchangeUnderTest();
 
 
     @Test
@@ -46,7 +73,7 @@ class FlatHalWrapperAssemblerTest {
         Book resource = new Book();
 
         //WHEN
-        HalResourceWrapper<Book, Void> actualWrapper = assemblerUnderTest.wrapInResourceWrapper(
+        HalResourceWrapper<Book, Void> actualWrapper = defaultAssemblerUnderTest.wrapInResourceWrapper(
                 resource,
                 null
         );
@@ -70,7 +97,7 @@ class FlatHalWrapperAssemblerTest {
         Book resource = new Book();
 
         //WHEN
-        HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.wrapInListWrapper(
+        HalListWrapper<Book, Void> actualWrapper = defaultAssemblerUnderTest.wrapInListWrapper(
                 List.of(resource,
                         resource),
                 null
@@ -103,7 +130,7 @@ class FlatHalWrapperAssemblerTest {
         Book resource = new Book();
 
         //WHEN
-        HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.wrapInListWrapper(
+        HalListWrapper<Book, Void> actualWrapper = defaultAssemblerUnderTest.wrapInListWrapper(
                 List.of(resource,
                         resource),
                 25L,
@@ -146,12 +173,67 @@ class FlatHalWrapperAssemblerTest {
     }
 
     @Test
+    public void givenAssemblerPrependsBaseUrls_whenWrapInResourceWrapper_thenBaseUrlIsUsedInLinks() {
+        //GIVEN
+        Book resource = new Book();
+        String url = "https://example.com/resource-list";
+        MockServerHttpRequest request = MockServerHttpRequest.get(url)
+                .build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        //WHEN
+        HalListWrapper<Book, Void> actualWrapper = assemblerUsingExchangeUnderTest.wrapInListWrapper(
+                List.of(resource),
+                exchange
+        );
+
+        //THEN
+        List<Link> links = actualWrapper.getLinks();
+        assertThat(links).hasSize(1);
+        assertThat(links.get(0).getHref()).isEqualTo("resource-list");
+        assertThat(links.get(0).getLinkRelation().getRelation()).isEqualTo("self");
+
+        HalResourceWrapper<Book, Void> bookWrapper = actualWrapper.getResourceList().get(0);
+        String href = bookWrapper.getRequiredLink("self").getHref();
+        assertThat(href).isEqualTo("https://example.com/resource/self/link");
+    }
+
+    @Test
+    public void givenAssemblerUrlHasNoPagingParamsButRequestHas_whenWrapInResourceWrapper_thenPagingIsAvailableInLinks() {
+        //GIVEN
+        Book resource = new Book();
+        String url = "https://example.com/resource-list?page=0&size=20&sort=author,asc";
+        MockServerHttpRequest request = MockServerHttpRequest.get(url)
+                .build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+
+        //WHEN
+        HalListWrapper<Book, Void> actualWrapper = assemblerUsingExchangeUnderTest.wrapInListWrapper(
+                List.of(resource,
+                        resource),
+                2L,
+                20,
+                0L,
+                List.of(SortCriteria.by("author", SortDirection.ASCENDING)),
+                exchange
+        );
+
+
+        //THEN
+        List<Link> links = actualWrapper.getLinks();
+        assertThat(links).hasSize(1);
+        assertThat(links.get(0).getHref()).isEqualTo("resource-list?page=0&size=20&sort=author,asc");
+        assertThat(links.get(0).getLinkRelation().getRelation()).isEqualTo("self");
+    }
+
+    @Test
     public void givenEmptyListWrapperWithStringName_toEmptyListWrapper_thenEmptyListWithSelfLink() {
         //GIVEN
         String nameOfList = "nameOfList";
 
         //WHEN
-        HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.createEmptyListWrapper(nameOfList, null);
+        HalListWrapper<Book, Void> actualWrapper = defaultAssemblerUnderTest.createEmptyListWrapper(nameOfList, null);
 
         //THEN
         assertThat(actualWrapper.getResourceList()).isEmpty();
@@ -167,7 +249,7 @@ class FlatHalWrapperAssemblerTest {
         Class<?> clazz = Book.class;
 
         //WHEN
-        HalListWrapper<Book, Void> actualWrapper = assemblerUnderTest.createEmptyListWrapper(clazz, null);
+        HalListWrapper<Book, Void> actualWrapper = defaultAssemblerUnderTest.createEmptyListWrapper(clazz, null);
 
         //THEN
         assertThat(actualWrapper.getNameOfResourceList()).isEqualTo("customBooks");
@@ -176,7 +258,7 @@ class FlatHalWrapperAssemblerTest {
     @Test
     public void givenEmptyPairs_whenWrapInListWrapper_thenNoException() {
         //GIVEN & WHEN
-        HalListWrapper<Book, Void> emptyWrapper = assemblerUnderTest.wrapInListWrapper(List.of(), null);
+        HalListWrapper<Book, Void> emptyWrapper = defaultAssemblerUnderTest.wrapInListWrapper(List.of(), null);
 
         //THEN
         assertThat(emptyWrapper).isNotNull();

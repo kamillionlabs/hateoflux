@@ -46,7 +46,7 @@ public sealed interface SealedResourceListAssemblerModule<ResourceT, EmbeddedT> 
      * type erasure removes generic type information at runtime. By implementing this method, the class type
      * of {@code ResourceT} becomes accessible. An implementation is as simple as:
      * <blockquote><pre>
-     * public Class<Book> getResourceTClass() {
+     * public Class&lt;Book&gt; getResourceTClass() {
      *     return Book.class;
      * }
      * </pre></blockquote>

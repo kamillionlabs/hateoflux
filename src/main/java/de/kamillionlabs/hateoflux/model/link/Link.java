@@ -40,6 +40,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static de.kamillionlabs.hateoflux.linkbuilder.UriExpander.removePagingParameters;
 import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueNotAllowedToBeEmpty;
 
 /**
@@ -417,23 +418,25 @@ public class Link {
         Assert.isTrue(!isTemplated(), "Navigation links can only be derived if the href is not a template. " +
                 "Please expand the URI first.");
 
+        String sanitizedHref = removePagingParameters(href); // remove existing paging parameters if they exist
+
         int size = pagingInformation.size();
         int totalPages = pagingInformation.totalPages();
         int number = pagingInformation.number();
 
 
         List<Link> result = new ArrayList<>();
-        result.add(createLinkForPage(IanaRelation.SELF, number, size, sortCriteria));
+        result.add(createLinkForPage(sanitizedHref, IanaRelation.SELF, number, size, sortCriteria));
 
         if (totalPages > 0) {
             if (number > 0) {
-                result.add(createLinkForPage(IanaRelation.FIRST, 0, size, sortCriteria));
-                result.add(createLinkForPage(IanaRelation.PREV, number - 1, size, sortCriteria));
+                result.add(createLinkForPage(sanitizedHref, IanaRelation.FIRST, 0, size, sortCriteria));
+                result.add(createLinkForPage(sanitizedHref, IanaRelation.PREV, number - 1, size, sortCriteria));
             }
 
             if (number < totalPages - 1) {
-                result.add(createLinkForPage(IanaRelation.NEXT, number + 1, size, sortCriteria));
-                result.add(createLinkForPage(IanaRelation.LAST, totalPages - 1, size, sortCriteria));
+                result.add(createLinkForPage(sanitizedHref, IanaRelation.NEXT, number + 1, size, sortCriteria));
+                result.add(createLinkForPage(sanitizedHref, IanaRelation.LAST, totalPages - 1, size, sortCriteria));
             }
         }
         return result;
@@ -463,7 +466,8 @@ public class Link {
         return deriveNavigationLinks(pagingInformation, sortCriteriaAsArray);
     }
 
-    private Link createLinkForPage(IanaRelation relType, int pageNumber, int size, SortCriteria... sortingCriteria) {
+    private Link createLinkForPage(String href, IanaRelation relType, int pageNumber, int size,
+                                   SortCriteria... sortingCriteria) {
         Map<String, Object> parameters = new LinkedHashMap<>();
         parameters.put("page", pageNumber);
         parameters.put("size", size);

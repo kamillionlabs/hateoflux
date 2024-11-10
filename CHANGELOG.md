@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.18.0]
 
+### Changed
+
+* Allow expansion of URL even though values for paging are missing (are handled automatically by assemblers)
+
 ### Fixed
 
 * Correctly process MultiValueMaps in expand() methods

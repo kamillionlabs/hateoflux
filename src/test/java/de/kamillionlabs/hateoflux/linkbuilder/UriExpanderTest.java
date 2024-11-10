@@ -17,6 +17,50 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 class UriExpanderTest {
+    @ParameterizedTest
+    @CsvSource({ // This method under test removes the 3 query parameters page, size and sort.
+
+            // No query parameters
+            "'customer/34/orders', 'customer/34/orders'",
+
+            // Only other query parameter available
+            "'orders?userId=34', 'orders?userId=34'",
+
+            // No query parameters
+            "'customer/34/orders', 'customer/34/orders'",
+
+            // just sort present
+            "'customer/34/orders?sort=date,desc', 'customer/34/orders'",
+
+            // just size present
+            "'customer/34/orders?size=0', 'customer/34/orders'",
+
+            // just page present
+            "'customer/34/orders?page=0', 'customer/34/orders'",
+
+            // all the 3 present
+            "'customer/34/orders?page=0&size=20&sort=date,desc', 'customer/34/orders'",
+
+            // all the 3, sort twice and an extra query parameter at the front
+            "'orders?userId=34&page=0&size=20&sort=date,desc&sort=total,asc', 'orders?userId=34'",
+
+            // all the 3 and an extra query parameter at the front
+            "'orders?userId=34&page=0&size=20&sort=date,desc', 'orders?userId=34'",
+
+            // all the 3 and an extra query parameter at the back
+            "'orders?page=0&size=20&sort=date,desc&userId=34', 'orders?userId=34'",
+
+            // all the 3 and an extra query parameter in the middle
+            "'orders?page=0&size=20&userId=34&sort=date,desc', 'orders?userId=34'",
+
+            // all the 3 and an extra query parameter in the middle and with a full base URL
+            "'www.example.com/orders?page=0&size=20&userId=34&sort=date,desc', 'www.example.com/orders?userId=34'"
+    })
+    public void givenInputUrl_whenRemovePagingParameters_thenOutputUrl(String inputUrl, String expectedOutputUrl) {
+        String outputUrl = UriExpander.removePagingParameters(inputUrl);
+        assertThat(outputUrl).isEqualTo(expectedOutputUrl);
+    }
+
 
     @ParameterizedTest
     @CsvSource(delimiter = ';', value = {

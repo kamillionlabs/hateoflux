@@ -78,12 +78,32 @@ class LinkTest {
         assertThat(findLinkByRel(navigationLinks, "last")).isNotNull();
     }
 
+
     // Helper method to find a link by its rel
     private Link findLinkByRel(List<Link> links, String rel) {
         return links.stream()
                 .filter(l -> rel.equals(l.getLinkRelation().getRelation()))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Expected link with rel '" + rel + "' not found"));
+    }
+
+    @Test
+    void givenUrlWithPagingInfoAlready_whenDeriveNavigationLinks_thenHrefDoNotIncludeDoubleQueryParams() {
+        // GIVEN
+        HalPageInfo pageInfo = new HalPageInfo(2, 2L, 1, 0); // Single page
+        // already contains paging though it is different
+        Link link = Link.of("https://example.com/resource?page=1&size=10&sort=age,desc");
+        SortCriteria sortCriteria1 = new SortCriteria("name", SortDirection.ASCENDING);
+
+        // WHEN
+        List<Link> navigationLinks = link.deriveNavigationLinks(pageInfo, sortCriteria1);
+
+        // THEN
+        Link selfLink = findLinkByRel(navigationLinks, "self");
+
+        // Assertions
+        assertThat(selfLink.getHref())
+                .isEqualTo("https://example.com/resource?page=0&size=2&sort=name,asc");
     }
 
     @ParameterizedTest

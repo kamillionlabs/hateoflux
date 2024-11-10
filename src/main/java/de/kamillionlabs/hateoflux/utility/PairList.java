@@ -26,6 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueNotAllowedToBeNull;
+
 /**
  * A list implementation that stores pairs of values.
  *
@@ -147,8 +149,8 @@ public class PairList<LeftT, RightT> extends LinkedList<Pair<LeftT, RightT>> {
      *         if the lists are null or of different sizes
      */
     public static <LeftT, RightT> PairList<LeftT, RightT> of(List<LeftT> lefts, List<RightT> rights) {
-        Assert.notNull(lefts, "lefts must not be null");
-        Assert.notNull(rights, "rights must not be null");
+        Assert.notNull(lefts, valueNotAllowedToBeNull("lefts"));
+        Assert.notNull(rights, valueNotAllowedToBeNull("rights"));
         Assert.isTrue(lefts.size() == rights.size(), "Different sizes in lefts and rights are not allowed");
 
         List<Pair<LeftT, RightT>> pairs = new LinkedList<>();
