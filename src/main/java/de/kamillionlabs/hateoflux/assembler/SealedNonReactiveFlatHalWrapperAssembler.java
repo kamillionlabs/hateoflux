@@ -42,20 +42,6 @@ import java.util.List;
  *     <li>Supporting pagination when wrapping lists of resources to provide structured navigation across large
  *     datasets.</li>
  * </ul>
- * <p>
- * This interface abstracts the tasks associated with modifying resources to fit HAL specifications, streamlining the
- * creation of HAL-compliant resource representations.
- *
- * <p>See also:
- * <ul>
- *    <li>{@link SealedNonReactiveEmbeddingHalWrapperAssembler} - for imperative (non-reactive) handling of resources
- *    <b>with</b>
- *    embedded resources.</li>
- *    <li>{@link EmbeddingHalWrapperAssembler} - for reactive <b>and</b> imperative handling of resources
- *    <b>with</b> embedded resources.</li>
- *    <li>{@link FlatHalWrapperAssembler} - for reactive <b>and</b> imperative handling of standalone
- *    resources <b>without</b> embedded resources.</li>
- * </ul>
  *
  * @param <ResourceT>
  *         the type of the object being wrapped, which contains the main data
