@@ -70,39 +70,6 @@ class FlatHalWrapperAssemblerTest {
 
 
     @Test
-    public void givenResources_wrapInListWrapper_thenAllFieldsAreFilled() {
-        //GIVEN
-        Book resource = new Book();
-
-        //WHEN
-        HalListWrapper<Book, Void> actualWrapper = defaultAssemblerUnderTest.wrapInListWrapper(
-                List.of(resource,
-                        resource),
-                null
-        );
-
-        /*
-         * THEN
-         */
-        //HalListWrapper
-        assertThat(actualWrapper).isNotNull();
-        assertThat(actualWrapper.getResourceList()).hasSize(2);
-        assertThat(actualWrapper.getLinks()).hasSize(1);
-        assertThat(actualWrapper.getRequiredLink(IanaRelation.SELF).getHref()).isEqualTo("resource-list/self/link");
-
-        //Resources
-        List<HalResourceWrapper<Book, Void>> actualResourceList = actualWrapper.getResourceList();
-        assertThat(actualResourceList).isNotNull();
-        assertThat(actualResourceList).hasSize(2);
-        assertThat(actualResourceList.get(0).getLinks()).hasSize(1);
-        assertThat(actualResourceList.get(0).getRequiredLink(IanaRelation.SELF)
-                .getHref()).isEqualTo("resource/self/link");
-        assertThat(actualResourceList.get(1).getLinks()).hasSize(1);
-        assertThat(actualResourceList.get(1).getRequiredLink(IanaRelation.SELF)
-                .getHref()).isEqualTo("resource/self/link");
-    }
-
-    @Test
     public void givenResourcesAndADataForPageInfo_wrapInListWrapperReactive_thenAllFieldsAreFilled() {
         //GIVEN
         Book resource = new Book();
@@ -118,21 +85,10 @@ class FlatHalWrapperAssemblerTest {
                 null
         ).block();
 
-        /*
-         * THEN
-         */
-        //Paged Info
-        HalPageInfo page = actualWrapper.getPage();
-        assertThat(page).isNotNull();
-        assertThat(page.totalPages()).isEqualTo(5);
-        assertThat(page.totalElements()).isEqualTo(25);
-        assertThat(page.size()).isEqualTo(5);
-        assertThat(page.number()).isEqualTo(2);
-
-        //Rudimentary testing (rest is tested elsewhere)
+        //THEN (through assertion in non-reactive version)
         assertThat(actualWrapper).isNotNull();
-        List<HalResourceWrapper<Book, Void>> actualResourceList = actualWrapper.getResourceList();
-        assertThat(actualResourceList).isNotNull();
+        assertThat(actualWrapper.getPage()).isNotNull();
+        assertThat(actualWrapper.getResourceList()).isNotNull();
     }
 
     @Test
@@ -184,16 +140,16 @@ class FlatHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenResources_wrapInListWrapperReactive_thenAllFieldsAreFilled() {
+    public void givenResources_wrapInListWrapper_thenAllFieldsAreFilled() {
         //GIVEN
         Book resource = new Book();
 
         //WHEN
         HalListWrapper<Book, Void> actualWrapper = defaultAssemblerUnderTest.wrapInListWrapper(
-                Flux.fromIterable(List.of(resource,
-                        resource)),
+                List.of(resource,
+                        resource),
                 null
-        ).block();
+        );
 
         /*
          * THEN
@@ -202,8 +158,7 @@ class FlatHalWrapperAssemblerTest {
         assertThat(actualWrapper).isNotNull();
         assertThat(actualWrapper.getResourceList()).hasSize(2);
         assertThat(actualWrapper.getLinks()).hasSize(1);
-        assertThat(actualWrapper.getRequiredLink(IanaRelation.SELF)
-                .getHref()).isEqualTo("resource-list/self/link");
+        assertThat(actualWrapper.getRequiredLink(IanaRelation.SELF).getHref()).isEqualTo("resource-list/self/link");
 
         //Resources
         List<HalResourceWrapper<Book, Void>> actualResourceList = actualWrapper.getResourceList();
@@ -215,6 +170,26 @@ class FlatHalWrapperAssemblerTest {
         assertThat(actualResourceList.get(1).getLinks()).hasSize(1);
         assertThat(actualResourceList.get(1).getRequiredLink(IanaRelation.SELF)
                 .getHref()).isEqualTo("resource/self/link");
+    }
+
+    @Test
+    public void givenResources_wrapInListWrapperReactive_thenAllFieldsAreFilled() {
+        //GIVEN
+        Book resource = new Book();
+
+        //WHEN
+        HalListWrapper<Book, Void> actualWrapper = defaultAssemblerUnderTest.wrapInListWrapper(
+                Flux.fromIterable(List.of(resource,
+                        resource)),
+                null
+        ).block();
+
+        //THEN (through assertion in non-reactive version)
+        assertThat(actualWrapper).isNotNull();
+        assertThat(actualWrapper.getResourceList()).hasSize(2);
+        List<HalResourceWrapper<Book, Void>> actualResourceList = actualWrapper.getResourceList();
+        assertThat(actualResourceList).isNotNull();
+        assertThat(actualResourceList).hasSize(2);
     }
 
     @Test
@@ -324,20 +299,14 @@ class FlatHalWrapperAssemblerTest {
                 null
         ).block();
 
-        /*
-         * THEN
-         */
+        //THEN (through assertion in non-reactive version)
         assertThat(actualWrapper).isNotNull();
-        //Resource
-        Book actualResource = actualWrapper.getResource();
-        assertThat(actualResource).isNotNull();
-        assertThat(actualResource).isEqualTo(resource);
+        assertThat(actualWrapper.getResource()).isNotNull();
         assertThat(actualWrapper.getLinks()).hasSize(1);
-        assertThat(actualWrapper.getRequiredLink(IanaRelation.SELF).getHref()).isEqualTo("resource/self/link");
     }
 
     @Test
-    public void givenResourceWithEmbedded_wrapInResourceWrapperNonReactive_thenAllFieldsAreFilled() {
+    public void givenResourceWithEmbedded_wrapInResourceWrapper_thenAllFieldsAreFilled() {
         //GIVEN
         Book resource = new Book();
 

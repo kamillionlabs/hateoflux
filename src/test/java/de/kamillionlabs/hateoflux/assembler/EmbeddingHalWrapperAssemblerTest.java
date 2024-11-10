@@ -104,26 +104,11 @@ class EmbeddingHalWrapperAssemblerTest {
                 null
         ).block();
 
-        /*
-         * THEN
-         */
+        //THEN (through assertion in non-reactive version)
         assertThat(actualWrapper).isNotNull();
-        //Resource
-        Book actualResource = actualWrapper.getResource();
-        assertThat(actualResource).isNotNull();
-        assertThat(actualResource).isEqualTo(resource);
+        assertThat(actualWrapper.getResource()).isNotNull();
         assertThat(actualWrapper.getLinks()).hasSize(1);
-        assertThat(actualWrapper.getRequiredLink(IanaRelation.SELF).getHref()).isEqualTo("resource/self/link");
-
-        //Embedded
         assertThat(actualWrapper.getEmbedded().isPresent()).isTrue();
-        assertThat(actualWrapper.getRequiredEmbedded()).hasSize(1);
-        HalEmbeddedWrapper<Author> actualEmbedded = actualWrapper.getRequiredEmbedded().get(0);
-        assertThat(actualEmbedded.getEmbeddedResource()).isEqualTo(embedded);
-        assertThat(actualEmbedded.getLinks().size()).isEqualTo(2);
-        assertThat(actualEmbedded.getRequiredLink(IanaRelation.SELF)
-                .getHref()).isEqualTo("embedded/self/link");
-        assertThat(actualEmbedded.getRequiredLink("other").getHref()).isEqualTo("embedded/other/");
     }
 
     @Test
@@ -304,31 +289,9 @@ class EmbeddingHalWrapperAssemblerTest {
                 null
         ).block();
 
-        /*
-         * THEN
-         */
-        //HalListWrapper
+        //THEN (through assertion in non-reactive version)
         assertThat(actualWrapper).isNotNull();
-        assertThat(actualWrapper.getResourceList()).hasSize(2);
-        assertThat(actualWrapper.getLinks()).hasSize(1);
-        assertThat(actualWrapper.getRequiredLink(IanaRelation.SELF)
-                .getHref()).isEqualTo("resource-list/self/link");
-
-        //Resources
-        List<HalResourceWrapper<Book, Author>> actualResourceList = actualWrapper.getResourceList();
-        assertThat(actualResourceList).isNotNull();
-        assertThat(actualResourceList).hasSize(2);
-        assertThat(actualResourceList.get(0).getLinks()).hasSize(1);
-        assertThat(actualResourceList.get(0).getRequiredLink(IanaRelation.SELF)
-                .getHref()).isEqualTo("resource/self/link");
-        assertThat(actualResourceList.get(1).getLinks()).hasSize(1);
-        assertThat(actualResourceList.get(1).getRequiredLink(IanaRelation.SELF)
-                .getHref()).isEqualTo("resource/self/link");
-
-        //Embedded
-        HalEmbeddedWrapper<Author> actualEmbedded = actualResourceList.get(0).getRequiredEmbedded().get(0);
-        assertThat(actualEmbedded).isNotNull();
-        assertThat(actualEmbedded.getLinks()).hasSize(2);
+        assertThat(actualWrapper.getResourceList()).isNotNull();
     }
 
     @Test
@@ -388,23 +351,10 @@ class EmbeddingHalWrapperAssemblerTest {
                 null
         ).block();
 
-        /*
-         * THEN
-         */
-        //Paged Info
-        HalPageInfo page = actualWrapper.getPage();
-        assertThat(page).isNotNull();
-        assertThat(page.totalPages()).isEqualTo(50);
-        assertThat(page.totalElements()).isEqualTo(100);
-        assertThat(page.size()).isEqualTo(2);
-        assertThat(page.number()).isEqualTo(0);
-
-        //Rudimentary testing (rest is tested elsewhere)
+        //THEN (through assertion in non-reactive version)
         assertThat(actualWrapper).isNotNull();
-        List<HalResourceWrapper<Book, Author>> actualResourceList = actualWrapper.getResourceList();
-        assertThat(actualResourceList).isNotNull();
-        HalEmbeddedWrapper<Author> actualEmbedded = actualResourceList.get(0).getRequiredEmbedded().get(0);
-        assertThat(actualEmbedded).isNotNull();
+        assertThat(actualWrapper.getPage()).isNotNull();
+        assertThat(actualWrapper.getResourceList()).isNotNull();
     }
 
     @Test

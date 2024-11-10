@@ -33,12 +33,11 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 /**
- * Reactive interface for managing the transformation of resources and their associated embedded resources into
+ * Interface for managing the transformation of resources and their associated embedded resources into
  * HAL-compliant representations, supplemented with hypermedia links. This interface is designed for use in reactive
  * programming environments where resources are emitted as a stream. It facilitates the enhancement of resource streams
  * with the necessary fields and structure to comply with HAL standards, enabling reactive streams of resources to
- * become
- * HAL-compliant.
+ * become HAL-compliant.
  * <p>
  * While the interface's main focus is the transformation of reactive streams, it also comes equipped with the means to
  * transform in an imperative manner, i.e., with direct objects and, for example, lists.
@@ -54,27 +53,13 @@ import java.util.List;
  *     <li>Supporting pagination and backpressure in reactive streams when wrapping resources to provide structured
  *     navigation across large datasets.</li>
  * </ul>
- * <p>
- * This interface abstracts the reactive tasks associated with modifying resource streams to fit HAL specifications,
- * streamlining the  creation of HAL-compliant resource representations in a reactive programming context.
- *
- * <p>See also:
- * <ul>
- *    <li>{@link SealedNonReactiveFlatHalWrapperAssembler} - for imperative (non-reactive) handling of resources
- *    <b>without</b>
- *    embedded resources.</li>
- *    <li>{@link SealedNonReactiveEmbeddingHalWrapperAssembler} - for imperative handling of resources <b>with</b>
- *    embedded resources
- *    .</li>
- *    <li>{@link FlatHalWrapperAssembler} - for reactive <b>and</b> imperative handling of standalone
- *    resources <b>without</b> embedded resources.</li>
- * </ul>
  *
  * @param <ResourceT>
  *         the type of the object being wrapped, which contains the main data
  * @param <EmbeddedT>
  *         the type of the object representing additional embedded resources related to the main data, if any
  * @author Younes El Ouarti
+ * @see FlatHalWrapperAssembler
  */
 public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> extends
         SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> {
