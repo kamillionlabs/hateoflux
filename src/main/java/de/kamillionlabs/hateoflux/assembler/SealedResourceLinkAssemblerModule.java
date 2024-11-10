@@ -32,7 +32,7 @@ import java.util.List;
  * @author Younes El Ouarti
  */
 public sealed interface SealedResourceLinkAssemblerModule<ResourceT>
-        permits FlatHalWrapperAssembler, EmbeddingHalWrapperAssembler {
+        permits SealedNonReactiveFlatHalWrapperAssembler, SealedNonReactiveEmbeddingHalWrapperAssembler {
 
     /**
      * Main method for building all links for a given resource, including a self-link and other contextual links.

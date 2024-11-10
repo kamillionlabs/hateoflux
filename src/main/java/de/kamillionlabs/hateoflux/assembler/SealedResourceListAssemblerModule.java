@@ -39,7 +39,7 @@ import java.util.List;
  * @author Younes El Ouarti
  */
 public sealed interface SealedResourceListAssemblerModule<ResourceT, EmbeddedT> permits
-        FlatHalWrapperAssembler, EmbeddingHalWrapperAssembler {
+        SealedNonReactiveFlatHalWrapperAssembler, SealedNonReactiveEmbeddingHalWrapperAssembler {
 
     /**
      * Specifies the class type of {@code ResourceT} that the assembler builds. This method is required because

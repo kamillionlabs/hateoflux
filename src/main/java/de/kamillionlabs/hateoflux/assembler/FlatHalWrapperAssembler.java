@@ -13,165 +13,109 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @since 08.07.2024
+ * @since 17.08.2024
  */
 
 package de.kamillionlabs.hateoflux.assembler;
 
 import de.kamillionlabs.hateoflux.model.hal.HalListWrapper;
-import de.kamillionlabs.hateoflux.model.hal.HalPageInfo;
 import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
 import de.kamillionlabs.hateoflux.utility.SortCriteria;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
 /**
  * Interface for managing the transformation of standalone resources into HAL-compliant representations,
- * supplemented with hypermedia links. This interface facilitates the direct enhancement of resources with the necessary
- * fields and structure to comply with HAL standards, enabling resources to become HAL-compliant.
+ * supplemented with hypermedia links in a reactive programming context. This interface is tailored for reactive
+ * environments, facilitating the enhancement of resource streams with the necessary fields and structure to comply
+ * with HAL standards, enabling reactive streams of resources to become HAL-compliant.
+ * <p>
+ * While the interface's main focus is the transformation of reactive streams, it also comes equipped with the means to
+ * transform in an imperative manner, i.e., with direct objects and, for example, lists.
  *
  * <p> Core functionalities include:
  * <ul>
- *     <li>Directly enhancing resources to meet HAL structure requirements.</li>
- *     <li>Appending hypermedia links to resources to support navigability and resource interaction in a HAL-based
- *     API.</li>
- *     <li>Supporting pagination when wrapping lists of resources to provide structured navigation across large
- *     datasets.</li>
- * </ul>
- * <p>
- * This interface abstracts the tasks associated with modifying resources to fit HAL specifications, streamlining the
- * creation of HAL-compliant resource representations.
- *
- * <p>See also:
- * <ul>
- *    <li>{@link EmbeddingHalWrapperAssembler} - for imperative (non-reactive) handling of resources <b>with</b>
- *    embedded resources.</li>
- *    <li>{@link ReactiveEmbeddingHalWrapperAssembler} - for reactive <b>and</b> imperative handling of resources
- *    <b>with</b> embedded resources.</li>
- *    <li>{@link ReactiveFlatHalWrapperAssembler} - for reactive <b>and</b> imperative handling of standalone
- *    resources <b>without</b> embedded resources.</li>
+ *     <li>Enhancing streams of resources to meet HAL structure requirements reactively.</li>
+ *     <li>Appending hypermedia links to resources within the stream to support navigability and resource interaction
+ *     in a HAL-based API reactively.</li>
+ *     <li>Supporting pagination and backpressure in reactive streams when wrapping resources to provide structured
+ *     navigation across large datasets reactively.</li>
  * </ul>
  *
  * @param <ResourceT>
  *         the type of the object being wrapped, which contains the main data
  * @author Younes El Ouarti
+ * @see EmbeddingHalWrapperAssembler
  */
-public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends
-        SealedResourceLinkAssemblerModule<ResourceT>,
-        SealedResourceListAssemblerModule<ResourceT, Void> {
-
+public non-sealed interface FlatHalWrapperAssembler<ResourceT> extends SealedNonReactiveFlatHalWrapperAssembler<ResourceT> {
 
     /**
-     * Wraps a list of resources into a {@link HalListWrapper}, enhancing them with hypermedia links as defined by the
-     * assembler.
+     * Wraps the provided resources in a single {@link HalListWrapper}.
      *
      * @param resourcesToWrap
-     *         the list of resources to be wrapped
+     *         resources to wrap
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalListWrapper} that includes the wrapped resources enhanced with hypermedia links
+     * @return wrapped resources
      *
-     * @see #wrapInListWrapper(List, long, int, Long, List, ServerWebExchange)
-     * @see #wrapInListWrapper(List, HalPageInfo, List, ServerWebExchange)
+     * @see #wrapInListWrapper(Flux, Mono, int, Long, List, ServerWebExchange)
      */
-    default HalListWrapper<ResourceT, Void> wrapInListWrapper(@NonNull List<ResourceT> resourcesToWrap,
-                                                              ServerWebExchange exchange) {
-        return wrapInListWrapper(resourcesToWrap, null, null, exchange);
+
+    default Mono<HalListWrapper<ResourceT, Void>> wrapInListWrapper(@NonNull Flux<ResourceT> resourcesToWrap,
+                                                                    ServerWebExchange exchange) {
+        return resourcesToWrap.collectList()
+                .map(resourcesToWrapValue -> wrapInListWrapper(resourcesToWrapValue, exchange));
     }
 
     /**
-     * Wraps a list of resources into a {@link HalListWrapper} with pagination details, enhancing them with hypermedia
-     * links as defined by the assembler.
+     * Wraps the provided resources in a single {@link HalListWrapper} with paging information.
      *
      * @param resourcesToWrap
-     *         the list of resources to be wrapped
+     *         resources to wrap
      * @param totalElements
      *         the total number of elements across all pages
      * @param pageSize
-     *         the requested/max number of elements in a single page
+     *         the number of items per page
      * @param offset
      *         the starting offset of the page, if specified
      * @param sortCriteria
-     *         sort criteria (property and direction) of the page, if specified
+     *         sort criteria (property and direction) of the page
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalListWrapper} that includes the wrapped resources enhanced with hypermedia links, along with
-     * pagination information
+     * @return wrapped resources
      *
-     * @see #wrapInListWrapper(List, HalPageInfo, List, ServerWebExchange)
-     * @see #wrapInListWrapper(List, ServerWebExchange)
+     * @see #wrapInListWrapper(Flux, ServerWebExchange)
      */
-    default HalListWrapper<ResourceT, Void> wrapInListWrapper(@NonNull List<ResourceT> resourcesToWrap,
-                                                              long totalElements,
-                                                              int pageSize,
-                                                              @Nullable Long offset,
-                                                              @Nullable List<SortCriteria> sortCriteria,
-                                                              ServerWebExchange exchange) {
-        HalPageInfo pageInfo = HalPageInfo.assembleWithOffset(pageSize, totalElements, offset);
-        return wrapInListWrapper(resourcesToWrap, pageInfo, sortCriteria, exchange);
+    default Mono<HalListWrapper<ResourceT, Void>> wrapInListWrapper(@NonNull Flux<ResourceT> resourcesToWrap,
+                                                                    @NonNull Mono<Long> totalElements,
+                                                                    int pageSize,
+                                                                    @Nullable Long offset,
+                                                                    List<SortCriteria> sortCriteria,
+                                                                    ServerWebExchange exchange) {
+        Mono<List<ResourceT>> resourcesAsListMono = resourcesToWrap.collectList();
+        return Mono.zip(resourcesAsListMono, totalElements,
+                (resourcesValue, totalElementsValue) -> wrapInListWrapper(resourcesValue, totalElementsValue,
+                        pageSize, offset, sortCriteria, exchange));
     }
 
     /**
-     * Wraps a list of resources into a {@link HalListWrapper}, optionally including pagination information, and
-     * enhances them with hypermedia links as defined by the assembler.
-     *
-     * @param resourcesToWrap
-     *         the list of resources to be wrapped
-     * @param pageInfo
-     *         optional pagination information to include in the wrapper
-     * @param sortCriteria
-     *         sort criteria (property and direction) of the page, if specified
-     * @param exchange
-     *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalListWrapper} that includes the wrapped resources enhanced with hypermedia links, and
-     * optionally pagination details
-     *
-     * @see #wrapInListWrapper(List, long, int, Long, List, ServerWebExchange)
-     * @see #wrapInListWrapper(List, ServerWebExchange)
-     */
-    default HalListWrapper<ResourceT, Void> wrapInListWrapper(@NonNull List<ResourceT> resourcesToWrap,
-                                                              @Nullable HalPageInfo pageInfo,
-                                                              @Nullable List<SortCriteria> sortCriteria,
-                                                              ServerWebExchange exchange) {
-        List<HalResourceWrapper<ResourceT, Void>> listOfWrappedResources =
-                resourcesToWrap.stream()
-                        .map(resource -> wrapInResourceWrapper(resource, exchange))
-                        .toList();
-
-        HalListWrapper<ResourceT, Void> result;
-
-        if (listOfWrappedResources.isEmpty()) {
-            result = HalListWrapper.empty(getResourceTClass());
-        } else {
-            result = HalListWrapper.wrap(listOfWrappedResources);
-        }
-
-        result.withLinks(buildLinksForResourceList(pageInfo, sortCriteria, exchange));
-
-        if (pageInfo == null) {
-            return result;
-        } else {
-            return result.withPageInfo(pageInfo);
-        }
-    }
-
-    /**
-     * Wraps a single resource in a {@link HalResourceWrapper} and enhances it with hypermedia links as defined by the
-     * assembler.
+     * Wraps the provided resource in a {@link HalResourceWrapper}
      *
      * @param resourceToWrap
-     *         the resource to wrap
+     *         resource to wrap
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a {@link HalResourceWrapper} that includes the wrapped resource enhanced with hypermedia links
+     * @return wrapped resource
      */
-    default HalResourceWrapper<ResourceT, Void> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
-                                                                      ServerWebExchange exchange) {
-        return HalResourceWrapper.wrap(resourceToWrap)
-                .withLinks(buildLinksForResource(resourceToWrap, exchange));
+    default Mono<HalResourceWrapper<ResourceT, Void>> wrapInResourceWrapper(@NonNull Mono<ResourceT> resourceToWrap,
+                                                                            ServerWebExchange exchange) {
+
+        return resourceToWrap.map(e -> wrapInResourceWrapper(e, exchange));
     }
 
 }

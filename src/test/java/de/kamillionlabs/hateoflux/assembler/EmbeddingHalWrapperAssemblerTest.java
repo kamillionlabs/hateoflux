@@ -8,10 +8,13 @@ import de.kamillionlabs.hateoflux.model.hal.HalPageInfo;
 import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
 import de.kamillionlabs.hateoflux.model.link.IanaRelation;
 import de.kamillionlabs.hateoflux.model.link.Link;
+import de.kamillionlabs.hateoflux.utility.Pair;
 import de.kamillionlabs.hateoflux.utility.PairList;
 import de.kamillionlabs.hateoflux.utility.SortCriteria;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -89,6 +92,26 @@ class EmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
+    public void givenResourceWithEmbedded_whenWrapInResourceWrapperReactive_thenAllFieldsAreFilled() {
+        //GIVEN
+        Book resource = new Book();
+        Author embedded = new Author();
+
+        //WHEN
+        HalResourceWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInResourceWrapper(
+                Mono.just(resource),
+                Mono.just(embedded),
+                null
+        ).block();
+
+        //THEN (through assertion in non-reactive version)
+        assertThat(actualWrapper).isNotNull();
+        assertThat(actualWrapper.getResource()).isNotNull();
+        assertThat(actualWrapper.getLinks()).hasSize(1);
+        assertThat(actualWrapper.getEmbedded().isPresent()).isTrue();
+    }
+
+    @Test
     public void givenResourceWithEmbeddedList_whenWrapInResourceWrapper_thenEmbeddedHas2Resources() {
         //GIVEN
         Book resource = new Book();
@@ -100,6 +123,25 @@ class EmbeddingHalWrapperAssemblerTest {
                 List.of(embedded, embedded),
                 null
         );
+
+        // THEN
+        assertThat(actualWrapper).isNotNull();
+        assertThat(actualWrapper.getEmbedded().isPresent()).isTrue();
+        assertThat(actualWrapper.getRequiredEmbedded()).hasSize(2);
+    }
+
+    @Test
+    public void givenResourceWithEmbeddedList_whenWrapInResourceWrapperReactive_thenEmbeddedHas2Resources() {
+        //GIVEN
+        Book resource = new Book();
+        Author embedded = new Author();
+
+        //WHEN
+        HalResourceWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInResourceWrapper(
+                Mono.just(resource),
+                Flux.fromIterable(List.of(embedded, embedded)),
+                null
+        ).block();
 
         // THEN
         assertThat(actualWrapper).isNotNull();
@@ -129,6 +171,27 @@ class EmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
+    public void givenResourceWithEmbeddedEmptyListAndStringName_whenWrapInResourceWrapperReactive_thenEmbeddedHasGivenName() {
+        //GIVEN
+        Book resource = new Book();
+        String embeddedListName = "testEmbeddedListName";
+
+        //WHEN
+        HalResourceWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInResourceWrapper(
+                Mono.just(resource),
+                embeddedListName,
+                Flux.empty(),
+                null
+        ).block();
+
+        // THEN
+        assertThat(actualWrapper).isNotNull();
+        assertThat(actualWrapper.getEmbedded().isPresent()).isTrue();
+        assertThat(actualWrapper.getRequiredEmbedded()).hasSize(0);
+        assertThat(actualWrapper.getRequiredNameOfEmbedded()).isEqualTo(embeddedListName);
+    }
+
+    @Test
     public void givenResourceWithEmbeddedEmptyListAndClassAsName_whenWrapInResourceWrapper_thenEmbeddedHasGivenClassName() {
         //GIVEN
         Book resource = new Book();
@@ -141,6 +204,27 @@ class EmbeddingHalWrapperAssemblerTest {
                 List.of(),
                 null
         );
+
+        // THEN
+        assertThat(actualWrapper).isNotNull();
+        assertThat(actualWrapper.getEmbedded().isPresent()).isTrue();
+        assertThat(actualWrapper.getRequiredEmbedded()).hasSize(0);
+        assertThat(actualWrapper.getRequiredNameOfEmbedded()).isEqualTo("customBooks");
+    }
+
+    @Test
+    public void givenResourceWithEmbeddedEmptyListAndClassAsName_whenWrapInResourceWrapperReactive_thenEmbeddedHasGivenClassName() {
+        //GIVEN
+        Book resource = new Book();
+        Class<?> clazz = Book.class;
+
+        //WHEN
+        HalResourceWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInResourceWrapper(
+                Mono.just(resource),
+                clazz,
+                Flux.empty(),
+                null
+        ).block();
 
         // THEN
         assertThat(actualWrapper).isNotNull();
@@ -189,6 +273,28 @@ class EmbeddingHalWrapperAssemblerTest {
     }
 
     @Test
+    public void givenResourcesEachWithEmbedded_whenWrapInListWrapperReactive_thenAllFieldsAreFilled() {
+        //GIVEN
+        Book resource = new Book();
+        Author embedded = new Author();
+
+        //WHEN
+        HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
+                Flux.fromIterable(
+                        List.of(
+                                Pair.of(resource, embedded),
+                                Pair.of(resource, embedded)
+                        )
+                ),
+                null
+        ).block();
+
+        //THEN (through assertion in non-reactive version)
+        assertThat(actualWrapper).isNotNull();
+        assertThat(actualWrapper.getResourceList()).isNotNull();
+    }
+
+    @Test
     public void givenResourcesAndADataForPageInfo_wrapInListWrapper_thenAllFieldsAreFilled() {
         //GIVEN
         Book resource = new Book();
@@ -222,6 +328,33 @@ class EmbeddingHalWrapperAssemblerTest {
         assertThat(actualResourceList).isNotNull();
         HalEmbeddedWrapper<Author> actualEmbedded = actualResourceList.get(0).getRequiredEmbedded().get(0);
         assertThat(actualEmbedded).isNotNull();
+    }
+
+    @Test
+    public void givenResourcesAndADataForPageInfo_wrapInListWrapperReactive_thenAllFieldsAreFilled() {
+        //GIVEN
+        Book resource = new Book();
+        Author embedded = new Author();
+
+        //WHEN
+        HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
+                Flux.fromIterable(
+                        List.of(
+                                Pair.of(resource, embedded),
+                                Pair.of(resource, embedded)
+                        )
+                ),
+                Mono.just(100L),
+                2,
+                null,
+                null,
+                null
+        ).block();
+
+        //THEN (through assertion in non-reactive version)
+        assertThat(actualWrapper).isNotNull();
+        assertThat(actualWrapper.getPage()).isNotNull();
+        assertThat(actualWrapper.getResourceList()).isNotNull();
     }
 
     @Test
@@ -299,4 +432,5 @@ class EmbeddingHalWrapperAssemblerTest {
         assertThat(emptyWrapper.getLinks()).hasSize(1);
         assertThat(emptyWrapper.getLinks().get(0).getHref()).isEqualTo("resource-list/self/link");
     }
+
 }
