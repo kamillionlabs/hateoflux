@@ -22,12 +22,13 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.util.Assert;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static de.kamillionlabs.hateoflux.utility.pair.PairListCollector.toPairList;
 import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueNotAllowedToBeNull;
+import static de.kamillionlabs.hateoflux.utility.pair.PairListCollector.toPairList;
 
 /**
  * A specialized list implementation that stores pairs of values.
@@ -83,6 +84,7 @@ public class PairList<LeftT, RightT> extends LinkedList<Pair<LeftT, RightT>> {
      *         the left element of the pair
      * @param right
      *         the right element of the pair
+     * @return {@code true} (as specified by {@link Collection#add})
      */
     public boolean add(LeftT left, RightT right) {
         return add(new Pair<>(left, right));

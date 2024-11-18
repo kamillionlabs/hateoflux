@@ -61,11 +61,23 @@ public final class HalEmbeddedWrapper<EmbeddedT> extends HalWrapper<HalEmbeddedW
         this.embeddedResource = embeddedResource;
     }
 
+    /**
+     * Indicates whether the wrapper holds a resource.
+     *
+     * @return {@code true} if the wrapper holds <b>no</b> resource; {@code false} otherwise
+     */
     @JsonIgnore
     public boolean isEmpty() {
         return embeddedResource == null;
     }
 
+    /**
+     * Creates an empty instance.
+     *
+     * @param <EmbeddedT>
+     *         Type of the embedded resource
+     * @return the created empty instance
+     */
     public static <EmbeddedT> HalEmbeddedWrapper<EmbeddedT> empty() {
         return new HalEmbeddedWrapper<>(null);
     }
@@ -95,7 +107,6 @@ public final class HalEmbeddedWrapper<EmbeddedT> extends HalWrapper<HalEmbeddedW
      * @throws IllegalArgumentException
      *         if {@code resourceToWrap} is an iterable
      */
-
     public static <EmbeddedT> HalEmbeddedWrapper<EmbeddedT> wrap(EmbeddedT resourceToWrap) {
         if (resourceToWrap == null) {
             return HalEmbeddedWrapper.empty();
