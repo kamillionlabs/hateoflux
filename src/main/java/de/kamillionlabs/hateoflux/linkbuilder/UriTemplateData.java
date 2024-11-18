@@ -18,8 +18,8 @@
 
 package de.kamillionlabs.hateoflux.linkbuilder;
 
-import de.kamillionlabs.hateoflux.utility.Pair;
-import de.kamillionlabs.hateoflux.utility.PairList;
+import de.kamillionlabs.hateoflux.utility.pair.Pair;
+import de.kamillionlabs.hateoflux.utility.pair.PairList;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;

@@ -15,6 +15,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.List;
 
@@ -289,7 +290,7 @@ class FlatHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenResourceWithEmbedded_wrapInResourceWrapperReactive_thenAllFieldsAreFilled() {
+    public void givenResource_wrapInResourceWrapperReactive_thenAllFieldsAreFilled() {
         //GIVEN
         Book resource = new Book();
 
@@ -306,7 +307,7 @@ class FlatHalWrapperAssemblerTest {
     }
 
     @Test
-    public void givenResourceWithEmbedded_wrapInResourceWrapper_thenAllFieldsAreFilled() {
+    public void givenResource_wrapInResourceWrapper_thenAllFieldsAreFilled() {
         //GIVEN
         Book resource = new Book();
 
@@ -327,5 +328,36 @@ class FlatHalWrapperAssemblerTest {
         assertThat(actualWrapper.getLinks()).hasSize(1);
         assertThat(actualWrapper.getRequiredLink(IanaRelation.SELF).getHref()).isEqualTo("resource/self/link");
     }
+
+    @Test
+    public void givenEmptyResourceMono_wrapInResourceWrapperReactive_thenAllFieldsAreFilled() {
+        //GIVEN
+        Mono<Book> emptyMono = Mono.empty();
+
+        //WHEN
+        Mono<HalResourceWrapper<Book, Void>> actualWrapper = defaultAssemblerUnderTest.wrapInResourceWrapper(
+                emptyMono,
+                null
+        );
+
+        //THEN
+        StepVerifier.create(actualWrapper)
+                .verifyComplete();
+    }
+
+    @Test
+    public void givenEmptyResourceFlux_wrapInResourceWrapperReactive_thenAllFieldsAreFilled() {
+        //GIVEN
+        Flux<Book> emptyFlux = Flux.empty();
+
+        //WHEN
+        Mono<HalListWrapper<Book, Void>> actualWrapper = defaultAssemblerUnderTest.wrapInListWrapper(emptyFlux, null);
+
+        //THEN
+        StepVerifier.create(actualWrapper)
+                .expectNextMatches(HalListWrapper::isEmpty)
+                .verifyComplete();
+    }
+
 
 }

@@ -18,16 +18,15 @@
 
 package de.kamillionlabs.hateoflux.model.hal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueIsNotAllowedToBeOfType;
-import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueNotAllowedToBeNull;
 
 /**
  * Represents an immutable wrapper class for encapsulating embedded resources in a hypermedia-driven format, adhering to
@@ -63,6 +62,27 @@ public final class HalEmbeddedWrapper<EmbeddedT> extends HalWrapper<HalEmbeddedW
     }
 
     /**
+     * Indicates whether the wrapper holds a resource.
+     *
+     * @return {@code true} if the wrapper holds <b>no</b> resource; {@code false} otherwise
+     */
+    @JsonIgnore
+    public boolean isEmpty() {
+        return embeddedResource == null;
+    }
+
+    /**
+     * Creates an empty instance.
+     *
+     * @param <EmbeddedT>
+     *         Type of the embedded resource
+     * @return the created empty instance
+     */
+    public static <EmbeddedT> HalEmbeddedWrapper<EmbeddedT> empty() {
+        return new HalEmbeddedWrapper<>(null);
+    }
+
+    /**
      * Wrapper for any given resource that is desired to be put as an embedded resource in either a
      * {@link HalListWrapper}
      * or a {@link HalResourceWrapper}, ensuring it conforms to HAL standards. When serialized, the resource is placed
@@ -85,11 +105,12 @@ public final class HalEmbeddedWrapper<EmbeddedT> extends HalWrapper<HalEmbeddedW
      * @return a new instance containing the wrapped resource
      *
      * @throws IllegalArgumentException
-     *         if {@code resourceToWrap} is null or an iterable
+     *         if {@code resourceToWrap} is an iterable
      */
-
-    public static <EmbeddedT> HalEmbeddedWrapper<EmbeddedT> wrap(@NonNull EmbeddedT resourceToWrap) {
-        Assert.notNull(resourceToWrap, valueNotAllowedToBeNull("Resource to embed"));
+    public static <EmbeddedT> HalEmbeddedWrapper<EmbeddedT> wrap(EmbeddedT resourceToWrap) {
+        if (resourceToWrap == null) {
+            return HalEmbeddedWrapper.empty();
+        }
         Assert.isTrue(!(resourceToWrap instanceof Iterable<?>), valueIsNotAllowedToBeOfType("Resource to embed",
                 "collection/iterable"));
         return new HalEmbeddedWrapper<>(resourceToWrap);

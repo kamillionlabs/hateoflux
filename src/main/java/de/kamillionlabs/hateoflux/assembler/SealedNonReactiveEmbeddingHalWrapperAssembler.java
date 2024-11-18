@@ -19,8 +19,9 @@
 package de.kamillionlabs.hateoflux.assembler;
 
 import de.kamillionlabs.hateoflux.model.hal.*;
-import de.kamillionlabs.hateoflux.utility.PairList;
 import de.kamillionlabs.hateoflux.utility.SortCriteria;
+import de.kamillionlabs.hateoflux.utility.pair.MultiRightPairList;
+import de.kamillionlabs.hateoflux.utility.pair.PairList;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.server.ServerWebExchange;
@@ -56,9 +57,26 @@ public sealed interface SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT,
         permits EmbeddingHalWrapperAssembler {
 
     /**
+     * Specifies the class type of {@code EmbeddedT} that the assembler builds. This method is required because
+     * type erasure removes generic type information at runtime. By implementing this method, the class type
+     * of {@code EmbeddedT} becomes accessible. An implementation is as simple as:
+     * <blockquote><pre>
+     * public Class&lt;Author&gt; getEmbeddedTClass() {
+     *     return Author.class;
+     * }
+     * </pre></blockquote>
+     *
+     * @return the class type of {@code EmbeddedT}
+     */
+    Class<EmbeddedT> getEmbeddedTClass();
+
+
+    /**
      * Wraps a list of main resources with their corresponding embedded resources in a {@link HalListWrapper},
-     * optionally
-     * including pagination information, appending hypermedia links as defined by the assembler.
+     * optionally including pagination information, appending hypermedia links as defined by the assembler.
+     *
+     * <p>The embedded resources in the {@link PairList} are allowed to be null resulting in the removal of the
+     * {@code _embedded} node in the serialized JSON.
      *
      * @param resourcesToWrap
      *         the list of main resources and their corresponding embedded resources to wrap
@@ -85,25 +103,15 @@ public sealed interface SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT,
                             return wrapInResourceWrapper(resource, embedded, exchange);
                         }).toList();
 
-        HalListWrapper<ResourceT, EmbeddedT> result;
-
-        if (listOfWrappedResourcesWithEmbedded.isEmpty()) {
-            result = HalListWrapper.empty(getResourceTClass());
-        } else {
-            result = HalListWrapper.wrap(listOfWrappedResourcesWithEmbedded);
-        }
-        result.withLinks(buildLinksForResourceList(pageInfo, sortCriteria, exchange));
-
-        if (pageInfo == null) {
-            return result;
-        } else {
-            return result.withPageInfo(pageInfo);
-        }
+        return buildListWrapper(listOfWrappedResourcesWithEmbedded, pageInfo, sortCriteria, exchange);
     }
 
     /**
      * Wraps a list of main resources with their corresponding embedded resources in a {@link HalListWrapper}, appending
      * hypermedia links as defined by the assembler.
+     * <p>
+     * The embedded resources in the {@link PairList} are allowed to be null resulting in the removal of the
+     * {@code _embedded} node in the serialized JSON.
      *
      * @param resourcesToWrap
      *         the list of main resources and their corresponding embedded resources to wrap
@@ -122,6 +130,9 @@ public sealed interface SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT,
     /**
      * Wraps a list of main resources with their corresponding embedded resources in a {@link HalListWrapper} with
      * pagination information, appending hypermedia links as defined by the assembler.
+     * <p>
+     * The embedded resources in the {@link PairList} are allowed to be null resulting in the removal of the
+     * {@code _embedded} node in the serialized JSON.
      *
      * @param resourcesToWrap
      *         the list of main resources and their corresponding embedded resources to wrap
@@ -150,10 +161,106 @@ public sealed interface SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT,
         return wrapInListWrapper(resourcesToWrap, pageInfo, sortCriteria, exchange);
     }
 
+    /**
+     * Wraps a list of main resources with their corresponding list of embedded resources in a {@link HalListWrapper},
+     * appending hypermedia links as defined by the assembler.
+     * <p>
+     * The embedded resources (list) for a main resource i.e. the list with the right elements of the
+     * {@link MultiRightPairList}, is allowed to be empty or null resulting in either the removal of the
+     * {@code _embedded} node or the addition of an empty array in the {@code _embedded} node in the serialized JSON.
+     *
+     * @param resourcesToWrap
+     *         the list of main resources and their corresponding list of embedded resources to wrap
+     * @param exchange
+     *         provides the context of the current web exchange, such as the base URL
+     * @return a {@link HalListWrapper} equipped with hypermedia links for each resource and the list as a whole
+     *
+     * @see #wrapInListWrapper(MultiRightPairList, long, int, Long, List, ServerWebExchange)
+     * @see #wrapInListWrapper(MultiRightPairList, HalPageInfo, List, ServerWebExchange)
+     */
+    default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull MultiRightPairList<ResourceT, EmbeddedT> resourcesToWrap,
+                                                                   ServerWebExchange exchange) {
+        return wrapInListWrapper(resourcesToWrap, null, null, exchange);
+    }
+
+    /**
+     * Wraps a list of main resources with their corresponding list of embedded resources in a {@link HalListWrapper}
+     * with pagination information, appending hypermedia links as defined by the assembler.
+     * <p>
+     * The embedded resources (list) for a main resource i.e. the list with the right elements of the
+     * {@link MultiRightPairList}, is allowed to be empty or null resulting in either the removal of the
+     * {@code _embedded} node or the addition of an empty array in the {@code _embedded} node in the serialized JSON.
+     *
+     * @param resourcesToWrap
+     *         the list of main resources and their corresponding list of embedded resources to wrap
+     * @param totalElements
+     *         the total number of elements across all pages
+     * @param pageSize
+     *         the requested/max number of elements in a single page
+     * @param offset
+     *         the starting offset of the page, if specified
+     * @param sortCriteria
+     *         sort criteria (property and direction) of the page
+     * @param exchange
+     *         provides the context of the current web exchange, such as the base URL
+     * @return a {@link HalListWrapper} with hypermedia links and pagination information
+     *
+     * @see #wrapInListWrapper(MultiRightPairList, HalPageInfo, List, ServerWebExchange)
+     * @see #wrapInListWrapper(MultiRightPairList, ServerWebExchange)
+     */
+    default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull MultiRightPairList<ResourceT, EmbeddedT> resourcesToWrap,
+                                                                   long totalElements,
+                                                                   int pageSize,
+                                                                   @Nullable Long offset,
+                                                                   List<SortCriteria> sortCriteria,
+                                                                   ServerWebExchange exchange) {
+        HalPageInfo pageInfo = HalPageInfo.assembleWithOffset(pageSize, totalElements, offset);
+        return wrapInListWrapper(resourcesToWrap, pageInfo, sortCriteria, exchange);
+    }
+
+
+    /**
+     * Wraps a list of main resources with their corresponding list of embedded resources in a {@link HalListWrapper},
+     * optionally including pagination information, appending hypermedia links as defined by the assembler.
+     * <p>
+     * The embedded resources (list) for a main resource i.e. the list with the right elements of the
+     * {@link MultiRightPairList}, is allowed to be empty or null resulting in either the removal of the
+     * {@code _embedded} node or the addition of an empty array in the {@code _embedded} node in the serialized JSON.
+     *
+     * @param resourcesToWrap
+     *         the list of main resources and their corresponding list of embedded resources to wrap
+     * @param pageInfo
+     *         optional pagination information to include in the wrapper
+     * @param sortCriteria
+     *         sort criteria (property and direction) of the page
+     * @param exchange
+     *         provides the context of the current web exchange, such as the base URL
+     * @return a {@link HalListWrapper} enriched with hypermedia links and optional pagination details
+     *
+     * @see #wrapInListWrapper(MultiRightPairList, long, int, Long, List, ServerWebExchange)
+     * @see #wrapInListWrapper(MultiRightPairList, ServerWebExchange)
+     */
+    default HalListWrapper<ResourceT, EmbeddedT> wrapInListWrapper(@NonNull MultiRightPairList<ResourceT, EmbeddedT> resourcesToWrap,
+                                                                   @Nullable HalPageInfo pageInfo,
+                                                                   @Nullable List<SortCriteria> sortCriteria,
+                                                                   ServerWebExchange exchange) {
+        List<HalResourceWrapper<ResourceT, EmbeddedT>> listOfWrappedResourcesWithEmbedded =
+                resourcesToWrap.stream()
+                        .map(pair -> {
+                            ResourceT resource = pair.left();
+                            List<EmbeddedT> embedded = pair.rights();
+                            return wrapInResourceWrapper(resource, embedded, exchange);
+                        }).toList();
+
+        return buildListWrapper(listOfWrappedResourcesWithEmbedded, pageInfo, sortCriteria, exchange);
+    }
 
     /**
      * Wraps a single main resource and its corresponding embedded resource in a {@link HalResourceWrapper}, appending
      * hypermedia links as defined by the assembler.
+     * <p>
+     * The embedded resources is allowed to be null resulting in the removal of the {@code _embedded} node in the
+     * serialized JSON.
      *
      * @param resourceToWrap
      *         the main resource to wrap
@@ -166,20 +273,26 @@ public sealed interface SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT,
      * @see #wrapInResourceWrapper(Object, List, ServerWebExchange)
      */
     default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
-                                                                           @NonNull EmbeddedT embedded,
+                                                                           EmbeddedT embedded,
                                                                            ServerWebExchange exchange) {
+        HalEmbeddedWrapper<EmbeddedT> embeddedWrapper;
+        if (embedded == null) {
+            embeddedWrapper = HalEmbeddedWrapper.empty();
+        } else {
+            embeddedWrapper = HalEmbeddedWrapper.wrap(embedded)
+                    .withLinks(buildLinksForEmbedded(embedded, exchange));
+        }
         return HalResourceWrapper.wrap(resourceToWrap)
                 .withLinks(buildLinksForResource(resourceToWrap, exchange))
-                .withEmbeddedResource(
-                        HalEmbeddedWrapper.wrap(embedded)
-                                .withLinks(buildLinksForEmbedded(embedded, exchange))
-                );
+                .withEmbeddedResource(embeddedWrapper);
     }
 
     /**
      * Wraps a single main resource and a non-empty list of its embedded resources in a {@link HalResourceWrapper},
-     * appending
-     * hypermedia links as defined by the assembler.
+     * appending hypermedia links as defined by the assembler.
+     * <p>
+     * The {@code embeddedList} is allowed to be empty or null resulting in either the removal of the {@code _embedded}
+     * node or the addition of an empty array in the {@code _embedded} node in the serialized JSON.
      *
      * @param resourceToWrap
      *         the main resource to wrap
@@ -199,19 +312,22 @@ public sealed interface SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT,
      * @see #wrapInResourceWrapper(Object, Class, List, ServerWebExchange)
      */
     default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
-                                                                           @NonNull List<EmbeddedT> embeddedList,
+                                                                           List<EmbeddedT> embeddedList,
                                                                            ServerWebExchange exchange) {
-        var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
+        List<HalEmbeddedWrapper<EmbeddedT>> wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
+
         return HalResourceWrapper.wrap(resourceToWrap)
                 .withLinks(buildLinksForResource(resourceToWrap, exchange))
-                .withNonEmptyEmbeddedList(wrappedEmbeddedList);
+                .withEmbeddedList(getEmbeddedTClass(), wrappedEmbeddedList);
     }
 
     /**
      * Wraps a single main resource and its list of embedded resources, identified by a directly provided list name, in
-     * a
-     * {@link HalResourceWrapper}, appending hypermedia links as defined by the assembler. The list is allowed to be
-     * empty.
+     * a {@link HalResourceWrapper}, appending hypermedia links as defined by the assembler. The list is allowed
+     * to be empty.
+     * <p>
+     * The {@code embeddedList} is allowed to be empty or null resulting in either the removal of the {@code _embedded}
+     * node or the addition of an empty array in the {@code _embedded} node in the serialized JSON.
      *
      * @param resourceToWrap
      *         the main resource to wrap
@@ -231,7 +347,7 @@ public sealed interface SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT,
      */
     default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
                                                                            @NonNull String embeddedListName,
-                                                                           @NonNull List<EmbeddedT> embeddedList,
+                                                                           List<EmbeddedT> embeddedList,
                                                                            ServerWebExchange exchange) {
         var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
         return HalResourceWrapper.wrap(resourceToWrap)
@@ -241,9 +357,11 @@ public sealed interface SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT,
 
     /**
      * Wraps a single main resource and its list of embedded resources, with the list name derived from the specified
-     * class
-     * {@code embeddedTypeAsNameOrigin}, in a {@link HalResourceWrapper}, appending hypermedia links as defined by the
-     * assembler. The list may be empty.
+     * class {@code embeddedTypeAsNameOrigin}, in a {@link HalResourceWrapper}, appending hypermedia links as defined by
+     * the assembler.
+     * <p>
+     * The {@code embeddedList} is allowed to be empty or null resulting in either the removal of the {@code _embedded}
+     * node or the addition of an empty array in the {@code _embedded} node in the serialized JSON.
      *
      * @param resourceToWrap
      *         the main resource to wrap
@@ -254,16 +372,15 @@ public sealed interface SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT,
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
      * @return a {@link HalResourceWrapper} that includes the main resource and its derived named embedded resources,
-     * all
-     * enhanced with hypermedia links
+     * all enhanced with hypermedia links
      *
      * @see #wrapInResourceWrapper(Object, Object, ServerWebExchange)
      * @see #wrapInResourceWrapper(Object, String, List, ServerWebExchange)
      * @see #wrapInResourceWrapper(Object, List, ServerWebExchange)
      */
     default HalResourceWrapper<ResourceT, EmbeddedT> wrapInResourceWrapper(@NonNull ResourceT resourceToWrap,
-                                                                           @NonNull Class<?> embeddedTypeAsNameOrigin,
-                                                                           @NonNull List<EmbeddedT> embeddedList,
+                                                                           @NonNull Class<EmbeddedT> embeddedTypeAsNameOrigin,
+                                                                           List<EmbeddedT> embeddedList,
                                                                            ServerWebExchange exchange) {
         var wrappedEmbeddedList = wrapEmbeddedElementsInList(embeddedList, exchange);
         return HalResourceWrapper.wrap(resourceToWrap)
@@ -271,12 +388,35 @@ public sealed interface SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT,
                 .withEmbeddedList(embeddedTypeAsNameOrigin, wrappedEmbeddedList);
     }
 
-    private List<HalEmbeddedWrapper<EmbeddedT>> wrapEmbeddedElementsInList(@NonNull List<EmbeddedT> embeddedResource,
+    private List<HalEmbeddedWrapper<EmbeddedT>> wrapEmbeddedElementsInList(List<EmbeddedT> embeddedResource,
                                                                            ServerWebExchange exchange) {
-        return embeddedResource.stream()
+        return embeddedResource == null ? null
+                : embeddedResource.stream()
                 .map(embedded -> HalEmbeddedWrapper.wrap(embedded)
-                        .withLinks(buildLinksForEmbedded(embedded, exchange)))
+                        .withLinks(buildLinksForEmbedded(embedded, exchange))
+                )
                 .toList();
+    }
+
+
+    private HalListWrapper<ResourceT, EmbeddedT> buildListWrapper(List<HalResourceWrapper<ResourceT, EmbeddedT>> listOfWrappedResourcesWithEmbedded,
+                                                                  HalPageInfo pageInfo,
+                                                                  List<SortCriteria> sortCriteria,
+                                                                  ServerWebExchange exchange) {
+        HalListWrapper<ResourceT, EmbeddedT> result;
+
+        if (listOfWrappedResourcesWithEmbedded.isEmpty()) {
+            result = HalListWrapper.empty(getResourceTClass());
+        } else {
+            result = HalListWrapper.wrap(listOfWrappedResourcesWithEmbedded);
+        }
+        result.withLinks(buildLinksForResourceList(pageInfo, sortCriteria, exchange));
+
+        if (pageInfo == null) {
+            return result;
+        } else {
+            return result.withPageInfo(pageInfo);
+        }
     }
 
 }

@@ -36,17 +36,6 @@ class HalResourceWrapperTest {
     }
 
     @Test
-    void givenEmbeddedIsNull_whenWithEmbeddedResource_thenExceptionIsThrown() {
-        //GIVEN
-        assertThatThrownBy(() -> HalResourceWrapper.wrap(new Book())
-                //WHEN
-                .withEmbeddedResource(null))
-                //THEN
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Embedded is not allowed to be null");
-    }
-
-    @Test
     void givenEmbeddedIsNotNull_whenWithEmbeddedResource_thenEmbeddedIsAccessible() {
         //GIVEN
         var embedded = HalEmbeddedWrapper.wrap(new UnannotatedBook());

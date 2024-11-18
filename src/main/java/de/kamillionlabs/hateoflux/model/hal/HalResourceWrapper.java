@@ -64,15 +64,23 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
     @JsonIgnore
     private Map.Entry<String, List<HalEmbeddedWrapper<EmbeddedT>>> embedded;
 
+    @JsonIgnore
+    private Boolean isEmbeddedOriginallyAList;
+
     @JsonProperty("_embedded")
     private Map.Entry<String, ?> getEmbeddedForSerialization() {
-        if (embedded != null) {
-            List<HalEmbeddedWrapper<EmbeddedT>> embeddedList = embedded.getValue();
-            if (embeddedList.size() == 1) {
-                //unwrap list
-                return new AbstractMap.SimpleImmutableEntry<>(embedded.getKey(), embeddedList.get(0));
-            } else {
+        if (embedded != null && embedded.getValue() != null) {
+            if (isEmbeddedOriginallyAList) {
                 return embedded;
+            } else {
+                List<HalEmbeddedWrapper<EmbeddedT>> embeddedList = embedded.getValue();
+                HalEmbeddedWrapper<EmbeddedT> embeddedWrapper = embeddedList.get(0);
+                if (embeddedWrapper.isEmpty()) {
+                    return null;
+                } else {
+                    //unwrap list
+                    return new AbstractMap.SimpleImmutableEntry<>(embedded.getKey(), embeddedWrapper);
+                }
             }
         } else {
             return null;
@@ -87,6 +95,7 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
     private HalResourceWrapper(ResourceT resource, String embeddedName,
                                List<HalEmbeddedWrapper<EmbeddedT>> embedded, Iterable<Link> links) {
         super();
+        this.isEmbeddedOriginallyAList = true;
         this.resource = resource;
         this.embedded = new AbstractMap.SimpleImmutableEntry<>(embeddedName, embedded);
         this.withLinks(links);
@@ -95,6 +104,7 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
     private HalResourceWrapper(ResourceT resource, String embeddedName, HalEmbeddedWrapper<EmbeddedT> embedded,
                                Iterable<Link> links) {
         this(resource, embeddedName, List.of(embedded), links);
+        this.isEmbeddedOriginallyAList = false;
     }
 
     /**
@@ -128,23 +138,30 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
      * name otherwise.
      *
      * <p>Only one embedded element can be held at a time. If multiple objects need to be embedded, use
-     * {@link #withNonEmptyEmbeddedList(List)} or {@link #withEmbeddedList(String, List)}.</p>
+     * {@link #withNonEmptyEmbeddedList(List)}, {@link #withEmbeddedList(String, List)}, or
+     * {@link #withEmbeddedList(Class, List)}.
      *
      * <p>Calling any {@code withEmbeddedXYZ()} method multiple times results in <b>overriding</b> the previously
      * embedded resource each time.</p>
      *
+     * <p>
+     * <b>Hint:</b> Call this method with an empty {@code embedded} ({@link HalEmbeddedWrapper#empty()}) if the
+     * embedded type is desired to be changed from {@code Void}.
+     *
      * @param <NewEmbeddedT>
      *         the type of the resource to embed
      * @param embedded
-     *         the resource to embed
+     *         the resource to embed (may be empty, but not null)
      * @return new instance with the embedded resource
      *
      * @throws IllegalArgumentException
      *         if the resource is null
      */
-    public <NewEmbeddedT> HalResourceWrapper<ResourceT, NewEmbeddedT> withEmbeddedResource(
-            @NonNull HalEmbeddedWrapper<NewEmbeddedT> embedded) {
-        Assert.notNull(embedded, valueNotAllowedToBeNull("Embedded"));
+    public <NewEmbeddedT> HalResourceWrapper<ResourceT, NewEmbeddedT> withEmbeddedResource(HalEmbeddedWrapper<NewEmbeddedT> embedded) {
+        if (embedded == null || embedded.isEmpty()) {
+            //when serialized, the embedded will be removed from the JSON. Name doesn't matter.
+            return new HalResourceWrapper<>(this.resource, "n/a", embedded, this.getLinks());
+        }
         String name = determineRelationNameForObject(embedded.getEmbeddedResource());
         return new HalResourceWrapper<>(this.resource, name, embedded, this.getLinks());
     }
@@ -222,12 +239,12 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
      * @return a new instance with the embedded list
      *
      * @throws IllegalArgumentException
-     *         if {@code resourcesToEmbed} is null or if {@code embeddedTypeAsNameOrigin} is null
+     *         if {@code embeddedTypeAsNameOrigin} is null
      */
     public <NewEmbeddedT> HalResourceWrapper<ResourceT, NewEmbeddedT> withEmbeddedList(
-            @NonNull Class<?> embeddedTypeAsNameOrigin, List<HalEmbeddedWrapper<NewEmbeddedT>> resourcesToEmbed) {
+            @NonNull Class<NewEmbeddedT> embeddedTypeAsNameOrigin,
+            List<HalEmbeddedWrapper<NewEmbeddedT>> resourcesToEmbed) {
         Assert.notNull(embeddedTypeAsNameOrigin, valueNotAllowedToBeNull("Embedded type name"));
-        Assert.notNull(resourcesToEmbed, valueNotAllowedToBeNull("List to embed"));
         String name = determineCollectionRelationName(embeddedTypeAsNameOrigin);
         return new HalResourceWrapper<>(this.resource, name, resourcesToEmbed, this.getLinks());
     }
@@ -257,7 +274,7 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
     /**
      * Indicates whether the {@link HalResourceWrapper} has an embedded resource
      *
-     * @return true if an embedded resource exists, else false
+     * @return {@code true} if an embedded resource exists; {@code false} otherwise
      */
     @JsonIgnore
     public boolean hasEmbedded() {

@@ -5,9 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.20.0]
+
+### Added
+
+* EmbeddingHalWrapperAssembler now also accepts a list of embedded when creating HalListWrappers
+* New MultiRightPair utility class
+
+### Changed
+
+* Assemblers also accept MultiRightPairs instead
+* Embedded now allowed to be empty without taking the type Void
+* Consistent serialization of embedded resources as lists, empty lists or their removal from the json
+
 ## [0.19.0]
 
-## Changed
+### Changed
 
 * Refactored Assemblers. Only Flat- and EmbeddingHalWrapperAssembler remain. Both contain imperative and reactive
   functions

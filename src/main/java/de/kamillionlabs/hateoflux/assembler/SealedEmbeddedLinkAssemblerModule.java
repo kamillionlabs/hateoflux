@@ -74,5 +74,4 @@ public sealed interface SealedEmbeddedLinkAssemblerModule<EmbeddedT> permits Sea
     default List<Link> buildOtherLinksForEmbedded(EmbeddedT embedded, ServerWebExchange exchange) {
         return List.of();
     }
-
 }

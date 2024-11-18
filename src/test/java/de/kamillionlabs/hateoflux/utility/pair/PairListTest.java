@@ -1,4 +1,4 @@
-package de.kamillionlabs.hateoflux.utility;
+package de.kamillionlabs.hateoflux.utility.pair;
 
 import org.junit.jupiter.api.Test;
 

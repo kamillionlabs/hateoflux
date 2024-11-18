@@ -1,5 +1,6 @@
 package de.kamillionlabs.hateoflux.assembler;
 
+import de.kamillionlabs.hateoflux.dummy.TestDataGenerator;
 import de.kamillionlabs.hateoflux.dummy.model.Author;
 import de.kamillionlabs.hateoflux.dummy.model.Book;
 import de.kamillionlabs.hateoflux.model.hal.HalEmbeddedWrapper;
@@ -8,13 +9,16 @@ import de.kamillionlabs.hateoflux.model.hal.HalPageInfo;
 import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
 import de.kamillionlabs.hateoflux.model.link.IanaRelation;
 import de.kamillionlabs.hateoflux.model.link.Link;
-import de.kamillionlabs.hateoflux.utility.Pair;
-import de.kamillionlabs.hateoflux.utility.PairList;
 import de.kamillionlabs.hateoflux.utility.SortCriteria;
+import de.kamillionlabs.hateoflux.utility.pair.MultiRightPairFlux;
+import de.kamillionlabs.hateoflux.utility.pair.MultiRightPairList;
+import de.kamillionlabs.hateoflux.utility.pair.PairFlux;
+import de.kamillionlabs.hateoflux.utility.pair.PairList;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.List;
 
@@ -22,6 +26,8 @@ import static de.kamillionlabs.hateoflux.utility.SortDirection.ASCENDING;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class EmbeddingHalWrapperAssemblerTest {
+
+    private TestDataGenerator testData = new TestDataGenerator();
 
     // Implementation for testing purposes -----------------------------------------------------------------------------
     static class AssemblerUnderTest implements EmbeddingHalWrapperAssembler<Book, Author> {
@@ -50,6 +56,11 @@ class EmbeddingHalWrapperAssemblerTest {
         public List<Link> buildOtherLinksForEmbedded(Author embedded, ServerWebExchange exchange) {
             return List.of(Link.of("embedded/other/")
                     .withRel("other"));
+        }
+
+        @Override
+        public Class<Author> getEmbeddedTClass() {
+            return Author.class;
         }
     }
     // -----------------------------------------------------------------------------------------------------------------
@@ -195,12 +206,12 @@ class EmbeddingHalWrapperAssemblerTest {
     public void givenResourceWithEmbeddedEmptyListAndClassAsName_whenWrapInResourceWrapper_thenEmbeddedHasGivenClassName() {
         //GIVEN
         Book resource = new Book();
-        Class<?> clazz = Book.class;
+        Class<Author> authorClass = Author.class;
 
         //WHEN
         HalResourceWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInResourceWrapper(
                 resource,
-                clazz,
+                authorClass,
                 List.of(),
                 null
         );
@@ -209,14 +220,14 @@ class EmbeddingHalWrapperAssemblerTest {
         assertThat(actualWrapper).isNotNull();
         assertThat(actualWrapper.getEmbedded().isPresent()).isTrue();
         assertThat(actualWrapper.getRequiredEmbedded()).hasSize(0);
-        assertThat(actualWrapper.getRequiredNameOfEmbedded()).isEqualTo("customBooks");
+        assertThat(actualWrapper.getRequiredNameOfEmbedded()).isEqualTo("authors");
     }
 
     @Test
     public void givenResourceWithEmbeddedEmptyListAndClassAsName_whenWrapInResourceWrapperReactive_thenEmbeddedHasGivenClassName() {
         //GIVEN
         Book resource = new Book();
-        Class<?> clazz = Book.class;
+        Class<Author> clazz = Author.class;
 
         //WHEN
         HalResourceWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInResourceWrapper(
@@ -230,7 +241,7 @@ class EmbeddingHalWrapperAssemblerTest {
         assertThat(actualWrapper).isNotNull();
         assertThat(actualWrapper.getEmbedded().isPresent()).isTrue();
         assertThat(actualWrapper.getRequiredEmbedded()).hasSize(0);
-        assertThat(actualWrapper.getRequiredNameOfEmbedded()).isEqualTo("customBooks");
+        assertThat(actualWrapper.getRequiredNameOfEmbedded()).isEqualTo("authors");
     }
 
     @Test
@@ -241,7 +252,7 @@ class EmbeddingHalWrapperAssemblerTest {
 
         //WHEN
         HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
-                PairList.of(resource, embedded,
+                MultiRightPairList.of(resource, embedded,
                         resource, embedded),
                 null
         );
@@ -280,10 +291,10 @@ class EmbeddingHalWrapperAssemblerTest {
 
         //WHEN
         HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
-                Flux.fromIterable(
-                        List.of(
-                                Pair.of(resource, embedded),
-                                Pair.of(resource, embedded)
+                MultiRightPairFlux.fromIterable(
+                        MultiRightPairList.of(
+                                resource, List.of(embedded),
+                                resource, List.of(embedded)
                         )
                 ),
                 null
@@ -302,7 +313,7 @@ class EmbeddingHalWrapperAssemblerTest {
 
         //WHEN
         HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
-                PairList.of(resource, embedded,
+                MultiRightPairList.of(resource, embedded,
                         resource, embedded),
                 100L,
                 2,
@@ -337,12 +348,13 @@ class EmbeddingHalWrapperAssemblerTest {
         Author embedded = new Author();
 
         //WHEN
+        PairList<Book, Author> multiRightPairs = PairList.of(
+                resource, embedded,
+                resource, embedded
+        );
         HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
-                Flux.fromIterable(
-                        List.of(
-                                Pair.of(resource, embedded),
-                                Pair.of(resource, embedded)
-                        )
+                PairFlux.fromIterable(
+                        multiRightPairs
                 ),
                 Mono.just(100L),
                 2,
@@ -365,7 +377,7 @@ class EmbeddingHalWrapperAssemblerTest {
 
         //WHEN
         HalListWrapper<Book, Author> actualWrapper = assemblerUnderTest.wrapInListWrapper(
-                PairList.of(resource, embedded,
+                MultiRightPairList.of(resource, embedded,
                         resource, embedded),
                 HalPageInfo.assembleWithOffset(10, 1000L, 20L),
                 null,
@@ -423,7 +435,8 @@ class EmbeddingHalWrapperAssemblerTest {
     @Test
     public void givenEmptyPairs_whenWrapInListWrapper_thenNoException() {
         //GIVEN
-        HalListWrapper<Book, Author> emptyWrapper = assemblerUnderTest.wrapInListWrapper(new PairList<>(), null);
+        HalListWrapper<Book, Author> emptyWrapper = assemblerUnderTest.wrapInListWrapper(new MultiRightPairList<>(),
+                null);
 
         //THEN
         assertThat(emptyWrapper).isNotNull();
@@ -431,6 +444,81 @@ class EmbeddingHalWrapperAssemblerTest {
         assertThat(emptyWrapper.getNameOfResourceList()).isEqualTo("customBooks");
         assertThat(emptyWrapper.getLinks()).hasSize(1);
         assertThat(emptyWrapper.getLinks().get(0).getHref()).isEqualTo("resource-list/self/link");
+    }
+
+    @Test
+    public void givenEmptyResourceAndMonoEmbedded_whenWrapInResourceWrapper_thenEmptyMono() {
+        //GIVEN
+        Mono<Book> emptyResource = Mono.empty();
+        Mono<Author> nonEmptyEmbedded = Mono.just(new Author());
+
+
+        //WHEN
+        Mono<HalResourceWrapper<Book, Author>> actual = assemblerUnderTest.wrapInResourceWrapper(emptyResource,
+                nonEmptyEmbedded, null);
+
+        // THEN
+        assertThat(actual).isNotNull();
+        StepVerifier.create(actual)
+                .verifyComplete();
+    }
+
+    @Test
+    public void givenResourceAndEmptyMonoEmbedded_whenWrapInResourceWrapper_thenEmptyMono() {
+        //GIVEN
+        Mono<Book> resource = Mono.just(testData.getAllBooksByAuthorName(TestDataGenerator.AuthorName.ROBERT_MARTIN)
+                .get(0));
+        Mono<Author> emptyEmbedded = Mono.empty();
+
+
+        //WHEN
+        Mono<HalResourceWrapper<Book, Author>> actualMono = assemblerUnderTest.wrapInResourceWrapper(resource,
+                emptyEmbedded, null);
+
+        // THEN
+        HalResourceWrapper<Book, Author> actual = actualMono.block();
+        assertThat(actual.hasEmbedded()).isEqualTo(true);
+        List<HalEmbeddedWrapper<Author>> halEmbeddedWrappers = actual.getEmbedded().get();
+        HalEmbeddedWrapper<Author> authorHalEmbeddedWrapper = halEmbeddedWrappers.get(0);
+        assertThat(authorHalEmbeddedWrapper.isEmpty()).isEqualTo(true);
+        assertThat(actual.getResource().getTitle()).isEqualTo("Clean Code");
+    }
+
+    @Test
+    public void givenEmptyResourceAndFluxEmbedded_whenWrapInResourceWrapper_thenEmptyMono() {
+        //GIVEN
+        Mono<Book> emptyResource = Mono.empty();
+        Flux<Author> nonEmptyEmbedded = Flux.just(new Author());
+
+
+        //WHEN
+        Mono<HalResourceWrapper<Book, Author>> actual = assemblerUnderTest.wrapInResourceWrapper(emptyResource,
+                nonEmptyEmbedded, null);
+
+        // THEN
+        assertThat(actual).isNotNull();
+        StepVerifier.create(actual)
+                .verifyComplete();
+    }
+
+    @Test
+    public void givenResourceAndEmptyFluxEmbedded_whenWrapInResourceWrapper_thenEmptyMono() {
+        //GIVEN
+        Mono<Book> resource = Mono.just(testData.getAllBooksByAuthorName(TestDataGenerator.AuthorName.ROBERT_MARTIN)
+                .get(0));
+        Flux<Author> emptyEmbedded = Flux.empty();
+
+
+        //WHEN
+        Mono<HalResourceWrapper<Book, Author>> actualMono = assemblerUnderTest.wrapInResourceWrapper(resource,
+                emptyEmbedded, null);
+
+        // THEN
+        HalResourceWrapper<Book, Author> actual = actualMono.block();
+        assertThat(actual.hasEmbedded()).isEqualTo(true);
+        List<HalEmbeddedWrapper<Author>> halEmbeddedWrappers = actual.getEmbedded().get();
+        assertThat(halEmbeddedWrappers.isEmpty()).isEqualTo(true);
+        assertThat(actual.getResource().getTitle()).isEqualTo("Clean Code");
     }
 
 }
