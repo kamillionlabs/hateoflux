@@ -69,7 +69,8 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
         SealedNonReactiveEmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> {
 
     /**
-     * Wraps a reactive stream of resource pairs into a Mono of a {@link HalListWrapper}, enhancing them with hypermedia
+     * Wraps a reactive stream of resource pairs into a {@code Mono} of a {@link HalListWrapper}, enhancing them with
+     * hypermedia
      * links as defined by the assembler.
      * <p>
      * The embedded resources (list) for a main resource i.e. the list with the right elements of the
@@ -80,7 +81,7 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      *         the reactive stream of resources and their associated embedded resources to be wrapped
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a Mono of a {@link HalListWrapper} containing the resources enhanced with hypermedia links
+     * @return a {@code Mono} of a {@link HalListWrapper} containing the resources enhanced with hypermedia links
      *
      * @see #wrapInListWrapper(MultiRightPairFlux, Mono, int, Long, List, ServerWebExchange)
      */
@@ -92,7 +93,8 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
 
 
     /**
-     * Wraps a reactive stream of resource pairs into a Mono of a {@link HalListWrapper} with pagination details. This
+     * Wraps a reactive stream of resource pairs into a {@code Mono} of a {@link HalListWrapper} with pagination
+     * details. This
      * includes hypermedia links as defined by the assembler, along with pagination parameters.
      *
      * <p>
@@ -103,7 +105,7 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      * @param resourcesToWrap
      *         the reactive stream of resources and their associated embedded resources to be wrapped
      * @param totalElements
-     *         a {@link Mono<Long>} providing the total number of elements across all pages
+     *         a {@code Mono} providing the total number of elements across all pages
      * @param pageSize
      *         the number of items per page
      * @param offset
@@ -112,7 +114,8 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      *         sort criteria (property and direction) of the page
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a Mono of a {@link HalListWrapper} containing the paginated list of resources enhanced with hypermedia
+     * @return a {@code Mono} of a {@link HalListWrapper} containing the paginated list of resources enhanced with
+     * hypermedia
      * links
      *
      * @see #wrapInListWrapper(MultiRightPairFlux, ServerWebExchange)
@@ -131,7 +134,8 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
     }
 
     /**
-     * Wraps a reactive stream of resource pairs into a Mono of a {@link HalListWrapper} with pagination details. This
+     * Wraps a reactive stream of resource pairs into a {@code Mono} of a {@link HalListWrapper} with pagination
+     * details. This
      * includes hypermedia links as defined by the assembler, along with pagination parameters.
      * <p>
      * The embedded resources in the {@link PairFlux} are allowed to be null resulting in the removal of the
@@ -149,7 +153,8 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      *         sort criteria (property and direction) of the page
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a Mono of a {@link HalListWrapper} containing the paginated list of resources enhanced with hypermedia
+     * @return a {@code Mono} of a {@link HalListWrapper} containing the paginated list of resources enhanced with
+     * hypermedia
      * links
      *
      * @see #wrapInListWrapper(PairFlux, ServerWebExchange)
@@ -168,7 +173,8 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
     }
 
     /**
-     * Wraps a reactive stream of resource pairs into a Mono of a {@link HalListWrapper}, enhancing them with hypermedia
+     * Wraps a reactive stream of resource pairs into a {@code Mono} of a {@link HalListWrapper}, enhancing them with
+     * hypermedia
      * links as defined by the assembler.
      * <p>
      * The embedded resources in the {@link PairFlux} are allowed to be null resulting in the removal of the
@@ -178,7 +184,7 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      *         the reactive stream of resources and their associated embedded resources to be wrapped
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a Mono of a {@link HalListWrapper} containing the resources enhanced with hypermedia links
+     * @return a {@code Mono} of a {@link HalListWrapper} containing the resources enhanced with hypermedia links
      *
      * @see #wrapInListWrapper(PairFlux, Mono, int, Long, List, ServerWebExchange)
      */
@@ -192,19 +198,21 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
 
 
     /**
-     * Wraps a reactive Mono of a resource and its associated embedded resource into a {@link HalResourceWrapper},
+     * Wraps a reactive {@code Mono} of a resource and its associated embedded resource into a
+     * {@link HalResourceWrapper},
      * enhancing both with hypermedia links as defined by the assembler.
      * <p>
      * If {@code resourceToWrap} is empty, the result will also be an empty {@code Mono}. If the {@code embedded} is
      * empty, when serialized, the resulting JSON will not have an {@code _embedded} node.
      *
      * @param resourceToWrap
-     *         the Mono of the resource to be wrapped
+     *         the {@code Mono} of the resource to be wrapped
      * @param embedded
-     *         the Mono of the associated embedded resource
+     *         the {@code Mono} of the associated embedded resource
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a Mono of a {@link HalResourceWrapper} containing the wrapped resource and embedded resource, enhanced
+     * @return a {@code Mono} of a {@link HalResourceWrapper} containing the wrapped resource and embedded resource,
+     * enhanced
      * with hypermedia links
      *
      * @see #wrapInResourceWrapper(Mono, Flux, ServerWebExchange)
@@ -230,13 +238,15 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      * empty, when serialized, the resulting JSON will have an empty array in the {@code _embedded} node.
      *
      * @param resourceWrap
-     *         the Mono of the main resource to wrap
+     *         the {@code Mono} of the main resource to wrap
      * @param embeddedList
-     *         the Flux of embedded resources associated with the main resource; this list must not be empty. The list
+     *         the {@code Flux} of embedded resources associated with the main resource; this list must not be empty.
+     *         The list
      *         name is derived from the embedded resource's class name (see also {@link Relation})
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a Mono of a {@link HalResourceWrapper} that includes the main resource and its embedded resources, all
+     * @return a {@code Mono} of a {@link HalResourceWrapper} that includes the main resource and its embedded
+     * resources, all
      * enhanced with hypermedia links
      *
      * @throws IllegalArgumentException
@@ -256,7 +266,7 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
 
 
     /**
-     * Wraps a reactive Mono of an resource and a Flux of its associated embedded resources into a
+     * Wraps a reactive {@code Mono} of an resource and a {@code Flux} of its associated embedded resources into a
      * {@link HalResourceWrapper}, appending hypermedia links as defined by the assembler. The list is identified by a
      * directly provided list name. The flux may be empty.
      * <p>
@@ -264,14 +274,15 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      * empty, when serialized, the resulting JSON will have an empty array in the {@code _embedded} node.
      *
      * @param resourceToWrap
-     *         the Mono of the main resource to wrap
+     *         the {@code Mono} of the main resource to wrap
      * @param embeddedListName
      *         the explicitly provided name for the list of embedded resources
      * @param embeddedList
-     *         the Flux of embedded resources associated with the main resource, which may be empty
+     *         the {@code Flux} of embedded resources associated with the main resource, which may be empty
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a Mono of a {@link HalResourceWrapper} that includes the main resource and its named list of embedded
+     * @return a {@code Mono} of a {@link HalResourceWrapper} that includes the main resource and its named list of
+     * embedded
      * resources, all enhanced with hypermedia links
      *
      * @see #wrapInResourceWrapper(Mono, Class, Flux, ServerWebExchange)
@@ -290,7 +301,7 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
     }
 
     /**
-     * Wraps a reactive Mono of an resource and a Flux of its associated embedded resources into a
+     * Wraps a reactive {@code Mono} of an resource and a {@code Flux} of its associated embedded resources into a
      * {@link HalResourceWrapper}, appending hypermedia links as defined by the assembler. The list name is derived from
      * the specified class {@code embeddedTypeAsNameOrigin}. The list may be empty.
      * <p>
@@ -298,14 +309,15 @@ public non-sealed interface EmbeddingHalWrapperAssembler<ResourceT, EmbeddedT> e
      * empty, when serialized, the resulting JSON will have an empty array in the {@code _embedded} node.
      *
      * @param resourceToWrap
-     *         the Mono of the main resource to wrap
+     *         the {@code Mono} of the main resource to wrap
      * @param embeddedTypeAsNameOrigin
      *         the class from which the list name is derived (see also {@link Relation})
      * @param embeddedList
-     *         the Flux of embedded resources associated with the main resource, which may be empty
+     *         the {@code Flux} of embedded resources associated with the main resource, which may be empty
      * @param exchange
      *         provides the context of the current web exchange, such as the base URL
-     * @return a Mono of a {@link HalResourceWrapper} that includes the main resource and its derived named list of
+     * @return a {@code Mono} of a {@link HalResourceWrapper} that includes the main resource and its derived named
+     * list of
      * embedded
      * resources, all enhanced with hypermedia links
      *
