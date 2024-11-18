@@ -16,12 +16,17 @@
  * @since 29.06.2024
  */
 
-package de.kamillionlabs.hateoflux.model.hal;
+package de.kamillionlabs.hateoflux.model.hal.serialization;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.kamillionlabs.hateoflux.dummy.TestDataGenerator;
 import de.kamillionlabs.hateoflux.dummy.controller.AuthorController;
 import de.kamillionlabs.hateoflux.dummy.model.Author;
 import de.kamillionlabs.hateoflux.dummy.model.Book;
+import de.kamillionlabs.hateoflux.model.hal.HalEmbeddedWrapper;
+import de.kamillionlabs.hateoflux.model.hal.HalListWrapper;
+import de.kamillionlabs.hateoflux.model.hal.HalPageInfo;
+import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
 import de.kamillionlabs.hateoflux.model.link.IanaRelation;
 import de.kamillionlabs.hateoflux.model.link.Link;
 import de.kamillionlabs.hateoflux.utility.SortCriteria;
@@ -37,9 +42,11 @@ import static org.skyscreamer.jsonassert.JSONCompareMode.NON_EXTENSIBLE;
 /**
  * @author Younes El Ouarti
  */
-public class SerializationTest {
+public class ManualSerializationTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
+
+    private final TestDataGenerator testData = new TestDataGenerator();
 
     private final Book germanBedtimeStories = Book.builder()
             .title("The German Bedtime Stories")
@@ -171,9 +178,9 @@ public class SerializationTest {
     }
 
     @Test
-    public void givenHalCollectionWrapperWithNoPaging_whenSerialized_thenNoErrors() throws Exception {
+    public void givenHalListWrapperWithNoPaging_whenSerialized_thenNoErrors() throws Exception {
         //GIVEN
-        var halCollection = HalListWrapper.wrap(List.of(
+        var halListWrapper = HalListWrapper.wrap(List.of(
                         HalResourceWrapper.wrap(germanBedtimeStories)
                                 .withLinks(Link.linkAsSelfOf("/book/123")),
                         HalResourceWrapper.wrap(cookBookForManlyMen)
@@ -181,7 +188,7 @@ public class SerializationTest {
                 .withLinks(Link.linkAsSelfOf("/author/1/books"));
 
         //WHEN
-        String actualJson = mapper.writeValueAsString(halCollection);
+        String actualJson = mapper.writeValueAsString(halListWrapper);
 
         //THEN
         JSONAssert.assertEquals("""
@@ -222,10 +229,10 @@ public class SerializationTest {
     }
 
     @Test
-    public void givenHalCollectionWrapperWithPaging_whenSerialized_thenNoErrors() throws Exception {
+    public void givenHalListWrapperWithPaging_whenSerialized_thenNoErrors() throws Exception {
         //GIVEN
         HalPageInfo halPageInfo = HalPageInfo.of(1, 3L, 3, 0);
-        HalListWrapper<Book, Void> halCollection = HalListWrapper.wrap(
+        HalListWrapper<Book, Void> halListWrapper = HalListWrapper.wrap(
                         List.of(HalResourceWrapper.wrap(germanBedtimeStories)
                                 .withLinks(Link.linkAsSelfOf("/book/123"))))
                 .withLinks(Link.of("/author/1/books")
@@ -233,7 +240,7 @@ public class SerializationTest {
                 .withPageInfo(halPageInfo);
 
         //WHEN
-        String actualJson = mapper.writeValueAsString(halCollection);
+        String actualJson = mapper.writeValueAsString(halListWrapper);
 
         //THEN
         JSONAssert.assertEquals("""
@@ -272,6 +279,100 @@ public class SerializationTest {
                     }
                   }
                 """, actualJson, NON_EXTENSIBLE);
+    }
+
+    @Test
+    public void givenHalListWrapperWithEmbeddingListsAndEmptyOnes_whenSerialized_thenNoErrors() throws Exception {
+        // GIVEN
+        Author brianGoetzAuthor = testData.getAuthorByName("Brian Goetz");
+        List<Book> brianGoetz = testData.getAllBooksByAuthorName("Brian Goetz");
+        Author joshuaBlockAuthor = testData.getAuthorByName("Joshua Bloch");
+
+        HalEmbeddedWrapper<Book> emptyEmbedded = HalEmbeddedWrapper.empty();
+        List<HalResourceWrapper<Author, Book>> halResourceWrappers = List.of(
+                HalResourceWrapper.wrap(brianGoetzAuthor)
+                        .withNonEmptyEmbeddedList(
+                                brianGoetz.stream()
+                                        .map(resourceToWrap ->
+                                                HalEmbeddedWrapper.wrap(resourceToWrap)
+                                                        .withLinks(Link.linkAsSelfOf("/book/" + resourceToWrap.getIsbn())))
+                                        .toList()
+                        ).withLinks(Link.linkAsSelfOf("/author/" + brianGoetzAuthor.getName())),
+                HalResourceWrapper.wrap(joshuaBlockAuthor)
+                        .withEmbeddedList(Book.class, List.of())
+                        .withLinks(Link.linkAsSelfOf("/author/" + joshuaBlockAuthor.getName()))
+        );
+        HalListWrapper<Author, Book> halListWrapper = HalListWrapper.wrap(halResourceWrappers)
+                .withLinks(Link.linkAsSelfOf("/authors?includeBooks=true"));
+
+        // WHEN
+        String actualJson = mapper.writeValueAsString(halListWrapper);
+
+        // THEN
+        System.out.println(actualJson);
+        JSONAssert.assertEquals("""
+                {
+                     "_embedded": {
+                       "authors": [
+                         {
+                           "name": "Brian Goetz",
+                           "birthDate": "1969-05-22",
+                           "mainGenre": "Programming Languages",
+                           "_embedded": {
+                             "customBooks": [
+                               {
+                                 "title": "Java Concurrency in Practice",
+                                 "author": "Brian Goetz",
+                                 "isbn": "978-0321349606",
+                                 "publishedDate": "2006-05-19",
+                                 "_links": {
+                                    "self": {
+                                      "href": "/book/978-0321349606"
+                                     }
+                                 }
+                               },
+                               {
+                                 "title": "Java Puzzlers",
+                                 "author": "Brian Goetz",
+                                 "isbn": "978-0321336781",
+                                 "publishedDate": "2005-07-24",
+                                 "_links": {
+                                    "self": {
+                                      "href": "/book/978-0321336781"
+                                     }
+                                 }
+                               }
+                             ]
+                           },
+                           "_links": {
+                             "self": {
+                               "href": "/author/Brian Goetz"
+                             }
+                           }
+                         },
+                         {
+                           "name": "Joshua Bloch",
+                           "birthDate": "1961-08-28",
+                           "mainGenre": "Programming",
+                           "_embedded": {
+                             "customBooks": []
+                           },
+                           "_links": {
+                             "self": {
+                               "href": "/author/Joshua Bloch"
+                             }
+                           }
+                         }
+                       ]
+                     },
+                     "_links": {
+                       "self": {
+                         "href": "/authors?includeBooks=true"
+                       }
+                     }
+                   }
+                """, actualJson, NON_EXTENSIBLE);
+
     }
 
 

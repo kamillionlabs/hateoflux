@@ -16,7 +16,7 @@
  * @since 04.11.2024
  */
 
-package de.kamillionlabs.hateoflux.utility;
+package de.kamillionlabs.hateoflux.utility.pair;
 
 import java.util.stream.Collector;
 

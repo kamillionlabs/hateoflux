@@ -16,7 +16,7 @@
  * @since 13.07.2024
  */
 
-package de.kamillionlabs.hateoflux.utility;
+package de.kamillionlabs.hateoflux.utility.pair;
 
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -26,10 +26,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static de.kamillionlabs.hateoflux.utility.pair.PairListCollector.toPairList;
 import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valueNotAllowedToBeNull;
 
 /**
- * A list implementation that stores pairs of values.
+ * A specialized list implementation that stores pairs of values.
+ *
+ * <p>Ordered collection of {@link Pair} objects, where each pair consists of a left element of type {@code LeftT} and a
+ * right element of type {@code RightT}.
+ *
+ * <p>Use {@code PairList} when you need to manage an ordered sequence of related pairs without the constraints
+ * of key-based collections like maps. This is particularly useful for scenarios where duplicate left elements
+ * are permissible or when the relationship between elements doesn't fit a key-value paradigm.
  *
  * @param <LeftT>
  *         the type of the left elements in the pairs
@@ -37,6 +45,8 @@ import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valu
  *         the type of the right elements in the pairs
  * @author Younes El Ouarti
  * @see Pair
+ * @see LinkedList
+ * @see PairFlux
  */
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -52,6 +62,20 @@ public class PairList<LeftT, RightT> extends LinkedList<Pair<LeftT, RightT>> {
         addAll(pairs);
     }
 
+
+    /**
+     * Converts this {@link PairList} instance to a {@link PairFlux} instance,
+     * allowing the pairs in this list to be used in a reactive stream.
+     *
+     * <p>This method creates a new {@link PairFlux} that emits each pair contained in
+     * this {@link PairList}.</p>
+     *
+     * @return a {@link PairFlux} instance containing the same pairs as this {@link PairList}
+     */
+    public PairFlux<LeftT, RightT> toPairFlux() {
+        return PairFlux.fromIterable(this);
+    }
+
     /**
      * Adds a new pair to the list.
      *
@@ -60,8 +84,8 @@ public class PairList<LeftT, RightT> extends LinkedList<Pair<LeftT, RightT>> {
      * @param right
      *         the right element of the pair
      */
-    public void add(LeftT left, RightT right) {
-        add(new Pair<>(left, right));
+    public boolean add(LeftT left, RightT right) {
+        return add(new Pair<>(left, right));
     }
 
     /**
@@ -172,9 +196,9 @@ public class PairList<LeftT, RightT> extends LinkedList<Pair<LeftT, RightT>> {
      * @return a new {@link PairList} containing pairs from the map
      */
     public static <LeftT, RightT> PairList<LeftT, RightT> of(Map<LeftT, RightT> pairs) {
-        return new PairList<>(pairs.entrySet().stream()
+        return pairs.entrySet().stream()
                 .map(e -> Pair.of(e.getKey(), e.getValue()))
-                .toList());
+                .collect(toPairList());
     }
 
     /**
