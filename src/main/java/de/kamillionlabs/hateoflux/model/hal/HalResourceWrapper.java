@@ -103,8 +103,11 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
 
     private HalResourceWrapper(ResourceT resource, String embeddedName, HalEmbeddedWrapper<EmbeddedT> embedded,
                                Iterable<Link> links) {
-        this(resource, embeddedName, List.of(embedded), links);
+        this(resource, embeddedName, new ArrayList<>(), links);
         this.isEmbeddedOriginallyAList = false;
+        if (embedded != null) {
+            this.embedded.getValue().add(embedded);
+        }
     }
 
     /**
