@@ -1,5 +1,6 @@
 package de.kamillionlabs.hateoflux.model.hal;
 
+import de.kamillionlabs.hateoflux.dummy.model.Author;
 import de.kamillionlabs.hateoflux.dummy.model.Book;
 import de.kamillionlabs.hateoflux.dummy.model.EmptyRelationBook;
 import de.kamillionlabs.hateoflux.dummy.model.UnannotatedBook;
@@ -137,5 +138,13 @@ class HalResourceWrapperTest {
         //THEN
         assertThat(resource.getEmbedded().get()).isEqualTo(new ArrayList<>());
         assertThat(resource.getNameOfEmbedded().get()).isEqualTo("customBooks");
+    }
+
+    @Test
+    void givenNullAsEmbedded_whenWrapping_thenNoExceptionIsThrown() {
+        // WHEN
+        HalResourceWrapper<Book, Void> wrapper = HalResourceWrapper.wrap(new Book());
+        //THEN no exception is thrown
+        HalResourceWrapper<Book, Author> wrapperWithEmbedded = wrapper.withEmbeddedResource(null);
     }
 }

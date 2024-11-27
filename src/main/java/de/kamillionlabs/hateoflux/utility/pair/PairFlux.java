@@ -27,6 +27,9 @@ package de.kamillionlabs.hateoflux.utility.pair;
 
 import lombok.Getter;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.util.function.Function;
 
 /**
  * Wraps a {@link Flux} of {@link Pair} objects, providing convenient factory methods to create reactive streams of
@@ -91,4 +94,105 @@ public final class PairFlux<LeftT, RightT> {
     public static <LeftT, RightT> PairFlux<LeftT, RightT> fromIterable(Iterable<Pair<LeftT, RightT>> iterable) {
         return new PairFlux<>(Flux.fromIterable(iterable));
     }
+
+    /**
+     * Zips a {@link Flux} with a corresponding {@link Mono} to create a {@link PairFlux}.
+     * <p>
+     * <b>Usage example:</b>
+     * <blockquote><pre>
+     * Flux&lt;Book&gt; books = getBooksOnTopic("coding");
+     *
+     * // given getAuthorByBookTitle() returns Mono&lt; Author&gt;
+     * PairFlux&lt;Book, Author&gt; pairFlux =
+     *         PairFlux.zipWith(books, book -> getAuthorByBookTitle(book.getTitle()));
+     * </pre></blockquote>
+     *
+     * @param flux
+     *         the {@link Flux} emitting the first elements of the pair
+     * @param mapper
+     *         a function that maps each element to a {@link Mono} emitting the corresponding second element
+     * @param <LeftT>
+     *         the type of the left element in the pair
+     * @param <RightT>
+     *         the type of the right element in the pair
+     * @return a new {@link PairFlux} instance emitting zipped pairs of elements
+     */
+    public static <LeftT, RightT> PairFlux<LeftT, RightT> zipWith(
+            Flux<LeftT> flux, Function<LeftT, Mono<RightT>> mapper) {
+        Flux<Pair<LeftT, RightT>> zippedFlux = flux.flatMap(
+                left -> mapper.apply(left)
+                        .map(right -> Pair.of(left, right))
+                        .switchIfEmpty(Mono.just(Pair.of(left, null)))
+        );
+        return new PairFlux<>(zippedFlux);
+    }
+
+    /**
+     * Initiates building a {@link PairFlux} by providing the first {@link Flux}. Should be used with
+     * {@link Builder#with}.
+     * <p>
+     * <b>Usage example:</b>
+     * <blockquote><pre>
+     * Flux&lt;Book&gt; books = getBooksOnTopic("coding");
+     *
+     * // given getAuthorByBookTitle() returns Mono&lt; Author&gt;
+     * PairFlux&lt;Book, Author&gt; pairFlux =
+     *         PairFlux.from(books)
+     *                 .with(book -> getAuthorByBookTitle(book.getTitle()));
+     * </pre></blockquote>
+     *
+     * @param flux
+     *         the {@link Flux} emitting the first elements of the pair
+     * @param <LeftT>
+     *         the type of the left element in the pair
+     * @return a {@link Builder} to continue building the {@link PairFlux}
+     */
+    public static <LeftT> Builder<LeftT> from(Flux<LeftT> flux) {
+        return new Builder<>(flux);
+    }
+
+    /**
+     * Builder class for {@link PairFlux}.
+     *
+     * @param <LeftT>
+     *         the type of the left element in the pair
+     */
+    public static class Builder<LeftT> {
+        private final Flux<LeftT> flux;
+
+        private Builder(Flux<LeftT> flux) {
+            this.flux = flux;
+        }
+
+        /**
+         * Specifies how to map each element to the right element of the pair asynchronously.
+         *
+         * <p>
+         * <b>Usage example:</b>
+         * <blockquote><pre>
+         * Flux&lt;Book&gt; books = getBooksOnTopic("coding");
+         *
+         * // given getAuthorByBookTitle() returns Mono&lt; Author&gt;
+         * PairFlux&lt;Book, Author&gt; pairFlux =
+         *         PairFlux.from(books)
+         *                 .with(book -> getAuthorByBookTitle(book.getTitle()));
+         * </pre></blockquote>
+         *
+         * @param mapper
+         *         a function that maps each element to a {@link Mono} emitting the right element
+         * @param <RightT>
+         *         the type of the right element in the pair
+         * @return a new {@link PairFlux} instance emitting paired elements
+         */
+        public <RightT> PairFlux<LeftT, RightT> with(Function<LeftT, Mono<RightT>> mapper) {
+            Flux<Pair<LeftT, RightT>> pairedFlux = flux.flatMap(left ->
+                    mapper.apply(left)
+                            .map(right -> Pair.of(left, right))
+                            .switchIfEmpty(Mono.just(Pair.of(left, null)))
+            );
+            return new PairFlux<>(pairedFlux);
+        }
+    }
+
+
 }

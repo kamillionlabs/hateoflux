@@ -27,6 +27,10 @@ package de.kamillionlabs.hateoflux.utility.pair;
 
 import lombok.Getter;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.util.ArrayList;
+import java.util.function.Function;
 
 /**
  * Wraps a {@link Flux} of {@link MultiRightPair} objects, providing convenient factory methods to create reactive
@@ -93,5 +97,105 @@ public class MultiRightPairFlux<LeftT, RightT> {
     public static <LeftT, RightT> MultiRightPairFlux<LeftT, RightT> fromIterable(Iterable<MultiRightPair<LeftT,
             RightT>> iterable) {
         return new MultiRightPairFlux<>(Flux.fromIterable(iterable));
+    }
+
+    /**
+     * Zips a {@link Flux} of left elements with a {@link Flux} of right elements into a {@link MultiRightPairFlux}.
+     * <p>
+     * <b>Usage example:</b>
+     * <blockquote><pre>
+     * Flux&lt;Author&gt; japaneseAuthors = getAuthorsFrom("Japan");
+     *
+     * // given getBooksOfAuthor() returns Flux&lt;Book>
+     * MultiRightPairFlux&lt;Author, Book&gt; authorsWithTheirBooks =
+     *         MultiRightPairFlux.zipWith(japaneseAuthors, author -> getBooksOfAuthor(author.getName()));
+     * </pre></blockquote>
+     *
+     * @param leftFlux
+     *         the {@link Flux} emitting the left elements
+     * @param rightMapper
+     *         a function that maps each left element to a {@link Flux} emitting corresponding right elements
+     * @param <LeftT>
+     *         the type of the left element in the pair
+     * @param <RightT>
+     *         the type of the right elements in the pair
+     * @return a new {@link MultiRightPairFlux} instance emitting paired elements
+     */
+    public static <LeftT, RightT> MultiRightPairFlux<LeftT, RightT> zipWith(
+            Flux<LeftT> leftFlux, Function<LeftT, Flux<RightT>> rightMapper) {
+        Flux<MultiRightPair<LeftT, RightT>> multiRightFlux =
+                leftFlux.flatMap(left ->
+                        rightMapper.apply(left).collectList()
+                                .map(rights -> MultiRightPair.of(left, rights))
+                                .switchIfEmpty(Mono.just(MultiRightPair.of(left, new ArrayList<>())))
+                );
+        return new MultiRightPairFlux<>(multiRightFlux);
+    }
+
+    /**
+     * Initiates building a {@link MultiRightPairFlux} by providing the first {@link Flux}. Should be used with
+     * {@link Builder#with}.
+     * <p>
+     * <b>Usage example:</b>
+     * <blockquote><pre>
+     * Flux&lt;Author&gt; japaneseAuthors = getAuthorsFrom("Japan");
+     *
+     * // given getBooksOfAuthor() returns Flux&lt;Book>
+     * MultiRightPairFlux&lt;Author, Book&gt; authorsWithTheirBooks =
+     *         MultiRightPairFlux.from(japaneseAuthors)
+     *                 .with(author -> getBooksOfAuthor(author.getName()));
+     * </pre></blockquote>
+     *
+     * @param flux
+     *         the {@link Flux} emitting the left elements
+     * @param <LeftT>
+     *         the type of the left element in the pair
+     * @return a {@link Builder} to continue building the {@link MultiRightPairFlux}
+     */
+    public static <LeftT> Builder<LeftT> from(Flux<LeftT> flux) {
+        return new Builder<>(flux);
+    }
+
+    /**
+     * Builder class for {@link MultiRightPairFlux}.
+     *
+     * @param <LeftT>
+     *         the type of the left element in the pair
+     */
+    public static class Builder<LeftT> {
+        private final Flux<LeftT> leftFlux;
+
+        private Builder(Flux<LeftT> leftFlux) {
+            this.leftFlux = leftFlux;
+        }
+
+        /**
+         * Specifies how to map each left element to its corresponding right elements asynchronously.
+         * <p>
+         * <b>Usage example:</b>
+         * <blockquote><pre>
+         * Flux&lt;Author&gt; japaneseAuthors = getAuthorsFrom("Japan");
+         *
+         * // given getBooksOfAuthor() returns Flux&lt;Book&gt;
+         * MultiRightPairFlux&lt;Author, Book&gt; authorsWithTheirBooks =
+         *         MultiRightPairFlux.from(japaneseAuthors)
+         *                 .with(author -> getBooksOfAuthor(author.getName()));
+         * </pre></blockquote>
+         *
+         * @param rightMapper
+         *         a function that maps each left element to a {@link Flux} emitting right elements
+         * @param <RightT>
+         *         the type of the right elements in the pair
+         * @return a new {@link MultiRightPairFlux} instance emitting paired elements
+         */
+        public <RightT> MultiRightPairFlux<LeftT, RightT> with(Function<LeftT, Flux<RightT>> rightMapper) {
+            Flux<MultiRightPair<LeftT, RightT>> multiRightFlux =
+                    leftFlux.flatMap(left ->
+                            rightMapper.apply(left).collectList()
+                                    .map(rights -> MultiRightPair.of(left, rights))
+                                    .switchIfEmpty(Mono.just(MultiRightPair.of(left, new ArrayList<>())))
+                    );
+            return new MultiRightPairFlux<>(multiRightFlux);
+        }
     }
 }
