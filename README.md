@@ -211,7 +211,7 @@ Contributions are welcome! Please follow these steps:
 1. Submit a pull request detailing your changes.
 1. For more details, see the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
-**Note:** All pull requests are subject to code review. Please be patient and responsive to any feedback or requests for changes.
+> **Note:** All pull requests are subject to code review. Please be patient and responsive to any feedback or requests for changes.
 
 For more details, see the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
