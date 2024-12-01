@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-* syntax error in dependabot.yml
+* Revert to max 10 individual dependabot PRs
 
 ## [0.24.0]
 
