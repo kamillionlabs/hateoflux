@@ -86,8 +86,8 @@ publishing {
 
             pom {
                 name = project.name
-                description = 'Lightweight HATEOAS library designed to work with Spring Webflux.'
-                url = 'https://github.com/kamillionlabs/hateoflux'
+                description = 'Lightweight HATEOAS library designed for Spring Webflux.'
+                url = 'https://hateoflux.kamillionlabs.de'
 
                 licenses {
                     license {

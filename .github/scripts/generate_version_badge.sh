@@ -52,7 +52,6 @@ echo "Encoded Label: $ENCODED_LABEL"
 echo "Encoded Version: $ENCODED_VALUE"
 
 # Define badge color based on version type
-# Customize this logic as needed
 if [[ "$PROPERTY_VALUE" == *"-SNAPSHOT"* ]]; then
     COLOR="orange"
 elif [[ "$PROPERTY_VALUE" == *"-alpha"* || "$PROPERTY_VALUE" == *"-beta"* || "$PROPERTY_VALUE" == *"-rc"* ]]; then
