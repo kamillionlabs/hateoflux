@@ -16,7 +16,7 @@ ___
 ![Java](https://img.shields.io/badge/Java-17%2B-blue)
 
 
-**hateoflux** is a lightweight, reactive-first Java library designed to streamline the creation of hypermedia-driven APIs in Spring WebFlux applications. It addresses the limitations of Spring HATEOAS in reactive environments, offering a more intuitive and maintainable approach to building HAL+JSON compliant APIs.
+hateoflux is a lightweight, reactive-first Java library designed to streamline the creation of hypermedia-driven APIs in Spring WebFlux applications. It addresses the limitations of Spring HATEOAS in reactive environments, offering a more intuitive and maintainable approach to building HAL+JSON compliant APIs.
 
 ## Table of Contents
 
@@ -40,7 +40,7 @@ ___
 
 ## Why hateoflux?
 
-Building hypermedia-driven APIs in reactive Spring applications using WebFlux can be challenging with traditional libraries like Spring HATEOAS, which are primarily designed for Spring MVC. **hateoflux** offers a reactive-first solution tailored specifically for Spring WebFlux, simplifying hypermedia API development by:
+Building hypermedia-driven APIs in reactive Spring applications using WebFlux can be challenging with traditional libraries like Spring HATEOAS, which are primarily designed for Spring MVC. hateoflux offers a reactive-first solution tailored specifically for Spring WebFlux, simplifying hypermedia API development by:
 
 - **Keeping Domain Models Clean:** Uses resource wrappers to decouple domain models from hypermedia concerns.
 - **Reducing Boilerplate:** Simplifies assemblers and automates link creation.
@@ -60,7 +60,7 @@ Building hypermedia-driven APIs in reactive Spring applications using WebFlux ca
 
 ### Prerequisites
 
-Before integrating **hateoflux** into your project, ensure that you have the following installed:
+Before integrating hateoflux into your project, ensure that you have the following installed:
 
 - **Java 17 or higher:** Ensure that your development environment is set up with Java 17+.
 - **Gradle 8.5 or higher:** Required for building and managing project dependencies.
@@ -68,7 +68,7 @@ Before integrating **hateoflux** into your project, ensure that you have the fol
 
 ### Installation
 
-To include **hateoflux** in your Spring WebFlux project, add it as a dependency using your preferred build tool.
+To include hateoflux in your Spring WebFlux project, add it as a dependency using your preferred build tool.
 
 ### Adding to Your Project
 
