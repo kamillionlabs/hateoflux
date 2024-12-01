@@ -35,7 +35,7 @@ dependencies {
     testImplementation 'org.springframework:spring-test'
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.3'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     testImplementation 'org.assertj:assertj-core:3.25.3'
     testImplementation 'org.skyscreamer:jsonassert:1.5.3'
