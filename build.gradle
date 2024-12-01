@@ -181,7 +181,7 @@ tasks.register('assembleBundle', Zip) {
 
     dependsOn 'jar', 'sourcesJar', 'javadocJar', 'signMavenJavaPublication', 'generateChecksums', 'generatePomFileForMavenJavaPublication'
 
-    archiveFileName.set("${project.name}-${project.version}-bundle.zip")
+    archiveFileName.set("${project.name}-${project.version}.zip")
     destinationDirectory.set(file("$buildDir/distributions"))
 
     def groupPath = project.group.replace('.', '/')
