@@ -191,14 +191,14 @@ Comprehensive documentation is available at [https://hateoflux.kamillionlabs.de 
 ## Comparison with Spring HATEOAS
 hateoflux is specifically designed for reactive Spring WebFlux applications, offering a more streamlined and maintainable approach compared to Spring HATEOAS in reactive environments. Key differences include:
 
-| **Aspect**                     | **Spring HATEOAS (WebFlux)**                                              | **hateoflux**                                                                             |
-|--------------------------------|---------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
-| **Representation Models**      | Inheritance-based models can lead to complex hierarchies.                 | Uses wrappers to keep domain models clean and decoupled.                                  |
-| **Assemblers and Boilerplate** | Verbose with manual resource wrapping and link addition.                  | Simplified with built-in methods; only links need to be specified in assemblers.          |
-| **Pagination Handling**        | Limited support in reactive environments; requires manual implementation. | Easy pagination with HalListWrapper; handles metadata and navigation links automatically. |
-| **Documentation Support**      | Better for Spring MVC; less comprehensive for WebFlux.                    | Tailored for reactive Spring WebFlux with focused documentation and examples.             |
-| **Media Types**                | Supports multiple media types (HAL, Collection+JSON, etc.).               | Only supports HAL+JSON for simplicity and performance.                                    |
-| **Affordance & CURIE Support** | Supports affordances and CURIEs.                                          | Does not support affordances or CURIEs.                                                   |
+| **Aspect**                     | **Spring HATEOAS (WebFlux)**                                                                                             | **hateoflux**                                                                             |
+|--------------------------------|--------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| **Representation Models**      | Uses wrappers and inheritance-based models, requiring manual embedding of resources via inheritance or separate classes. | Uses wrappers exclusively to keep domain models clean and decoupled.                      |
+| **Assemblers and Boilerplate** | Verbose with manual resource wrapping and link addition.                                                                 | Simplified with built-in methods; only links need to be specified in assemblers.          |
+| **Pagination Handling**        | Limited support in reactive environments; requires manual implementation.                                                | Easy pagination with HalListWrapper; handles metadata and navigation links automatically. |
+| **Documentation Support**      | Better for Spring MVC; less comprehensive for WebFlux.                                                                   | Tailored for reactive Spring WebFlux with focused documentation and examples.             |
+| **Media Types**                | Supports multiple media types (HAL, Collection+JSON, etc.).                                                              | Only supports HAL+JSON for simplicity and performance.                                    |
+| **Affordance & CURIE Support** | Supports affordances and CURIEs.                                                                                         | Does not support affordances or CURIEs.                                                   |
 
 For a detailed comparison, refer to the [Spring HATEOAS vs. hateoflux](https://hateoflux.kamillionlabs.de/docs/spring-vs-hateoflux.html) documentation.
 
