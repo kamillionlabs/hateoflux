@@ -113,6 +113,8 @@ public final class HalEmbeddedWrapper<EmbeddedT> extends HalWrapper<HalEmbeddedW
         }
         Assert.isTrue(!(resourceToWrap instanceof Iterable<?>), valueIsNotAllowedToBeOfType("Resource to embed",
                 "collection/iterable"));
+        Assert.isTrue(!isScalar(resourceToWrap.getClass()), valueIsNotAllowedToBeOfType("Embedded",
+                "scalar (e.g. String, int, etc.)"));
         return new HalEmbeddedWrapper<>(resourceToWrap);
     }
 

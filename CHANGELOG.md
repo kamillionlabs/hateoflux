@@ -10,8 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+* HalResourecWrapperis#EmbeddedOriginallyAList is now private
 
 ### Fixed
+* Single scalars (e.g. String, Integers, Boolean, etc.) are now not allowed in Wrappers and will result in an exception
 
 ## [1.0.0]
 

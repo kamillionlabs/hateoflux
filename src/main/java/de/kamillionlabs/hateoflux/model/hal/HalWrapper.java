@@ -281,5 +281,13 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
         }
     }
 
+    protected static boolean isScalar(Class<?> clazz) {
+        return clazz.isPrimitive()
+                || clazz.equals(String.class)
+                || Number.class.isAssignableFrom(clazz)
+                || clazz.equals(Boolean.class)
+                || clazz.equals(Character.class);
+    }
+
 
 }

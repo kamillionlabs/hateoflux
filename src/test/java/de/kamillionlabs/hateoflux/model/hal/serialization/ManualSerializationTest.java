@@ -309,7 +309,6 @@ public class ManualSerializationTest {
         String actualJson = mapper.writeValueAsString(halListWrapper);
 
         // THEN
-        System.out.println(actualJson);
         JSONAssert.assertEquals("""
                 {
                      "_embedded": {
