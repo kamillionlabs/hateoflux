@@ -19,12 +19,12 @@ ___
 hateoflux is a lightweight, reactive-first Java library designed to streamline the creation of hypermedia-driven APIs in Spring WebFlux applications. It addresses the limitations of Spring HATEOAS in reactive environments, offering a more intuitive and maintainable approach to building HAL+JSON compliant APIs.
 
 <br>
-<div style="text-align: center;">
+<p align=center>
 <a href="https://github.com/kamillionlabs/hateoflux#getting-started">Getting Started</a> | 
 <a href="https://hateoflux.kamillionlabs.de/docs/cookbook.html">Cookbook</a> | 
 <a href="https://hateoflux.kamillionlabs.de">Documentation</a> | 
 <a href="https://github.com/kamillionlabs/hateoflux-demos">Demos</a>
-</div>
+</p>
 
 
 ## Table of Contents
