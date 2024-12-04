@@ -7,6 +7,7 @@ import de.kamillionlabs.hateoflux.dummy.model.UnannotatedBook;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -78,5 +79,40 @@ class HalWrapperTest {
         assertThatThrownBy(() -> HalWrapper.determineRelationNameForObject(new ArrayList<String>()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Iterable cannot be empty when determining relation names");
+    }
+
+    @Test
+    void givenString_whenWrapping_thenThrowsException() {
+        assertThatThrownBy(() -> HalResourceWrapper.wrap("hello"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Resource is not allowed to be of type scalar (e.g. String, int, etc.)");
+    }
+
+    @Test
+    void givenCharacter_whenWrapping_thenThrowsException() {
+        assertThatThrownBy(() -> HalResourceWrapper.wrap('h'))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Resource is not allowed to be of type scalar (e.g. String, int, etc.)");
+    }
+
+    @Test
+    void givenPrimitiveInt_whenWrapping_thenThrowsException() {
+        assertThatThrownBy(() -> HalResourceWrapper.wrap(3))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Resource is not allowed to be of type scalar (e.g. String, int, etc.)");
+    }
+
+    @Test
+    void givenBigDecimal_whenWrapping_thenThrowsException() {
+        assertThatThrownBy(() -> HalResourceWrapper.wrap(new BigDecimal("4536433.58")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Resource is not allowed to be of type scalar (e.g. String, int, etc.)");
+    }
+
+    @Test
+    void givenBoolean_whenWrapping_thenThrowsException() {
+        assertThatThrownBy(() -> HalResourceWrapper.wrap(false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Resource is not allowed to be of type scalar (e.g. String, int, etc.)");
     }
 }

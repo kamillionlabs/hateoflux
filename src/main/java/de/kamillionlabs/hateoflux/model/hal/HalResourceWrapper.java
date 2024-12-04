@@ -23,8 +23,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import de.kamillionlabs.hateoflux.model.link.Link;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
@@ -65,6 +67,8 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
     private Map.Entry<String, List<HalEmbeddedWrapper<EmbeddedT>>> embedded;
 
     @JsonIgnore
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     private Boolean isEmbeddedOriginallyAList;
 
     @JsonProperty("_embedded")
@@ -131,6 +135,8 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
         Assert.isTrue(!(resource instanceof Iterable<?>), valueIsNotAllowedToBeOfType("Resource", "collection" +
                 "/iterable. " +
                 "Use HalListWrapper instead"));
+        Assert.isTrue(!isScalar(resource.getClass()), valueIsNotAllowedToBeOfType("Resource",
+                "scalar (e.g. String, int, etc.)"));
         return new HalResourceWrapper<>(resource);
     }
 
