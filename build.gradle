@@ -32,7 +32,8 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'org.springframework:spring-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.3'
@@ -133,6 +134,9 @@ signing {
         ext['signing.keyId'] = signingKeyId
         ext['signing.password'] = signingPassword
         ext['signing.gnupg.options'] = ['--batch', '--yes', '--pinentry-mode', 'loopback']
+
+        ext['signing.gnupg.maxAttempts'] = 3
+        ext['signing.gnupg.delayBetweenAttempts'] = 1000
     }
     sign publishing.publications.mavenJava
 }

@@ -36,7 +36,7 @@ class SpringControllerLinkBuilderTest {
         Link link = linkTo(DummyController.class, c -> c.postMappingWithCollectionAsQueryParameter(args));
 
         //THEN
-        assertThat(link.getHref()).isEqualTo("/dummy/names");
+        assertThat(link.getHref()).isEqualTo("/dummy/names1");
     }
 
     @ParameterizedTest
@@ -52,7 +52,7 @@ class SpringControllerLinkBuilderTest {
                 c -> c.postMappingWithCompositeCollectionAsQueryParameter(argsAsList));
 
         //THEN
-        assertThat(link.getHref()).isEqualTo("/dummy/names" + expectedQueryParameters);
+        assertThat(link.getHref()).isEqualTo("/dummy/names2" + expectedQueryParameters);
     }
 
 
@@ -63,7 +63,7 @@ class SpringControllerLinkBuilderTest {
         Link link = linkTo(DummyController.class, c -> c.postMappingWithCollectionAsQueryParameter(args));
 
         //THEN
-        assertThat(link.getHref()).isEqualTo("/dummy/names");
+        assertThat(link.getHref()).isEqualTo("/dummy/names1");
     }
 
     @ParameterizedTest
@@ -78,7 +78,7 @@ class SpringControllerLinkBuilderTest {
         Link link = linkTo(DummyController.class, c -> c.postMappingWithCollectionAsQueryParameter(argsAsList));
 
         //THEN
-        assertThat(link.getHref()).isEqualTo("/dummy/names" + expectedQueryParameters);
+        assertThat(link.getHref()).isEqualTo("/dummy/names1" + expectedQueryParameters);
     }
 
 
@@ -98,7 +98,7 @@ class SpringControllerLinkBuilderTest {
         final Link link = linkTo(DummyController.class, c -> c.postMappingWithParameter(UUID.fromString(someUuid)));
 
         //THEN
-        assertThat(link.getHref()).isEqualTo("/dummy/" + someUuid);
+        assertThat(link.getHref()).isEqualTo("/dummy/t1/" + someUuid);
     }
 
     @Test
@@ -109,7 +109,7 @@ class SpringControllerLinkBuilderTest {
                 c -> c.postMappingWithParameterAndSlash(UUID.fromString(someUuid)));
 
         //THEN
-        assertThat(link.getHref()).isEqualTo("/dummy/" + someUuid + "/");
+        assertThat(link.getHref()).isEqualTo("/dummy/t3/" + someUuid + "/");
     }
 
     @Test
@@ -129,7 +129,7 @@ class SpringControllerLinkBuilderTest {
         final Link link = linkTo(DummyController.class, c -> c.requestPutMappingWithQueryParameters(3, "foo"));
 
         //THEN
-        assertThat(link.getHref()).isEqualTo("/dummy/request?size=3&name=foo");
+        assertThat(link.getHref()).isEqualTo("/dummy/request1?size=3&name=foo");
     }
 
     @Test
@@ -138,7 +138,7 @@ class SpringControllerLinkBuilderTest {
         final Link link = linkTo(DummyController.class, c -> c.requestPutMappingWithQueryParameters(null, "foo"));
 
         //THEN
-        assertThat(link.getHref()).isEqualTo("/dummy/request?name=foo");
+        assertThat(link.getHref()).isEqualTo("/dummy/request1?name=foo");
     }
 
     @Test
@@ -147,7 +147,7 @@ class SpringControllerLinkBuilderTest {
         final Link link = linkTo(DummyController.class, c -> c.requestPutMappingWithQueryParametersAndSlash(3, "foo"));
 
         //THEN
-        assertThat(link.getHref()).isEqualTo("/dummy/request/?size=3&name=foo");
+        assertThat(link.getHref()).isEqualTo("/dummy/request3/?size=3&name=foo");
     }
 
     @Test
@@ -169,7 +169,7 @@ class SpringControllerLinkBuilderTest {
                 c -> c.postMappingWithParameterAndCustomName(name));
 
         //THEN
-        assertThat(link.getHref()).isEqualTo("/dummy/" + name);
+        assertThat(link.getHref()).isEqualTo("/dummy/t2/" + name);
     }
 
     @Test
@@ -179,7 +179,7 @@ class SpringControllerLinkBuilderTest {
                 c -> c.requestPutMappingWithQueryParameterAndCustomName(3));
 
         //THEN
-        assertThat(link.getHref()).isEqualTo("/dummy/request?customSize=3");
+        assertThat(link.getHref()).isEqualTo("/dummy/request2?customSize=3");
     }
 
 
