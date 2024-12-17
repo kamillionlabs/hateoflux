@@ -28,7 +28,6 @@ public class ValidationMessageTemplates {
     private ValidationMessageTemplates() {
     }
 
-
     /**
      * Returns a message indicating that a value is not allowed to be empty.
      *
