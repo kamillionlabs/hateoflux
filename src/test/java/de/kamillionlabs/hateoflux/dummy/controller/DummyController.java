@@ -38,17 +38,17 @@ public class DummyController {
         return Mono.just(3);
     }
 
-    @PostMapping("/{someUuId}")
+    @PostMapping("/t1/{someUuId}")
     public Mono<String> postMappingWithParameter(@PathVariable UUID someUuId) {
         return Mono.just("test");
     }
 
-    @PostMapping("/{someUuId}")
+    @PostMapping("/t2/{someUuId}")
     public Mono<Void> postMappingWithParameterAndCustomName(@PathVariable("someUuId") String customName) {
         return Mono.empty();
     }
 
-    @PostMapping("/{someUuId}/")
+    @PostMapping("/t3/{someUuId}/")
     public Mono<Void> postMappingWithParameterAndSlash(@PathVariable UUID someUuId) {
         return Mono.empty();
     }
@@ -59,18 +59,18 @@ public class DummyController {
         return Mono.empty();
     }
 
-    @RequestMapping(value = "/request", method = RequestMethod.PUT)
+    @RequestMapping(value = "/request1", method = RequestMethod.PUT)
     public Mono<Void> requestPutMappingWithQueryParameters(@RequestParam(required = false) Integer size,
                                                            @RequestParam String name) {
         return Mono.empty();
     }
 
-    @RequestMapping(value = "/request", method = RequestMethod.PUT)
+    @RequestMapping(value = "/request2", method = RequestMethod.PUT)
     public Mono<Void> requestPutMappingWithQueryParameterAndCustomName(@RequestParam("customSize") Integer size) {
         return Mono.empty();
     }
 
-    @RequestMapping(value = "/request/", method = RequestMethod.PUT)
+    @RequestMapping(value = "/request3/", method = RequestMethod.PUT)
     public Mono<Void> requestPutMappingWithQueryParametersAndSlash(@RequestParam(required = false) Integer size,
                                                                    @RequestParam String name) {
         return Mono.empty();
@@ -82,12 +82,12 @@ public class DummyController {
         return Mono.empty();
     }
 
-    @PostMapping("/names")
+    @PostMapping("/names1")
     public Mono<Void> postMappingWithCollectionAsQueryParameter(@RequestParam Collection<String> names) {
         return Mono.empty();
     }
 
-    @PostMapping("/names")
+    @PostMapping("/names2")
     public Mono<Void> postMappingWithCompositeCollectionAsQueryParameter(@Composite @RequestParam Collection<String> names) {
         return Mono.empty();
     }

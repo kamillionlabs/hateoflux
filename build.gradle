@@ -22,7 +22,18 @@ repositories {
 }
 
 tasks.named('test') {
+    doFirst {
+        def mockitoAgentPath = configurations.mockitoAgent.singleFile.absolutePath
+        println "Using Mockito Java Agent at: ${mockitoAgentPath}"
+
+        jvmArgs "-javaagent:${mockitoAgentPath}"
+    }
+
     useJUnitPlatform()
+}
+
+configurations {
+    mockitoAgent
 }
 
 dependencies {
@@ -32,7 +43,8 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'org.springframework:spring-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
@@ -42,7 +54,12 @@ dependencies {
 
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    mockitoAgent 'org.mockito:mockito-core:5.14.0', {
+        transitive = false
+    }
 }
+
 
 jar {
     enabled = true
@@ -133,6 +150,9 @@ signing {
         ext['signing.keyId'] = signingKeyId
         ext['signing.password'] = signingPassword
         ext['signing.gnupg.options'] = ['--batch', '--yes', '--pinentry-mode', 'loopback']
+
+        ext['signing.gnupg.maxAttempts'] = 3
+        ext['signing.gnupg.delayBetweenAttempts'] = 1000
     }
     sign publishing.publications.mavenJava
 }
