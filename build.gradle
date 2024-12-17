@@ -22,7 +22,20 @@ repositories {
 }
 
 tasks.named('test') {
+    doFirst {
+        // Resolve the path to the mockito-agent JAR
+        def mockitoAgentPath = configurations.mockitoAgent.singleFile.absolutePath
+        println "Using Mockito Java Agent at: ${mockitoAgentPath}"
+
+        // Add the Java agent JVM argument
+        jvmArgs "-javaagent:${mockitoAgentPath}"
+    }
+
     useJUnitPlatform()
+}
+
+configurations {
+    mockitoAgent
 }
 
 dependencies {
@@ -43,7 +56,13 @@ dependencies {
 
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // Add mockito-core to the mockitoAgent configuration without transitive dependencies
+    mockitoAgent 'org.mockito:mockito-core:5.14.0', {
+        transitive = false
+    }
 }
+
 
 jar {
     enabled = true

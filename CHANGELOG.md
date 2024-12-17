@@ -8,9 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.0-SNAPSHOT]
 
 ### Added
+* New `ReactiveResponseEntity` classes with its handler and autoconfiguration
 
 ### Changed
-* HalResourecWrapperis#EmbeddedOriginallyAList is now private
+* `HalResourecWrapperis#EmbeddedOriginallyAList` is now private
 
 ### Fixed
 * Single scalars (e.g. String, Integers, Boolean, etc.) are now not allowed in Wrappers and will result in an exception

@@ -1,6 +1,6 @@
 package de.kamillionlabs.hateoflux.integrationtest;
 
-import de.kamillionlabs.hateoflux.http.HalResponseConfig;
+import de.kamillionlabs.hateoflux.http.ReactiveResponseEntityConfig;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -19,7 +19,7 @@ import static org.skyscreamer.jsonassert.JSONCompareMode.NON_EXTENSIBLE;
         classes = IntegrationTestConfiguration.class
 )
 @AutoConfigureWebTestClient
-@Import({HalResponseConfig.class})
+@Import({ReactiveResponseEntityConfig.class})
 class HalResponseHandlerResultHandlerIntegrationTest {
 
     @Autowired
@@ -38,7 +38,7 @@ class HalResponseHandlerResultHandlerIntegrationTest {
     @Test
     void givenExistingBook_whenCallingGetBookFound_thenReturnBookWithHalResponse() {
         webTestClient.get()
-                .uri("/book/get-book-found")
+                .uri("/book/get-book")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -47,44 +47,11 @@ class HalResponseHandlerResultHandlerIntegrationTest {
                 .jsonPath("$._links.self.href").isEqualTo("/book/effective-java");
     }
 
-    @Test
-    void givenNoBook_whenCallingGetBookNotFound_thenReturnNotFoundStatus() {
-        webTestClient.get()
-                .uri("/book/get-book-not-found")
-                .exchange()
-                .expectStatus().isNotFound()
-                .expectBody()
-                .isEmpty();
-    }
-
-    @Test
-    void givenBookWithAuthor_whenCallingGetBookWithAuthor_thenReturnBookAndEmbeddedAuthor() {
-        webTestClient.get()
-                .uri("/book/get-book-with-author")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.title").isEqualTo("Effective Java")
-                .jsonPath("$._embedded.author.name").isEqualTo("Joshua Bloch")
-                .jsonPath("$._links.self.href").isEqualTo("/book/effective-java");
-    }
-
-    @Test
-    void givenNewBook_whenCallingGetBookCreated_thenReturnCreatedStatusAndLocation() {
-        webTestClient.get()
-                .uri("/book/get-book-created")
-                .exchange()
-                .expectStatus().isCreated()
-                .expectHeader().valueEquals("Location", "/book/clean-code")
-                .expectBody()
-                .jsonPath("$.title").isEqualTo("Clean Code")
-                .jsonPath("$._links.self.href").isEqualTo("/book/clean-code");
-    }
 
     @Test
     void givenBooksCollection_whenCallingGetBooksByAuthor_thenReturnHalListResponse() {
         webTestClient.get()
-                .uri("/book/get-books-by-author")
+                .uri("/book/get-list-of-books")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -95,93 +62,16 @@ class HalResponseHandlerResultHandlerIntegrationTest {
                 .jsonPath("$._links.self.href").isEqualTo("/books/erich-gamma");
     }
 
-    @Test
-    void givenNoBooks_whenCallingGetEmptyBookList_thenReturnNoContent() {
-        webTestClient.get()
-                .uri("/book/get-empty-book-list")
-                .exchange()
-                .expectStatus().isNoContent()
-                .expectBody()
-                .isEmpty();
-    }
 
     @Test
-    void givenBooksWithAuthor_whenCallingGetBookListWithAuthors_thenReturnHalListWithEmbeddedAuthors() {
+    void givenResponseWithHttpHeaderAccepted_whenCallingGetBookAccepted_thenReturnAcceptedStatus() {
         webTestClient.get()
-                .uri("/book/get-book-list-with-authors")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$._embedded.customBooks.length()").isEqualTo(2)
-                .jsonPath("$._embedded.customBooks[0]._embedded.author.name").isEqualTo("Brian Goetz")
-                .jsonPath("$._embedded.customBooks[0]._links.self.href").exists();
-    }
-
-    @Test
-    void givenPendingBook_whenCallingGetBookAccepted_thenReturnAcceptedStatus() {
-        webTestClient.get()
-                .uri("/book/get-book-accepted")
+                .uri("/book/get-book-with-header")
                 .exchange()
                 .expectStatus().isAccepted()
                 .expectBody()
                 .jsonPath("$.title").isEqualTo("Refactoring: Improving the Design of Existing Code")
                 .jsonPath("$._links.self.href").isEqualTo("/book/refactoring");
-    }
-
-    @Test
-    void givenInvalidRequest_whenCallingGetBookBadRequest_thenReturnBadRequestStatus() {
-        webTestClient.get()
-                .uri("/book/get-book-bad-request")
-                .exchange()
-                .expectStatus().isBadRequest()
-                .expectBody()
-                .isEmpty();
-    }
-
-    @Test
-    void givenUnauthorizedAccess_whenCallingGetBookForbidden_thenReturnForbiddenStatus() {
-        webTestClient.get()
-                .uri("/book/get-book-forbidden")
-                .exchange()
-                .expectStatus().isForbidden()
-                .expectBody()
-                .isEmpty();
-    }
-
-    @Test
-    void givenUnauthenticatedAccess_whenCallingGetBookUnauthorized_thenReturnUnauthorizedStatus() {
-        webTestClient.get()
-                .uri("/book/get-book-unauthorized")
-                .exchange()
-                .expectStatus().isUnauthorized()
-                .expectBody()
-                .isEmpty();
-    }
-
-    @Test
-    void givenBookWithMetadata_whenCallingGetBookWithETag_thenReturnBookWithETagAndContentType() {
-        webTestClient.get()
-                .uri("/book/get-book-with-etag")
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().valueEquals("ETag", "\"1234\"")
-                .expectHeader().contentType(MediaType.APPLICATION_JSON)
-                .expectBody()
-                .jsonPath("$.title").isEqualTo("Clean Code")
-                .jsonPath("$._links.self.href").isEqualTo("/book/clean-code");
-    }
-
-    @Test
-    void givenNonReactiveEndpoint_whenCallingGetBookNonReactive_thenReturnBookWithHalResponse() {
-        webTestClient.get()
-                .uri("/book/get-book-non-reactive")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.title").isEqualTo("Effective Java")
-                .jsonPath("$.author").isEqualTo("Joshua Bloch")
-                .jsonPath("$.isbn").isEqualTo("978-0134685991")
-                .jsonPath("$._links.self.href").isEqualTo("/book/effective-java");
     }
 
     @Test
@@ -220,4 +110,14 @@ class HalResponseHandlerResultHandlerIntegrationTest {
                     }
                 });
     }
+
+    @Test
+    void givenControllerReturnsAPublisherOfReactiveResponseEntity_whenmethodCalled_thenThrowsException() {
+        webTestClient.get()
+                .uri("/book/wrapped-halresponse")
+                .exchange()
+                .expectStatus().is5xxServerError();
+    }
+
+
 }
