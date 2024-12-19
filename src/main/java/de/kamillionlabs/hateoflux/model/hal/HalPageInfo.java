@@ -18,6 +18,7 @@
 
 package de.kamillionlabs.hateoflux.model.hal;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.lang.Nullable;
@@ -37,7 +38,33 @@ import org.springframework.lang.Nullable;
  */
 @Builder
 @Jacksonized
-public record HalPageInfo(Integer size, Long totalElements, Integer totalPages, Integer number) {
+@Schema(
+        name = "HalPageInfo",
+        description = "Pagination details for navigating through large datasets."
+)
+public record HalPageInfo(
+        @Schema(
+                description = "The requested or maximum number of elements in a single page.",
+                example = "20"
+        )
+        Integer size,
+        @Schema(
+                description = "The total number of elements across all pages.",
+                example = "1000"
+        )
+        Long totalElements,
+
+        @Schema(
+                description = "The total number of pages available based on the page size and total elements.",
+                example = "50"
+        )
+        Integer totalPages,
+
+        @Schema(
+                description = "The current page number, typically zero-based.",
+                example = "0"
+        )
+        Integer number) {
 
     /**
      * Creates a {@link HalPageInfo} instance using provided individual parameters.

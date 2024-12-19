@@ -28,6 +28,7 @@ import de.kamillionlabs.hateoflux.linkbuilder.UriTemplateData;
 import de.kamillionlabs.hateoflux.model.hal.HalPageInfo;
 import de.kamillionlabs.hateoflux.utility.SortCriteria;
 import de.kamillionlabs.hateoflux.utility.SortDirection;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Value;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -52,6 +53,10 @@ import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valu
 @Getter
 @JsonInclude(Include.NON_NULL)
 @Value
+@Schema(
+        description = "Represents a hypermedia link with various attributes defining aspects of the link such as " +
+                "href, templated nature, and media type."
+)
 public class Link {
 
     /**
@@ -59,24 +64,40 @@ public class Link {
      * values include "self", "next", "previous", etc. Custom relations can also be used.
      */
     @JsonIgnore
+    @Schema(hidden = true)
     LinkRelation linkRelation;
 
     /**
      * The URI of the linked resource. This is a required attribute and is the
      * actual URL where the resource can be accessed.
      */
+    @Schema(
+            description = "The URI of the linked resource.",
+            example = "https://api.example.com/resources/1",
+            required = true
+    )
     String href;
 
     /**
      * A human-readable title for the link, which can be used for labeling the
      * link in user interfaces.
      */
+    @Schema(
+            description = "A human-readable title for the link.",
+            example = "Related Items",
+            nullable = true
+    )
     String title;
 
     /**
      * An identifier or label for the link, used for documentation or as additional
      * metadata in client applications.
      */
+    @Schema(
+            description = "An identifier or label for the link.",
+            example = "resource-link",
+            nullable = true
+    )
     String name;
 
     /**
@@ -84,6 +105,11 @@ public class Link {
      * type of content that the client can expect at the URL, such as "application/json"
      * or "text/html".
      */
+    @Schema(
+            description = "Describes the media type of the linked resource.",
+            example = "application/json",
+            nullable = true
+    )
     String media;
 
     /**
@@ -91,24 +117,44 @@ public class Link {
      * This can be used to indicate more specific formats when multiple representations
      * are available.
      */
+    @Schema(
+            description = "Further specifies the MIME type of the linked resource's expected content.",
+            example = "application/vnd.example+json",
+            nullable = true
+    )
     String type;
 
     /**
      * A URL that provides information about the deprecation of the link, useful
      * for alerting API consumers that a resource is outdated or scheduled for removal.
      */
+    @Schema(
+            description = "A URL that provides information about the deprecation of the link.",
+            example = "https://api.example.com/docs/deprecation",
+            nullable = true
+    )
     String deprecation;
 
     /**
      * A hint about the profile (or schema) that the linked resource conforms to,
      * providing additional semantics about the linked resource.
      */
+    @Schema(
+            description = "A hint about the profile (or schema) that the linked resource conforms to.",
+            example = "https://api.example.com/profiles/resource",
+            nullable = true
+    )
     String profile;
 
     /**
      * Specifies the language of the linked resource, useful for applications supporting
      * multiple languages.
      */
+    @Schema(
+            description = "Specifies the language of the linked resource.",
+            example = "en-US",
+            nullable = true
+    )
     String hreflang;
 
     // CONSTRUCTORS AND CREATORS ---------------------------------------------------------------------------------------
@@ -188,6 +234,11 @@ public class Link {
     // SPECIAL GETTERS -------------------------------------------------------------------------------------------------
 
     @JsonProperty("templated")
+    @Schema(
+            description = "Indicates whether the href is a URI template.",
+            example = "false",
+            nullable = true
+    )
     private Boolean isTemplatedForJsonRendering() {
         return UriTemplateData.of(href).isTemplated() ? true : null;
     }
@@ -198,6 +249,7 @@ public class Link {
      * @return {@code true} if href of the link is templated; {@code false} otherwise
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public boolean isTemplated() {
         return UriTemplateData.of(href).isTemplated();
     }

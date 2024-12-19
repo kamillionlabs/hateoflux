@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.kamillionlabs.hateoflux.model.link.IanaRelation;
 import de.kamillionlabs.hateoflux.model.link.Link;
 import de.kamillionlabs.hateoflux.model.link.LinkRelation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -54,6 +55,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
     /**
      * Links of the {@link HalWrapper} as whole.
      */
+    @Schema(hidden = true)
     protected final Map<LinkRelation, Link> links = new LinkedHashMap<>();
 
     /**
@@ -63,6 +65,11 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
     }
 
     @JsonProperty("_links")
+    @Schema(
+            description = "Hypermedia links associated with the resource.",
+            type = "object"
+            //            additionalPropertiesSchema = Link.class
+    )
     private Map<LinkRelation, Link> getLinksForJsonRendering() {
         return new HashMap<>(this.links);
     }
@@ -73,6 +80,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
      * @return the list of links of the wrapped resource(s).
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public List<Link> getLinks() {
         return new ArrayList<>(links.values());
     }
@@ -86,6 +94,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
      * @return Found link
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public Optional<Link> getLink(IanaRelation relation) {
         return Optional.ofNullable(links.get(LinkRelation.of(relation)));
     }
@@ -98,6 +107,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
      * @return Found link
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public Optional<Link> getLink(String relation) {
         return Optional.ofNullable(links.get(LinkRelation.of(relation)));
     }
@@ -111,6 +121,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
      * @return Found link
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public Link getRequiredLink(IanaRelation relation) {
         return getLink(relation).orElseThrow(() -> new IllegalStateException(
                 requiredValueWasNonExisting("link with the relation '" + relation + "'")));
@@ -125,6 +136,7 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
      * @return Found link
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public Link getRequiredLink(String relation) {
         return getLink(relation).orElseThrow(() -> new IllegalStateException(
                 requiredValueWasNonExisting("link with the relation '" + relation + "'")));

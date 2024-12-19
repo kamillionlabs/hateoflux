@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import de.kamillionlabs.hateoflux.model.link.Link;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -57,21 +58,38 @@ import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.*;
 @Getter
 @EqualsAndHashCode(callSuper = true)
 @JsonInclude(NON_NULL)
+@Schema(
+        name = "HalResourceWrapper",
+        description = "A HAL-compliant wrapper that enriches a primary resource with hypermedia links and optionally " +
+                "embedded resources."
+)
 public final class HalResourceWrapper<ResourceT, EmbeddedT>
         extends HalWrapper<HalResourceWrapper<ResourceT, EmbeddedT>> {
 
     @JsonUnwrapped
+    @Schema(
+            description = "The primary resource object. Its fields are unwrapped into the top-level of the JSON.",
+            implementation = Object.class
+    )
     private final ResourceT resource;
 
     @JsonIgnore
+    @Schema(hidden = true)
     private Map.Entry<String, List<HalEmbeddedWrapper<EmbeddedT>>> embedded;
 
     @JsonIgnore
+    @Schema(hidden = true)
     @Getter(AccessLevel.NONE)
     @Setter(AccessLevel.NONE)
     private Boolean isEmbeddedOriginallyAList;
 
     @JsonProperty("_embedded")
+    @Schema(
+            description = "Embedded resources adhering to HAL standards.",
+            nullable = true,
+            accessMode = Schema.AccessMode.READ_ONLY,
+            implementation = Object.class
+    )
     private Map.Entry<String, ?> getEmbeddedForSerialization() {
         if (embedded != null && embedded.getValue() != null) {
             if (isEmbeddedOriginallyAList) {
@@ -266,6 +284,7 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
      * @return List with embedded resources
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public Optional<List<HalEmbeddedWrapper<EmbeddedT>>> getEmbedded() {
         return Optional.ofNullable(embedded).map(Map.Entry::getValue).map(ArrayList::new);
     }
@@ -276,6 +295,7 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
      * @return Name of the embedded resource
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public Optional<String> getNameOfEmbedded() {
         return Optional.ofNullable(embedded).map(Map.Entry::getKey);
     }
@@ -286,6 +306,7 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
      * @return {@code true} if an embedded resource exists; {@code false} otherwise
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public boolean hasEmbedded() {
         return embedded != null;
     }
@@ -305,6 +326,7 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
      *         if no embedded resource(s) exist
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public List<HalEmbeddedWrapper<EmbeddedT>> getRequiredEmbedded() {
         return getEmbedded()
                 .orElseThrow(() -> new IllegalStateException(requiredValueWasNonExisting("embedded")));
@@ -323,6 +345,7 @@ public final class HalResourceWrapper<ResourceT, EmbeddedT>
      *         if no embedded resource(s) exist
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public String getRequiredNameOfEmbedded() {
         return getNameOfEmbedded()
                 .orElseThrow(() -> new IllegalStateException(requiredValueWasNonExisting("name of embedded")));

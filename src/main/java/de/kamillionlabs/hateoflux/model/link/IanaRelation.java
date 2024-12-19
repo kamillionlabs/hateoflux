@@ -18,6 +18,7 @@
 
 package de.kamillionlabs.hateoflux.model.link;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 /**
@@ -27,6 +28,10 @@ import lombok.Getter;
  * @see <a href="https://tools.ietf.org/html/rfc5988">Web Linking (RFC 5988)</a>
  * @see <a href="https://www.iana.org/assignments/link-relations/link-relations.xhtml">Official IANA documentation</a>
  */
+@Schema(
+        description = "Standard IANA Link Relations as defined in the IANA Link Relations Registry",
+        enumAsRef = true
+)
 @Getter
 public enum IanaRelation {
     // ---------- Document relationships ----------

@@ -2,6 +2,7 @@ package de.kamillionlabs.hateoflux.http;
 
 import de.kamillionlabs.hateoflux.model.hal.HalListWrapper;
 import de.kamillionlabs.hateoflux.model.hal.HalResourceWrapper;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +62,9 @@ import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valu
  * @see ResponseEntity
  * @see HttpHeadersModule
  */
+@Schema(
+        implementation = HalResourceWrapper.class
+)
 public class HalResourceResponse<ResourceT, EmbeddedT>
         extends HttpHeadersModule<HalResourceResponse<ResourceT, EmbeddedT>>
         implements ReactiveResponseEntity {

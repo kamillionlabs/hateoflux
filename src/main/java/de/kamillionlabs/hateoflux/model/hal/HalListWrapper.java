@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.kamillionlabs.hateoflux.model.link.Link;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.springframework.lang.NonNull;
@@ -63,12 +64,28 @@ import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valu
 @Getter
 @EqualsAndHashCode(callSuper = true)
 @JsonInclude(NON_NULL)
+@Schema(
+        name = "HalListWrapper",
+        description = "A HAL-compliant wrapper that manages a collection of primary resources, each enriched with " +
+                "hypermedia links and optionally embedded resources."
+)
 public final class HalListWrapper<ResourceT, EmbeddedT>
         extends HalWrapper<HalListWrapper<ResourceT, EmbeddedT>> {
 
     @JsonProperty("_embedded")
+    @Schema(
+            description = "A collection of wrapped primary resources, each potentially containing embedded resources.",
+            type = "object",
+            example = "{ \"items\": [ { ... }, { ... } ] }"
+    )
     private Map.Entry<String, List<HalResourceWrapper<ResourceT, EmbeddedT>>> resourceList;
 
+    @Schema(
+            description = "Pagination information for the current list of resources.",
+            nullable = true,
+            implementation = HalPageInfo.class,
+            accessMode = Schema.AccessMode.READ_ONLY
+    )
     private HalPageInfo page;
 
     private HalListWrapper(String listName,
@@ -164,6 +181,7 @@ public final class HalListWrapper<ResourceT, EmbeddedT>
      * @return the held list of resources.
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public List<HalResourceWrapper<ResourceT, EmbeddedT>> getResourceList() {
         return new ArrayList<>(resourceList.getValue());
     }
@@ -174,6 +192,7 @@ public final class HalListWrapper<ResourceT, EmbeddedT>
      * @return Name of the list of resources.
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public String getNameOfResourceList() {
         return resourceList.getKey();
     }
@@ -185,6 +204,7 @@ public final class HalListWrapper<ResourceT, EmbeddedT>
      * @return {@code true} if list is non-empty; {@code false} otherwise
      */
     @JsonIgnore
+    @Schema(hidden = true)
     public boolean isEmpty() {
         return resourceList.getValue().isEmpty();
     }

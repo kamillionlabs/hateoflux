@@ -19,6 +19,7 @@
 package de.kamillionlabs.hateoflux.model.link;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
@@ -31,8 +32,17 @@ import lombok.Value;
  */
 @EqualsAndHashCode
 @Value
+@Schema(
+        name = "LinkRelation",
+        description = "Represents a link relation type as defined in RFC 8288. It can be a standard IANA registered " +
+                "relation or a custom one.",
+        type = "string"
+)
 public class LinkRelation {
 
+    /**
+     * The relationship type as a string (e.g., "self", "next").
+     */
     @JsonValue
     String relation;
 
