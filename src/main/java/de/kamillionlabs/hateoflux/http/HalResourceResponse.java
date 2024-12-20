@@ -49,7 +49,8 @@ import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valu
  *   {@link HalResourceWrapper}/li>
  *   <li><strong>{@link HalMultiResourceResponse}</strong>: Use when your endpoint returns <b>multiple</b>
  *   {@link HalResourceWrapper}</li>
- *   <li><strong>{@link HalListResponse}</strong>: Use when your endpoint returns a single {@link HalListWrapper}</li>
+ *   <li><strong>{@link HalResourceResponse}</strong>: Use when your endpoint returns a single {@link HalListWrapper}
+ *   </li>
  * </ul>
  *
  * @param <ResourceT>
@@ -174,6 +175,19 @@ public class HalResourceResponse<ResourceT, EmbeddedT>
     }
 
     /**
+     * Creates a {@link HalResourceResponse} with {@link HttpStatus#OK}.
+     *
+     * @param <ResourceT>
+     *         the resource type
+     * @param <EmbeddedT>
+     *         the embedded resource type
+     * @return a {@link HalResourceResponse} with {@code OK} status
+     */
+    public static <ResourceT, EmbeddedT> HalResourceResponse<ResourceT, EmbeddedT> ok() {
+        return new HalResourceResponse<>(Mono.empty(), Mono.just(HttpStatus.OK), null);
+    }
+
+    /**
      * Creates a {@code HalResourceResponse} with a body and {@link HttpStatus#CREATED}.
      *
      * @param body
@@ -191,6 +205,19 @@ public class HalResourceResponse<ResourceT, EmbeddedT>
             @NonNull Mono<HalResourceWrapper<ResourceT, EmbeddedT>> body) {
         Assert.notNull(body, valueNotAllowedToBeNull("Body"));
         return new HalResourceResponse<>(body, Mono.just(HttpStatus.CREATED), null);
+    }
+
+    /**
+     * Creates a {@link HalResourceResponse} with {@link HttpStatus#CREATED}.
+     *
+     * @param <ResourceT>
+     *         the resource type
+     * @param <EmbeddedT>
+     *         the embedded resource type
+     * @return a {@link HalResourceResponse} with {@code CREATED} status
+     */
+    public static <ResourceT, EmbeddedT> HalResourceResponse<ResourceT, EmbeddedT> created() {
+        return new HalResourceResponse<>(Mono.empty(), Mono.just(HttpStatus.CREATED), null);
     }
 
     /**
@@ -214,6 +241,19 @@ public class HalResourceResponse<ResourceT, EmbeddedT>
     }
 
     /**
+     * Creates a {@link HalResourceResponse} with {@link HttpStatus#ACCEPTED}.
+     *
+     * @param <ResourceT>
+     *         the resource type
+     * @param <EmbeddedT>
+     *         the embedded resource type
+     * @return a {@link HalResourceResponse} with {@code ACCEPTED} status
+     */
+    public static <ResourceT, EmbeddedT> HalResourceResponse<ResourceT, EmbeddedT> accepted() {
+        return new HalResourceResponse<>(Mono.empty(), Mono.just(HttpStatus.ACCEPTED), null);
+    }
+
+    /**
      * Creates a {@code HalResourceResponse} with no body and {@link HttpStatus#NO_CONTENT}.
      *
      * @param <ResourceT>
@@ -227,19 +267,6 @@ public class HalResourceResponse<ResourceT, EmbeddedT>
     }
 
     /**
-     * Creates a {@code HalResourceResponse} with no body and {@link HttpStatus#BAD_REQUEST}.
-     *
-     * @param <ResourceT>
-     *         the resource type
-     * @param <EmbeddedT>
-     *         the embedded resource type
-     * @return a {@code HalResourceResponse} with {@code BAD_REQUEST} status
-     */
-    public static <ResourceT, EmbeddedT> HalResourceResponse<ResourceT, EmbeddedT> badRequest() {
-        return new HalResourceResponse<>(Mono.empty(), Mono.just(HttpStatus.BAD_REQUEST), null);
-    }
-
-    /**
      * Creates a {@code HalResourceResponse} with no body and {@link HttpStatus#NOT_FOUND}.
      *
      * @param <ResourceT>
@@ -250,31 +277,5 @@ public class HalResourceResponse<ResourceT, EmbeddedT>
      */
     public static <ResourceT, EmbeddedT> HalResourceResponse<ResourceT, EmbeddedT> notFound() {
         return new HalResourceResponse<>(Mono.empty(), Mono.just(HttpStatus.NOT_FOUND), null);
-    }
-
-    /**
-     * Creates a {@code HalResourceResponse} with no body and {@link HttpStatus#FORBIDDEN}.
-     *
-     * @param <ResourceT>
-     *         the resource type
-     * @param <EmbeddedT>
-     *         the embedded resource type
-     * @return a {@code HalResourceResponse} with {@code FORBIDDEN} status
-     */
-    public static <ResourceT, EmbeddedT> HalResourceResponse<ResourceT, EmbeddedT> forbidden() {
-        return new HalResourceResponse<>(Mono.empty(), Mono.just(HttpStatus.FORBIDDEN), null);
-    }
-
-    /**
-     * Creates a {@code HalResourceResponse} with no body and {@link HttpStatus#UNAUTHORIZED}.
-     *
-     * @param <ResourceT>
-     *         the resource type
-     * @param <EmbeddedT>
-     *         the embedded resource type
-     * @return a {@code HalResourceResponse} with {@code UNAUTHORIZED} status
-     */
-    public static <ResourceT, EmbeddedT> HalResourceResponse<ResourceT, EmbeddedT> unauthorized() {
-        return new HalResourceResponse<>(Mono.empty(), Mono.just(HttpStatus.UNAUTHORIZED), null);
     }
 }

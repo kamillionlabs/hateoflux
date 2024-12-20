@@ -173,6 +173,19 @@ public class HalListResponse<ResourceT, EmbeddedT>
     }
 
     /**
+     * Creates a {@link HalListResponse} with {@link HttpStatus#OK}.
+     *
+     * @param <ResourceT>
+     *         the resource type
+     * @param <EmbeddedT>
+     *         the embedded resource type
+     * @return a {@link HalListResponse} with {@code OK} status
+     */
+    public static <ResourceT, EmbeddedT> HalListResponse<ResourceT, EmbeddedT> ok() {
+        return new HalListResponse<>(Mono.empty(), Mono.just(HttpStatus.OK), null);
+    }
+
+    /**
      * Creates a {@link HalListResponse} with a body and {@link HttpStatus#CREATED}.
      *
      * @param body
@@ -190,6 +203,19 @@ public class HalListResponse<ResourceT, EmbeddedT>
             @NonNull Mono<HalListWrapper<ResourceT, EmbeddedT>> body) {
         Assert.notNull(body, valueNotAllowedToBeNull("Body"));
         return new HalListResponse<>(body, Mono.just(HttpStatus.CREATED), null);
+    }
+
+    /**
+     * Creates a {@link HalListResponse} with {@link HttpStatus#CREATED}.
+     *
+     * @param <ResourceT>
+     *         the resource type
+     * @param <EmbeddedT>
+     *         the embedded resource type
+     * @return a {@link HalListResponse} with {@code CREATED} status
+     */
+    public static <ResourceT, EmbeddedT> HalListResponse<ResourceT, EmbeddedT> created() {
+        return new HalListResponse<>(Mono.empty(), Mono.just(HttpStatus.CREATED), null);
     }
 
     /**
@@ -213,6 +239,19 @@ public class HalListResponse<ResourceT, EmbeddedT>
     }
 
     /**
+     * Creates a {@link HalListResponse} with {@link HttpStatus#ACCEPTED}.
+     *
+     * @param <ResourceT>
+     *         the resource type
+     * @param <EmbeddedT>
+     *         the embedded resource type
+     * @return a {@link HalListResponse} with {@code ACCEPTED} status
+     */
+    public static <ResourceT, EmbeddedT> HalListResponse<ResourceT, EmbeddedT> accepted() {
+        return new HalListResponse<>(Mono.empty(), Mono.just(HttpStatus.ACCEPTED), null);
+    }
+
+    /**
      * Creates a {@link HalListResponse} with no body and {@link HttpStatus#NO_CONTENT}.
      *
      * @param <ResourceT>
@@ -226,19 +265,6 @@ public class HalListResponse<ResourceT, EmbeddedT>
     }
 
     /**
-     * Creates a {@link HalListResponse} with no body and {@link HttpStatus#BAD_REQUEST}.
-     *
-     * @param <ResourceT>
-     *         the resource type
-     * @param <EmbeddedT>
-     *         the embedded resource type
-     * @return a {@link HalListResponse} with {@code BAD_REQUEST} status
-     */
-    public static <ResourceT, EmbeddedT> HalListResponse<ResourceT, EmbeddedT> badRequest() {
-        return new HalListResponse<>(Mono.empty(), Mono.just(HttpStatus.BAD_REQUEST), null);
-    }
-
-    /**
      * Creates a {@link HalListResponse} with no body and {@link HttpStatus#NOT_FOUND}.
      *
      * @param <ResourceT>
@@ -249,31 +275,5 @@ public class HalListResponse<ResourceT, EmbeddedT>
      */
     public static <ResourceT, EmbeddedT> HalListResponse<ResourceT, EmbeddedT> notFound() {
         return new HalListResponse<>(Mono.empty(), Mono.just(HttpStatus.NOT_FOUND), null);
-    }
-
-    /**
-     * Creates a {@link HalListResponse} with no body and {@link HttpStatus#FORBIDDEN}.
-     *
-     * @param <ResourceT>
-     *         the resource type
-     * @param <EmbeddedT>
-     *         the embedded resource type
-     * @return a {@link HalListResponse} with {@code FORBIDDEN} status
-     */
-    public static <ResourceT, EmbeddedT> HalListResponse<ResourceT, EmbeddedT> forbidden() {
-        return new HalListResponse<>(Mono.empty(), Mono.just(HttpStatus.FORBIDDEN), null);
-    }
-
-    /**
-     * Creates a {@link HalListResponse} with no body and {@link HttpStatus#UNAUTHORIZED}.
-     *
-     * @param <ResourceT>
-     *         the resource type
-     * @param <EmbeddedT>
-     *         the embedded resource type
-     * @return a {@link HalListResponse} with {@code UNAUTHORIZED} status
-     */
-    public static <ResourceT, EmbeddedT> HalListResponse<ResourceT, EmbeddedT> unauthorized() {
-        return new HalListResponse<>(Mono.empty(), Mono.just(HttpStatus.UNAUTHORIZED), null);
     }
 }

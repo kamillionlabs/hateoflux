@@ -52,7 +52,8 @@ import static de.kamillionlabs.hateoflux.utility.ValidationMessageTemplates.valu
  *   {@link HalResourceWrapper}/li>
  *   <li><strong>{@link HalMultiResourceResponse}</strong>: Use when your endpoint returns <b>multiple</b>
  *   {@link HalResourceWrapper}</li>
- *   <li><strong>{@link HalListResponse}</strong>: Use when your endpoint returns a single {@link HalListWrapper}</li>
+ *   <li><strong>{@link HalMultiResourceResponse}</strong>: Use when your endpoint returns a single
+ *   {@link HalListWrapper}</li>
  * </ul>
  *
  * @param <ResourceT>
@@ -167,6 +168,19 @@ public class HalMultiResourceResponse<ResourceT, EmbeddedT>
     }
 
     /**
+     * Creates a {@link HalMultiResourceResponse} with {@link HttpStatus#OK}.
+     *
+     * @param <ResourceT>
+     *         the resource type
+     * @param <EmbeddedT>
+     *         the embedded resource type
+     * @return a {@link HalMultiResourceResponse} with {@code OK} status
+     */
+    public static <ResourceT, EmbeddedT> HalMultiResourceResponse<ResourceT, EmbeddedT> ok() {
+        return new HalMultiResourceResponse<>(Flux.empty(), HttpStatus.OK, null);
+    }
+
+    /**
      * Creates a {@link HalMultiResourceResponse} with the given HAL resource body and {@link HttpStatus#CREATED}.
      *
      * @param body
@@ -185,6 +199,19 @@ public class HalMultiResourceResponse<ResourceT, EmbeddedT>
             @NonNull Flux<HalResourceWrapper<ResourceT, EmbeddedT>> body) {
         Assert.notNull(body, valueNotAllowedToBeNull("Body"));
         return new HalMultiResourceResponse<>(body, HttpStatus.CREATED, null);
+    }
+
+    /**
+     * Creates a {@link HalMultiResourceResponse} with {@link HttpStatus#CREATED}.
+     *
+     * @param <ResourceT>
+     *         the resource type
+     * @param <EmbeddedT>
+     *         the embedded resource type
+     * @return a {@link HalMultiResourceResponse} with {@code CREATED} status
+     */
+    public static <ResourceT, EmbeddedT> HalMultiResourceResponse<ResourceT, EmbeddedT> created() {
+        return new HalMultiResourceResponse<>(Flux.empty(), HttpStatus.CREATED, null);
     }
 
     /**
@@ -209,6 +236,19 @@ public class HalMultiResourceResponse<ResourceT, EmbeddedT>
     }
 
     /**
+     * Creates a {@link HalMultiResourceResponse} with {@link HttpStatus#ACCEPTED}.
+     *
+     * @param <ResourceT>
+     *         the resource type
+     * @param <EmbeddedT>
+     *         the embedded resource type
+     * @return a {@link HalMultiResourceResponse} with {@code ACCEPTED} status
+     */
+    public static <ResourceT, EmbeddedT> HalMultiResourceResponse<ResourceT, EmbeddedT> accepted() {
+        return new HalMultiResourceResponse<>(Flux.empty(), HttpStatus.ACCEPTED, null);
+    }
+
+    /**
      * Creates a {@link HalMultiResourceResponse} with no body and {@link HttpStatus#NO_CONTENT}.
      *
      * @param <ResourceT>
@@ -222,19 +262,6 @@ public class HalMultiResourceResponse<ResourceT, EmbeddedT>
     }
 
     /**
-     * Creates a {@link HalMultiResourceResponse} with no body and {@link HttpStatus#BAD_REQUEST}.
-     *
-     * @param <ResourceT>
-     *         the resource type
-     * @param <EmbeddedT>
-     *         the embedded resource type
-     * @return a {@link HalMultiResourceResponse} with {@code BAD_REQUEST} status
-     */
-    public static <ResourceT, EmbeddedT> HalMultiResourceResponse<ResourceT, EmbeddedT> badRequest() {
-        return new HalMultiResourceResponse<>(Flux.empty(), HttpStatus.BAD_REQUEST, null);
-    }
-
-    /**
      * Creates a {@link HalMultiResourceResponse} with {@link HttpStatus#NOT_FOUND}.
      *
      * @param <ResourceT>
@@ -245,31 +272,5 @@ public class HalMultiResourceResponse<ResourceT, EmbeddedT>
      */
     public static <ResourceT, EmbeddedT> HalMultiResourceResponse<ResourceT, EmbeddedT> notFound() {
         return new HalMultiResourceResponse<>(Flux.empty(), HttpStatus.NOT_FOUND, null);
-    }
-
-    /**
-     * Creates a {@link HalMultiResourceResponse} with no body and {@link HttpStatus#FORBIDDEN}.
-     *
-     * @param <ResourceT>
-     *         the resource type
-     * @param <EmbeddedT>
-     *         the embedded resource type
-     * @return a {@link HalMultiResourceResponse} with {@code FORBIDDEN} status
-     */
-    public static <ResourceT, EmbeddedT> HalMultiResourceResponse<ResourceT, EmbeddedT> forbidden() {
-        return new HalMultiResourceResponse<>(Flux.empty(), HttpStatus.FORBIDDEN, null);
-    }
-
-    /**
-     * Creates a {@link HalMultiResourceResponse} with no body and {@link HttpStatus#UNAUTHORIZED}.
-     *
-     * @param <ResourceT>
-     *         the resource type
-     * @param <EmbeddedT>
-     *         the embedded resource type
-     * @return a {@link HalMultiResourceResponse} with {@code UNAUTHORIZED} status
-     */
-    public static <ResourceT, EmbeddedT> HalMultiResourceResponse<ResourceT, EmbeddedT> unauthorized() {
-        return new HalMultiResourceResponse<>(Flux.empty(), HttpStatus.UNAUTHORIZED, null);
     }
 }

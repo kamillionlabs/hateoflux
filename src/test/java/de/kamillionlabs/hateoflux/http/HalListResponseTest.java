@@ -104,31 +104,16 @@ class HalListResponseTest {
     }
 
     @Test
-    void givenFactoryMethodUnauthorized_whenCalled_thenCreatesResponseWithUnauthorizedStatus() {
+    void givenFactoryMethodOkWithoutBody_whenCalled_thenCreatesResponseWithOkStatus() {
         // GIVEN
-        HalListResponse<String, String> response = HalListResponse.unauthorized();
+        HalListResponse<String, String> response = HalListResponse.ok();
 
         // WHEN
         ResponseEntity<?> entity = response.toResponseEntity().block();
 
         // THEN
         assertThat(entity).isNotNull();
-        assertThat(entity.getBody()).isNull();
-        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
-    void givenFactoryMethodForbidden_whenCalled_thenCreatesResponseWithForbiddenStatus() {
-        // GIVEN
-        HalListResponse<String, String> response = HalListResponse.forbidden();
-
-        // WHEN
-        ResponseEntity<?> entity = response.toResponseEntity().block();
-
-        // THEN
-        assertThat(entity).isNotNull();
-        assertThat(entity.getBody()).isNull();
-        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
@@ -143,20 +128,6 @@ class HalListResponseTest {
         assertThat(entity).isNotNull();
         assertThat(entity.getBody()).isNull();
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    void givenFactoryMethodBadRequest_whenCalled_thenCreatesResponseWithBadRequestStatus() {
-        // GIVEN
-        HalListResponse<String, String> response = HalListResponse.badRequest();
-
-        // WHEN
-        ResponseEntity<?> entity = response.toResponseEntity().block();
-
-        // THEN
-        assertThat(entity).isNotNull();
-        assertThat(entity.getBody()).isNull();
-        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -216,6 +187,19 @@ class HalListResponseTest {
     }
 
     @Test
+    void givenFactoryMethodCreatedWithoutBody_whenCalled_thenCreatesResponseWithCreatedStatus() {
+        // GIVEN
+        HalListResponse<String, String> response = HalListResponse.created();
+
+        // WHEN
+        ResponseEntity<?> entity = response.toResponseEntity().block();
+
+        // THEN
+        assertThat(entity).isNotNull();
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    }
+
+    @Test
     void givenFactoryMethodAccepted_whenCalled_thenCreatesResponseWithAcceptedStatus() {
         // GIVEN
         HalListResponse<String, String> response = HalListResponse.accepted(mockBody);
@@ -226,6 +210,19 @@ class HalListResponseTest {
         // THEN
         assertThat(entity).isNotNull();
         assertThat(entity.getBody()).isEqualTo(mockWrapper);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+    }
+
+    @Test
+    void givenFactoryMethodAcceptedWithoutBody_whenCalled_thenCreatesResponseWithAcceptedStatus() {
+        // GIVEN
+        HalListResponse<String, String> response = HalListResponse.accepted();
+
+        // WHEN
+        ResponseEntity<?> entity = response.toResponseEntity().block();
+
+        // THEN
+        assertThat(entity).isNotNull();
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
     }
 }
