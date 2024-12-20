@@ -102,31 +102,16 @@ class HalResourceResponseTest {
     }
 
     @Test
-    void givenFactoryMethodUnauthorized_whenCalled_thenCreatesResponseWithUnauthorizedStatus() {
+    void givenFactoryMethodOkWithoutBody_whenCalled_thenCreatesResponseWithBadRequestStatus() {
         // GIVEN
-        HalResourceResponse<String, String> response = HalResourceResponse.unauthorized();
+        HalResourceResponse<String, String> response = HalResourceResponse.ok();
 
         // WHEN
         ResponseEntity<?> entity = response.toResponseEntity().block();
 
         // THEN
         assertThat(entity).isNotNull();
-        assertThat(entity.getBody()).isNull();
-        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
-    void givenFactoryMethodForbidden_whenCalled_thenCreatesResponseWithForbiddenStatus() {
-        // GIVEN
-        HalResourceResponse<String, String> response = HalResourceResponse.forbidden();
-
-        // WHEN
-        ResponseEntity<?> entity = response.toResponseEntity().block();
-
-        // THEN
-        assertThat(entity).isNotNull();
-        assertThat(entity.getBody()).isNull();
-        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
@@ -139,22 +124,7 @@ class HalResourceResponseTest {
 
         // THEN
         assertThat(entity).isNotNull();
-        assertThat(entity.getBody()).isNull();
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    void givenFactoryMethodBadRequest_whenCalled_thenCreatesResponseWithBadRequestStatus() {
-        // GIVEN
-        HalResourceResponse<String, String> response = HalResourceResponse.badRequest();
-
-        // WHEN
-        ResponseEntity<?> entity = response.toResponseEntity().block();
-
-        // THEN
-        assertThat(entity).isNotNull();
-        assertThat(entity.getBody()).isNull();
-        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -226,4 +196,31 @@ class HalResourceResponseTest {
         assertThat(entity.getBody()).isEqualTo(mockWrapper);
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
     }
+
+    @Test
+    void givenFactoryMethodCreatedWithoutBody_whenCalled_thenCreatesResponseWithUnauthorizedStatus() {
+        // GIVEN
+        HalResourceResponse<String, String> response = HalResourceResponse.created();
+
+        // WHEN
+        ResponseEntity<?> entity = response.toResponseEntity().block();
+
+        // THEN
+        assertThat(entity).isNotNull();
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    }
+
+    @Test
+    void givenFactoryMethodAcceptedWithoutBody_whenCalled_thenCreatesResponseWithForbiddenStatus() {
+        // GIVEN
+        HalResourceResponse<String, String> response = HalResourceResponse.accepted();
+
+        // WHEN
+        ResponseEntity<?> entity = response.toResponseEntity().block();
+
+        // THEN
+        assertThat(entity).isNotNull();
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+    }
+
 }

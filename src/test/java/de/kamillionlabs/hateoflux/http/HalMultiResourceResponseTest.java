@@ -122,37 +122,16 @@ class HalMultiResourceResponseTest {
     }
 
     @Test
-    void givenFactoryMethodUnauthorized_whenCalled_thenCreatesResponseWithUnauthorizedStatus() {
+    void givenFactoryMethodOkWithoutBody_whenCalled_thenCreatesResponseWithOkStatus() {
         // GIVEN
-        HalMultiResourceResponse<String, String> response = HalMultiResourceResponse.unauthorized();
+        HalMultiResourceResponse<String, String> response = HalMultiResourceResponse.ok();
 
         // WHEN
         ResponseEntity<?> entity = response.toResponseEntity().block();
 
         // THEN
         assertThat(entity).isNotNull();
-        assertThat(entity.getBody()).isNotNull();
-        Flux body = (Flux) entity.getBody();
-        Mono<Boolean> hasElements = body.hasElements();
-        assertEquals(Boolean.FALSE, hasElements.block());
-        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-    }
-
-    @Test
-    void givenFactoryMethodForbidden_whenCalled_thenCreatesResponseWithForbiddenStatus() {
-        // GIVEN
-        HalMultiResourceResponse<String, String> response = HalMultiResourceResponse.forbidden();
-
-        // WHEN
-        ResponseEntity<?> entity = response.toResponseEntity().block();
-
-        // THEN
-        assertThat(entity).isNotNull();
-        assertThat(entity.getBody()).isNotNull();
-        Flux body = (Flux) entity.getBody();
-        Mono<Boolean> hasElements = body.hasElements();
-        assertEquals(Boolean.FALSE, hasElements.block());
-        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
@@ -170,23 +149,6 @@ class HalMultiResourceResponseTest {
         Mono<Boolean> hasElements = body.hasElements();
         assertEquals(Boolean.FALSE, hasElements.block());
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-    }
-
-    @Test
-    void givenFactoryMethodBadRequest_whenCalled_thenCreatesResponseWithBadRequestStatus() {
-        // GIVEN
-        HalMultiResourceResponse<String, String> response = HalMultiResourceResponse.badRequest();
-
-        // WHEN
-        ResponseEntity<?> entity = response.toResponseEntity().block();
-
-        // THEN
-        assertThat(entity).isNotNull();
-        assertThat(entity.getBody()).isNotNull();
-        Flux body = (Flux) entity.getBody();
-        Mono<Boolean> hasElements = body.hasElements();
-        assertEquals(Boolean.FALSE, hasElements.block());
-        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -237,6 +199,32 @@ class HalMultiResourceResponseTest {
         Mono<Boolean> hasElements = body.hasElements();
         assertEquals(Boolean.FALSE, hasElements.block());
         assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void givenFactoryMethodCreatedWithoutBody_whenCalled_thenCreatesResponseWithCreatedStatus() {
+        // GIVEN
+        HalMultiResourceResponse<String, String> response = HalMultiResourceResponse.created();
+
+        // WHEN
+        ResponseEntity<?> entity = response.toResponseEntity().block();
+
+        // THEN
+        assertThat(entity).isNotNull();
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    }
+
+    @Test
+    void givenFactoryMethodAcceptedWithoutBody_whenCalled_thenCreatesResponseWithAcceptedStatus() {
+        // GIVEN
+        HalMultiResourceResponse<String, String> response = HalMultiResourceResponse.accepted();
+
+        // WHEN
+        ResponseEntity<?> entity = response.toResponseEntity().block();
+
+        // THEN
+        assertThat(entity).isNotNull();
+        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
     }
 
     @Test
