@@ -18,6 +18,8 @@
 
 package de.kamillionlabs.hateoflux.dummy.controller;
 
+import de.kamillionlabs.hateoflux.dummy.model.Book;
+import de.kamillionlabs.hateoflux.http.HalResourceResponse;
 import de.kamillionlabs.hateoflux.model.hal.Composite;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -97,5 +99,8 @@ public class DummyController {
         return Mono.empty();
     }
 
-
+    @PostMapping("/response-type/{id}")
+    public HalResourceResponse<Book, Void> postMappingWithHalResponseAsReturnValue(@PathVariable String id) {
+        return HalResourceResponse.notFound();
+    }
 }

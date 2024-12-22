@@ -60,6 +60,7 @@ Building hypermedia-driven APIs in reactive Spring applications using WebFlux ca
 
 - **Resource Wrappers:** `HalResourceWrapper` and `HalListWrapper` to encapsulate resources and collections.
 - **Type-Safe Link Building:** Easily create and manage hypermedia links.
+- **Specialized Response Types:** Purpose-built reactive response handling with `HalResourceResponse`, `HalMultiResourceResponse`, and `HalListResponse`.
 - **Pagination Support:** Simplified pagination with metadata and navigation links.
 - **URI Template Support:** Define dynamic URLs with placeholders.
 - **Seamless Spring Integration:** Works effortlessly with existing Spring configurations and annotations.
@@ -101,7 +102,7 @@ dependencies {
 ```
 ## Basic Usage
 ### Creating a HalResourceWrapper
-Here's a simple example of how to create a `HalResourceWrapper` for an OrderDTO without any embedded resources.
+Here's a simple example of how to create a `HalResourceWrapper` for an `OrderDTO` without any embedded resources.
 ```java
 @GetMapping("/order-no-embedded/{orderId}")
 public Mono<HalResourceWrapper<OrderDTO, Void>> getOrder(@PathVariable int orderId) {
@@ -133,6 +134,35 @@ public Mono<HalResourceWrapper<OrderDTO, Void>> getOrder(@PathVariable int order
    }
 }
 ```
+### Response Types
+hateoflux provides specialized response types (basically reactive `ResponseEntity`s) to handle different resource scenarios in reactive applications. The following controller method is from the previous example now altered however altered to return a reactive HTTP response, while preserving the same body:
+
+hateoflux provides specialized response types (essentially reactive `ResponseEntity`s) to handle different resource scenarios in reactive applications. Here's the previous controller example modified to return a reactive HTTP response while preserving the same body:
+
+```java
+@GetMapping("/order-no-embedded/{orderId}")
+public HalResourceResponse<OrderDTO, Void> getOrder(@PathVariable String orderId) {
+    
+        Mono<HalResourceWrapper<OrderDTO, Void>> order = orderService.getOrder(orderId)
+            .map(order -> HalResourceWrapper.wrap(order)
+                .withLinks(
+                        Link.of("orders/{orderId}/shipment")
+                                .expand(orderId)
+                                .withRel("shipment"),
+                        Link.linkAsSelfOf("orders/" + orderId)
+                ));
+        
+    return HalResourceResponse.ok(order)
+        .withContentType(MediaType.APPLICATION_JSON)
+        .withHeader("Custom-Header", "value");
+}
+```
+The library provides three response types for different scenarios:
+
+* `HalResourceResponse`: For single HAL resources (shown above)
+* `HalMultiResourceResponse`: For streaming multiple resources individually
+* `HalListResponse`: For collections as a single HAL document, including pagination
+
 ## Advanced Usage
 ### Assemblers
 Assemblers in hateoflux reduce boilerplate by handling the wrapping and linking logic. Implement either `FlatHalWrapperAssembler` for resources without embedded entities or `EmbeddingHalWrapperAssembler` for resources with embedded entities.
@@ -186,16 +216,17 @@ Link userLink = linkTo(UserController.class, controller -> controller.getUser("1
 ### Demos
 Explore practical examples and debug them in the [hateoflux-demos](https://github.com/kamillionlabs/hateoflux-demos) repository. Fork the repository and run the applications to see hateoflux in action.
 ### Cookbook
-Refer to the [Cookbook: Examples & Use Cases](https://hateoflux.kamillionlabs.de/docs/cookbook.html) for detailed and explained scenarios and code snippets demonstrating various functionalities of hateoflux.
+Refer to the [Cookbook: Examples & Use Cases](https://hateoflux.kamillionlabs.de/cookbook/cookbook.html) for detailed and explained scenarios and code snippets demonstrating various functionalities of hateoflux.
 
 ## Documentation
 Comprehensive documentation is available at [https://hateoflux.kamillionlabs.de (english)](https://hateoflux.kamillionlabs.de), covering:
 - [What is hateoflux?](https://hateoflux.kamillionlabs.de/)
 - [Representation Model](https://hateoflux.kamillionlabs.de/docs/core-concepts/representation-model.html)
+- [Response Types](https://hateoflux.kamillionlabs.de/docs/core-concepts/response-handling.html)
 - [Link Building](https://hateoflux.kamillionlabs.de/docs/core-concepts/linkbuilding.html)
 - [Assemblers](https://hateoflux.kamillionlabs.de/docs/core-concepts/assemblers.html)
 - [Spring HATEOAS vs. hateoflux](https://hateoflux.kamillionlabs.de/docs/spring-vs-hateoflux.html)
-- [Cookbook: Examples & Use Cases](https://hateoflux.kamillionlabs.de/docs/cookbook.html)
+- [Cookbook: Examples & Use Cases](https://hateoflux.kamillionlabs.de/docs/cookbook/)
 
 ## Comparison with Spring HATEOAS
 hateoflux is specifically designed for reactive Spring WebFlux applications, offering a more streamlined and maintainable approach compared to Spring HATEOAS in reactive environments. Key differences include:
@@ -203,6 +234,7 @@ hateoflux is specifically designed for reactive Spring WebFlux applications, off
 | **Aspect**                     | **Spring HATEOAS (WebFlux)**                                                                                             | **hateoflux**                                                                             |
 |--------------------------------|--------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
 | **Representation Models**      | Uses wrappers and inheritance-based models, requiring manual embedding of resources via inheritance or separate classes. | Uses wrappers exclusively to keep domain models clean and decoupled.                      |
+| **Response Types**             | Uses standard `ResponseEntity` with manual reactive flow handling                                                        | Dedicated response types optimized for different resource scenarios                       |
 | **Assemblers and Boilerplate** | Verbose with manual resource wrapping and link addition.                                                                 | Simplified with built-in methods; only links need to be specified in assemblers.          |
 | **Pagination Handling**        | Limited support in reactive environments; requires manual implementation.                                                | Easy pagination with HalListWrapper; handles metadata and navigation links automatically. |
 | **Documentation Support**      | Better for Spring MVC; less comprehensive for WebFlux.                                                                   | Tailored for reactive Spring WebFlux with focused documentation and examples.             |
