@@ -15,6 +15,10 @@ import reactor.core.publisher.Mono;
  */
 public interface ReactiveResponseEntity {
 
+    /**
+     * The default HTTP status to be used when no specific status is provided. This constant is set to
+     * {@link HttpStatus#OK} (200), indicating a successful request.
+     */
     HttpStatus DEFAULT_STATUS = HttpStatus.OK;
 
     /**

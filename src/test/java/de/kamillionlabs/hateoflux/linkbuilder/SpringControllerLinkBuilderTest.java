@@ -184,13 +184,23 @@ class SpringControllerLinkBuilderTest {
 
 
     @Test
-    void givenpostMappingWithVoidAsReturnValue_whenLinkTo_noExceptionIsThrownAndLinkIsCorrect() {
+    void givenPostMappingWithVoidAsReturnValue_whenLinkTo_noExceptionIsThrownAndLinkIsCorrect() {
         // GIVEN & WHEN
         final Link link = linkTo(DummyController.class,
                 DummyController::postMappingWithVoidAsReturnValue);
 
         //THEN
         assertThat(link.getHref()).isEqualTo("/dummy/void-of-nothing");
+    }
+
+    @Test
+    void givenPostMappingWithHalResponseAsReturnValue_whenLinkTo_noExceptionIsThrownAndLinkIsCorrect() {
+        // GIVEN & WHEN
+        final Link link = linkTo(DummyController.class,
+                c -> c.postMappingWithHalResponseAsReturnValue("123"));
+
+        //THEN
+        assertThat(link.getHref()).isEqualTo("/dummy/response-type/123");
     }
 
 

@@ -281,6 +281,22 @@ public abstract class HalWrapper<HalWrapperT extends HalWrapper<? extends HalWra
         }
     }
 
+    /**
+     * Determines whether the given class represents a scalar value type.
+     * <p>
+     * Scalar types are defined as:
+     * <ul>
+     * <li>Primitive types (int, boolean, char, etc.)</li>
+     * <li>String</li>
+     * <li>Number subclasses (Integer, Double, etc.)</li>
+     * <li>Boolean wrapper class</li>
+     * <li>Character wrapper class</li>
+     * </ul>
+     *
+     * @param clazz
+     *         The class to check
+     * @return true if the class represents a scalar type, false otherwise
+     */
     protected static boolean isScalar(Class<?> clazz) {
         return clazz.isPrimitive()
                 || clazz.equals(String.class)
