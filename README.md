@@ -4,7 +4,7 @@
   <img alt="hateoflux logo" src="./readme_resources/hateoflux_black.svg">
 </picture>
 
-Lightweight HATEOAS library designed for Spring Webflux.
+Lightweight HATEOAS library designed for Spring WebFlux.
 ___
 
 ![Version](.github/badges/development-version.svg)
@@ -135,7 +135,7 @@ public Mono<HalResourceWrapper<OrderDTO, Void>> getOrder(@PathVariable int order
 }
 ```
 ### Response Types
-hateoflux provides specialized response types (basically reactive `ResponseEntity`s) to handle different resource scenarios in reactive applications. The following controller method is from the previous example now altered however altered to return a reactive HTTP response, while preserving the same body:
+hateoflux provides specialized response types (basically reactive `ResponseEntity`s) to handle different resource scenarios in reactive applications. The following controller method is from the previous example now altered however to return a reactive HTTP response, while preserving the same body:
 
 hateoflux provides specialized response types (essentially reactive `ResponseEntity`s) to handle different resource scenarios in reactive applications. Here's the previous controller example modified to return a reactive HTTP response while preserving the same body:
 
