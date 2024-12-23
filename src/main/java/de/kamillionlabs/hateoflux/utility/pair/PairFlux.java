@@ -1,5 +1,5 @@
 /*
- * Copyright (c)  2024 kamillion-suite contributors
+ * Copyright (c)  2024 kamillion labs contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,6 @@
  *
  * @since 15.11.2024
  */
-/*
- * Copyright (c) 2024 kamillion contributors
- *
- * This work is licensed under the GNU General Public License (GPL).
- *
- * @since 14.10.2024
- */
-
 package de.kamillionlabs.hateoflux.utility.pair;
 
 import lombok.Getter;
