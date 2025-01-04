@@ -37,6 +37,7 @@ hateoflux is a lightweight, reactive-first Java library designed to streamline t
   - [Adding to Your Project](#adding-to-your-project)
 - [Basic Usage](#basic-usage)
   - [Creating a HalResourceWrapper](#creating-a-halresourcewrapper)
+  - [Response Types](#response-types)
 - [Advanced Usage](#advanced-usage)
   - [Assemblers](#assemblers)
   - [Link Building](#link-building)
