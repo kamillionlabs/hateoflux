@@ -135,8 +135,6 @@ public Mono<HalResourceWrapper<OrderDTO, Void>> getOrder(@PathVariable int order
 }
 ```
 ### Response Types
-hateoflux provides specialized response types (basically reactive `ResponseEntity`s) to handle different resource scenarios in reactive applications. The following controller method is from the previous example now altered however to return a reactive HTTP response, while preserving the same body:
-
 hateoflux provides specialized response types (essentially reactive `ResponseEntity`s) to handle different resource scenarios in reactive applications. Here's the previous controller example modified to return a reactive HTTP response while preserving the same body:
 
 ```java
@@ -252,7 +250,8 @@ Contributions are welcome! Please follow these steps:
 1. Submit a pull request detailing your changes.
 1. For more details, see the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
-> **Note:** All pull requests are subject to code review. Please be patient and responsive to any feedback or requests for changes.
+> [!NOTE]
+> All pull requests are subject to code review. Please be patient and responsive to any feedback or requests for changes.
 
 For more details, see the [CONTRIBUTING.md](./CONTRIBUTING.md) file.
 
