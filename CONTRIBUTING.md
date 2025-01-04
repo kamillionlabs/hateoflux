@@ -118,7 +118,8 @@ git push origin your-feature-name
 1. Link any related issues by including `Closes #issue-number` in your description.
 1. Submit the pull request.
 
-> **Note:** All pull requests are subject to code review. Please be patient and responsive to any feedback or requests for changes.
+> [!NOTE]
+> All pull requests are subject to code review. Please be patient and responsive to any feedback or requests for changes.
 
 ## Coding Guidelines
 ### Style Guide
