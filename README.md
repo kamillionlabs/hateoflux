@@ -82,8 +82,8 @@ Before integrating hateoflux into your project, ensure that you have the followi
 To include hateoflux in your Spring WebFlux project, add it as a dependency using your preferred build tool.
 
 ### Adding to Your Project
-
-> **Note: Check the latest available version on [Maven Central](https://central.sonatype.com/artifact/de.kamillionlabs/hateoflux).**
+> [!TIP]
+> Check the latest available version on [Maven Central](https://central.sonatype.com/artifact/de.kamillionlabs/hateoflux).
 
 #### Maven
 
