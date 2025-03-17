@@ -55,7 +55,7 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
-    mockitoAgent 'org.mockito:mockito-core:5.16.0', {
+    mockitoAgent 'org.mockito:mockito-core:5.16.1', {
         transitive = false
     }
 }
